@@ -52,6 +52,17 @@
     banner() {
       const onboard = App.KGMU ? App.KGMU.onboardCard() : '';
       if (onboard) return `<div class="sample-banner">${onboard}</div>`;
+      const last = App.Schedule.semesterOver(new Date());
+      if (last && App.KGMU) {
+        return `
+          <div class="banner sample-banner rise" style="--i:6">${ico('info')}
+            <div class="banner-text"><b>Семестр по расписанию закончился ${U.fmtDate(last)}.</b> Когда на сайте КГМУ появится расписание следующего полугодия, скачайте .xlsx своего потока и загрузите его — темы 6 семестра уже есть.</div>
+            <div class="banner-actions">
+              <a class="btn btn-sm" href="${esc(App.KGMU_DATA.page)}" target="_blank" rel="noopener">Сайт КГМУ</a>
+              <button class="btn btn-sm" data-action="kgmu-upload">${ico('upload')} Загрузить</button>
+            </div>
+          </div>`;
+      }
       if (!Store.state.sampleBanner || !Store.hasSample()) return '';
       return `
         <div class="banner sample-banner rise" style="--i:6">${ico('info')}
@@ -147,8 +158,14 @@
         }
       }
 
+      const holiday = S.holiday(now);
+      const over = S.semesterOver(now);
       const empty = !list.length
-        ? `<div class="empty"><div class="empty-title">Сегодня занятий нет</div>${Store.state.classes.length ? '<p>Можно выдохнуть или заняться отработками.</p>' : '<p>Выберите группу — и здесь появится план на день.</p><button class="btn btn-sm" data-action="kgmu-import">' + ico('calendar') + ' Выбрать группу</button>'}</div>`
+        ? `<div class="empty"><div class="empty-title">${holiday ? `Праздник: ${esc(holiday)}` : 'Сегодня занятий нет'}</div>${
+          !Store.state.classes.length
+            ? '<p>Выберите группу — и здесь появится план на день.</p><button class="btn btn-sm" data-action="kgmu-import">' + ico('calendar') + ' Выбрать группу</button>'
+            : over ? '<p>Занятия по загруженному расписанию закончились.</p>'
+              : holiday ? '<p>Занятий нет — выходной день.</p>' : '<p>Можно выдохнуть или заняться отработками.</p>'}</div>`
         : allPast ? `<p class="empty" style="padding:4px 16px 10px">На сегодня занятия закончились.</p>` : '';
 
       return `

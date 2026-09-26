@@ -1165,6 +1165,7 @@ select.input-sm { padding-right: 30px; background-position: right 8px center; }
   overflow: hidden;
 }
 .modal.is-wide { max-width: 900px; }
+.modal:focus { outline: none; }
 .modal.is-small { max-width: 420px; }
 .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 16px 6px 22px; }
 .modal-title { font-family: var(--font-serif); font-size: 23px; font-weight: 500; letter-spacing: -.01em; min-width: 0; overflow-wrap: anywhere; }

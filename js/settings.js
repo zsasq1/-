@@ -209,6 +209,8 @@
       const theme = Store.state.settings.theme;
       Store.state = Store.defaults();
       Store.state.settings.theme = theme;
+      Store.state.settings.autoImported = true;
+      Store.state.settings.electivesSynced = true;
       Store.save();
       App.go('home');
       UI.toast('Все данные удалены');

@@ -467,6 +467,7 @@
       if (!p) return;
       let current = String(group || Store.state.profile.group || p.streams[0].groups[0]);
       const manual = Store.state.classes.filter((c) => c.source !== 'kgmu' && !c.sample).length;
+      const edited = Store.state.classes.filter((c) => c.source === 'kgmu' && c.edited).length;
       const updated = U.parseYmd(p.updated || '2026-09-02');
 
       const row = (it, i, on) => {
@@ -505,7 +506,7 @@
               <span class="field-label">Что загрузить</span>
               <div class="kg-list" id="kg-list">${list()}</div>
             </div>
-            <p class="field-hint span-2">Источник: официальное расписание лечебного факультета с сайта kirovgma.ru${p.custom ? ', загруженное вами' : `, версия от ${U.fmtDate(updated)}`}. Время, период и аудитория у каждого курса по выбору взяты из таблицы. Если на кафедре что-то поменяли, пару можно исправить вручную.${manual ? ' Пары, которые вы добавили сами, останутся.' : ''}</p>
+            <p class="field-hint span-2">Источник: официальное расписание лечебного факультета с сайта kirovgma.ru${p.custom ? ', загруженное вами' : `, версия от ${U.fmtDate(updated)}`}. Время, период и аудитория у каждого курса по выбору взяты из таблицы. Если на кафедре что-то поменяли, пару можно исправить вручную.${manual ? ' Пары, которые вы добавили сами, останутся.' : ''}${edited ? ` <b>${U.count(edited, ['исправленная вручную пара', 'исправленные вручную пары', 'исправленных вручную пар'])} из таблицы ${U.plural(edited, ['заменится', 'заменятся', 'заменятся'])} заново загруженными.</b>` : ''}</p>
           </div>`,
         foot: `
           <button class="btn btn-ghost" type="button" data-close>Отмена</button>

@@ -6,7 +6,7 @@
   const KEY = 'semestr.v1';
 
   // Оттенки предметов: подобраны так, чтобы различаться и в светлой, и в тёмной теме
-  const HUES = [18, 210, 145, 40, 285, 350, 178, 95, 248, 8];
+  const HUES = [18, 210, 145, 40, 285, 350, 178, 95, 248, 8, 120, 318, 195, 62, 265, 332, 160, 228];
 
   // Частое время занятий в КГМУ: практические — два часа с перерывом, лекции — 90 минут
   const PAIRS = [
@@ -81,6 +81,7 @@
         return;
       }
       this.state = this.normalize(data);
+      this.fixHueClashes();
       this.save();
     },
 
@@ -135,12 +136,22 @@
       return free != null ? free : HUES[this.state.subjects.length % HUES.length];
     },
 
+    // Раньше все дисциплины по выбору получали один цвет — разводим совпадения
+    fixHueClashes() {
+      const seen = new Set();
+      this.state.subjects.forEach((s) => {
+        if (seen.has(s.hue)) {
+          const free = HUES.find((h) => !this.state.subjects.some((x) => x.hue === h));
+          if (free != null) s.hue = free;
+        }
+        seen.add(s.hue);
+      });
+    },
+
     // Постоянный цвет для известных дисциплин, если он ещё не занят
     defaultHue(name) {
       const known = App.KGMU && App.KGMU.SUBJECTS.find((s) => s.name.toLowerCase() === name.toLowerCase());
-      if (known && !this.state.subjects.some((s) => s.hue === known.hue && !(App.KGMU.SUBJECTS.find((k) => k.name === s.name) || {}).elective)) {
-        return known.hue;
-      }
+      if (known && known.hue != null && !this.state.subjects.some((s) => s.hue === known.hue)) return known.hue;
       return this.nextHue();
     },
 

@@ -161,6 +161,7 @@
       };
 
       UI.modal({
+        focus: 'none',
         title: subj ? subj.name : 'Занятие',
         body: `
           <div class="occ">

@@ -287,9 +287,18 @@
 
     // Планировщик уведомлений и «живые» части экрана
     let lastMinute = new Date().getMinutes();
+    let lastDay = U.ymd(new Date());
     const tick = () => {
       App.Notify.tick();
       const m = new Date().getMinutes();
+      if (U.ymd(new Date()) !== lastDay) {
+        // Полночь: приветствие, неделя и карточка «Сегодня» должны смениться
+        lastDay = U.ymd(new Date());
+        lastMinute = m;
+        App.renderView(false);
+        App.renderSidebar();
+        return;
+      }
       if (m !== lastMinute) {
         lastMinute = m;
         const mod = App.views[App.route];

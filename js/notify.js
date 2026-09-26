@@ -372,7 +372,7 @@
           <form id="rf" class="form-grid" autocomplete="off" novalidate>
             <div class="field span-2">
               <label for="rf-title">Что сделать</label>
-              <input id="rf-title" class="input" value="${esc(r.title)}" placeholder="Например, отработка по фармакологии" required autofocus>
+              <input id="rf-title" class="input" value="${esc(r.title)}" placeholder="Например, отработка по фармакологии" required ${isEdit ? '' : 'autofocus'}>
             </div>
             <div class="field span-2">
               <span class="field-label">Тип</span>

@@ -48,7 +48,7 @@
 
     /* ---------- Модальные окна ---------- */
 
-    modal({ title, body, foot = '', size = '', onMount, onClose }) {
+    modal({ title, body, foot = '', size = '', onMount, onClose, focus = 'auto' }) {
       const id = `m${++modalSeq}`;
       const back = document.createElement('div');
       back.className = 'modal-backdrop';
@@ -89,8 +89,15 @@
       UI.initSeg(el);
       if (onMount) onMount(el, api);
       setTimeout(() => {
-        const f = el.querySelector('[autofocus]') || el.querySelector('.modal-body input:not([type=radio]):not([type=hidden]), .modal-body select, .modal-body textarea') || el.querySelector('.modal-foot .btn-primary, .modal-foot .btn-danger-solid');
-        if (f) f.focus({ preventScroll: true });
+        // На телефоне не ставим курсор в поле сами — иначе сразу выезжает клавиатура
+        const touch = window.matchMedia('(pointer: coarse)').matches;
+        let f = el.querySelector('[autofocus]');
+        if (!f && focus !== 'none' && !touch) {
+          f = el.querySelector('.modal-body input:not([type=radio]):not([type=hidden]), .modal-body select, .modal-body textarea')
+            || el.querySelector('.modal-foot .btn-primary, .modal-foot .btn-danger-solid');
+        }
+        if (!f) { el.setAttribute('tabindex', '-1'); f = el; }
+        f.focus({ preventScroll: true });
       }, 80);
       return api;
     },

@@ -270,6 +270,7 @@
       const k = this.kind(f);
       const subjects = Store.sortedSubjects();
       const modal = UI.modal({
+        focus: 'none',
         title: f.name,
         size: 'wide',
         body: `<div class="preview" id="pv"><span class="shimmer">Открываю…</span></div>`,

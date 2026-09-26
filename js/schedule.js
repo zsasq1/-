@@ -45,6 +45,19 @@
       return `<span class="pill ${p.odd ? 'accent' : ''}">${esc(U.cap(this.weekName(p.odd)))}</span>`;
     },
 
+    // Последний день занятий по загруженному расписанию, если он уже прошёл
+    semesterOver(now) {
+      const list = Store.state.classes;
+      if (!list.length) return null;
+      let last = '';
+      for (const c of list) {
+        if (c.dates && c.dates.length) last = c.dates.reduce((a, d) => (d > a ? d : a), last);
+        else if (c.until) last = c.until > last ? c.until : last;
+        else return null; // есть занятия без даты окончания
+      }
+      return last && last < U.ymd(now) ? U.parseYmd(last) : null;
+    },
+
     holiday(date) {
       return HOLIDAYS[typeof date === 'string' ? date : U.ymd(date)] || null;
     },
@@ -445,6 +458,7 @@
               Object.assign(cls, data);
               ['from', 'until', 'dates'].forEach((k) => { if (data[k] === undefined) delete cls[k]; });
               delete cls.sample;
+              if (cls.source === 'kgmu') cls.edited = true;
             } else {
               Store.state.classes.push(Object.assign({ id: U.uid() }, data));
             }

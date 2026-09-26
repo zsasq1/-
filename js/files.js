@@ -337,14 +337,8 @@
       const f = Store.state.files.find((x) => x.id === id);
       const blob = f && await FileDB.get(id);
       if (!blob) { UI.toast('Файл не найден в хранилище браузера'); return; }
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = f.name;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      const res = await U.saveFile(blob, f.name);
+      if (res === 'blocked') UI.toast('В предпросмотре такой файл сохранить нельзя — откройте Семестр на сайте');
     },
 
     async remove(id) {

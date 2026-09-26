@@ -162,6 +162,7 @@
               <span class="week-range">${range}</span>
               <button class="icon-btn" data-action="week-next" aria-label="Следующая неделя">${ico('chevron-right')}</button>
             </div>
+            <button class="btn cal-btn" data-action="cal-export" ${st.classes.length ? '' : 'hidden'} aria-label="Добавить в календарь телефона" title="Добавить в календарь телефона">${ico('calendar-plus')}<span class="cal-btn-text">В календарь</span></button>
             <button class="btn btn-primary" data-action="class-new">${ico('plus')} Занятие</button>
           </div>
         </div>

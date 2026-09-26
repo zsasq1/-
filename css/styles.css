@@ -1374,6 +1374,16 @@ details.more[open] .more-body { animation: rise .35s var(--ease-out) both; }
 .net-pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .howto { margin: 0 0 12px; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 14.5px; line-height: 1.45; }
 .howto li::marker { color: var(--accent); font-weight: 600; }
+
+/* Выгрузка в календарь */
+.cal { display: flex; flex-direction: column; gap: 16px; }
+.cal .modal-text { margin: 0; line-height: 1.5; }
+.cal .kg-list { max-height: none; }
+.cal-note { flex-wrap: nowrap; align-items: flex-start; padding: 12px 14px; }
+.cal-note > .ico { flex: none; margin-top: 1px; }
+.cal-note .banner-text { flex-basis: 0; }
+.cal .howto b { font-weight: 600; }
+.cal .more-body .field-hint { margin: 0; }
 .set-control .pill .ico { width: 14px; height: 14px; }
 
 /* ---------- Адаптив ---------- */
@@ -1417,6 +1427,12 @@ details.more[open] .more-body { animation: rise .35s var(--ease-out) both; }
   .chip-select select { max-width: 116px; }
   .view-schedule .head-actions { width: 100%; justify-content: space-between; }
   .view-schedule .today-btn.is-off { display: none; }
+  /* Первая строка — переключатель недель, вторая — две кнопки поровну */
+  .view-schedule .week-nav { flex: 1 1 100%; }
+  .view-schedule .week-range { flex: 1; }
+  .view-schedule .head-actions > .btn { flex: 1 1 0; }
+  .occ-edit { padding: 0 11px; }
+  .occ-edit-text { display: none; }
   .form-grid { grid-template-columns: minmax(0, 1fr); }
   .files-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .frow { grid-template-columns: 34px minmax(0, 1fr) auto; }

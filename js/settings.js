@@ -80,6 +80,9 @@
             <div class="set-card">
               ${row('Начало семестра', `Неделя с этой датой — ${esc(App.Schedule.weekName(true))}. Сейчас ${esc(App.Schedule.weekLabel(p))}, ${esc(App.Schedule.weekName(p.odd))}.`,
                 `<input id="set-start" type="date" class="input" value="${esc(s.semesterStart)}">`)}
+              ${App.Calendar ? row('Календарь телефона',
+                `Все занятия с темами и дедлайны — в календарь iPhone, Android или Google.${s.calExportedAt ? ` Последний раз добавляли ${esc(U.fmtDate(new Date(s.calExportedAt)))}; если расписание поменялось, добавьте заново.` : ''}`,
+                `<button class="btn" data-action="cal-export">${ico('calendar-plus')} Добавить</button>`) : ''}
               ${row('Показывать воскресенье', 'Если занятия бывают и в воскресенье',
                 `<label class="switch"><input type="checkbox" id="set-sun" ${s.showSunday ? 'checked' : ''} aria-label="Показывать воскресенье"><span></span></label>`)}
             </div>
@@ -175,18 +178,11 @@
     // Экран настроек не зависит от живых данных — не перерисовываем, чтобы не сбить ввод
     refresh() {},
 
-    exportData() {
+    async exportData() {
       const data = JSON.stringify(Object.assign({}, Store.state, { exportedAt: new Date().toISOString(), app: 'semestr' }), null, 2);
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `semestr-${U.ymd(new Date())}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
-      UI.toast('Резервная копия скачана');
+      const res = await U.saveFile(data, `semestr-${U.ymd(new Date())}.json`, 'application/json');
+      if (res === 'saved') UI.toast('Резервная копия скачана');
+      else if (res === 'blocked') UI.toast('Здесь сохранить файл нельзя — откройте Семестр на сайте');
     },
 
     importData() {

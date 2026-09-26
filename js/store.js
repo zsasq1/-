@@ -55,6 +55,7 @@
           hideInstall: false,
           electivesSynced: false,
           electiveCourses: [],
+          calExportedAt: null,
         },
         subjects: [],
         classes: [],

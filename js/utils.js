@@ -240,11 +240,44 @@ window.App.changes = window.App.changes || {}; // обработчики data-ch
     return { due, clean };
   };
 
+  /* ---------- Скачивание ---------- */
+
+  // Открыт ли Семестр в предпросмотре claude.ai: там файлы сохраняются через окно подтверждения,
+  // и не все форматы разрешены
+  U.inPreview = () => !!(window.claude && typeof window.claude.use === 'function');
+
+  // Отдать файл пользователю: 'saved' | 'declined' | 'blocked'
+  U.saveFile = async (data, name, type) => {
+    const blob = data instanceof Blob ? data : new Blob([data], { type: type || 'application/octet-stream' });
+    if (U.inPreview()) {
+      let dl = null;
+      try { dl = await window.claude.use('downloads'); } catch (e) { dl = null; }
+      if (dl) {
+        try {
+          await dl.save({ filename: name, data: blob });
+          return 'saved';
+        } catch (e) {
+          return e && e.code === 'declined' ? 'declined' : 'blocked';
+        }
+      }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    return 'saved';
+  };
+
   /* ---------- Иконки ---------- */
 
   const ICONS = {
     home: '<path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11.5h13V9"/><path d="M10 20.5v-6h4v6"/>',
     calendar: '<rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4"/>',
+    'calendar-plus': '<rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4M12 12.5v5M9.5 15h5"/>',
     folder: '<path d="M3.5 7.5A2.5 2.5 0 0 1 6 5h3.4l2 2.2H18a2.5 2.5 0 0 1 2.5 2.5v7.8A2.5 2.5 0 0 1 18 20H6a2.5 2.5 0 0 1-2.5-2.5z"/>',
     bell: '<path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9"/><path d="M10.2 20a2 2 0 0 0 3.6 0"/>',
     sliders: '<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',

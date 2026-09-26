@@ -188,7 +188,8 @@
             ${t.src ? `<p class="field-hint">Темы взяты из <a class="link" href="${esc(t.src)}" target="_blank" rel="noopener">рабочей программы дисциплины</a> и разложены по датам по порядку, с учётом часов занятия и праздников. Если кафедра идёт в другом темпе, впишите свою тему.</p>` : ''}
           </div>`,
         foot: `
-          <button class="btn btn-ghost" type="button" data-edit>${ico('pencil')} Изменить расписание</button>
+          <button class="btn btn-ghost occ-edit" type="button" data-edit aria-label="Изменить расписание" title="Изменить расписание">${ico('pencil')}<span class="occ-edit-text">Изменить</span></button>
+          <button class="btn btn-ghost" type="button" data-action="cal-menu" data-id="${esc(c.id)}" data-date="${esc(iso)}" aria-haspopup="menu">${ico('calendar-plus')} В календарь</button>
           <span class="spacer"></span>
           <button class="btn btn-primary" type="button" data-close>Готово</button>`,
         onMount: (el, api) => {

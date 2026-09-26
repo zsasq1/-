@@ -5,6 +5,13 @@
   const { U, Store, UI } = App;
   const { esc, ico } = U;
 
+  // Тема занятия и заметка под названием в карточке «Сегодня»
+  function topicLine(c, date) {
+    const t = App.Topics ? App.Topics.line(c, date) : null;
+    if (!t) return '';
+    return `<span class="tl-topic">${t.final ? '<span class="pill accent">итоговое</span>' : ''}<span>${esc(t.text)}</span></span>${t.note ? `<span class="tl-note">${ico('pencil')}${esc(t.note)}</span>` : ''}`;
+  }
+
   const Home = {
     att: [],          // файлы, прикреплённые к полю ввода
     manualDue: null,  // срок, выбранный вручную
@@ -109,7 +116,7 @@
           extra = `<div class="tl-status">Через ${U.relIn(U.atTime(now, c.start) - now)}</div>`;
         }
         return `
-          <button class="tl-item is-${status} ${Store.subjClass(c.subjectId)}" style="${Store.subjStyle(c.subjectId)}" data-action="class-edit" data-id="${c.id}">
+          <button class="tl-item is-${status} ${Store.subjClass(c.subjectId)}" style="${Store.subjStyle(c.subjectId)}" data-action="occ-open" data-id="${c.id}" data-date="${U.ymd(now)}">
             <span class="tl-time"><b>${c.start}</b>${c.end}</span>
             <span>
               <span class="tl-name"><span class="dot"></span><span>${esc(subj ? subj.name : 'Без названия')}</span></span>
@@ -118,6 +125,7 @@
                 ${c.room || c.place ? `<span title="${esc(c.place || '')}">${ico('pin')}${esc([App.Schedule.roomText(c), App.Schedule.placeShort(c)].filter(Boolean).join(' · '))}</span>` : ''}
                 ${c.teacher ? `<span>${ico('user')}${esc(c.teacher)}</span>` : ''}
               </span>
+              ${topicLine(c, now)}
               ${extra}
             </span>
           </button>`;
@@ -132,7 +140,8 @@
               <div class="next-day-label">${U.cap(U.dayWord(nd.date, now))}${U.dayDiff(now, nd.date) > 1 ? '' : `, ${U.fmtDate(nd.date)}`} · ${U.count(nd.list.length, ['занятие', 'занятия', 'занятий'])}</div>
               ${nd.list.map((c) => {
                 const s = Store.subject(c.subjectId);
-                return `<div class="next-day-row ${Store.subjClass(c.subjectId)}" style="${Store.subjStyle(c.subjectId)}"><time>${c.start}</time><span class="dot"></span><span>${esc(s ? s.name : '')}</span></div>`;
+                const t = App.Topics ? App.Topics.line(c, nd.date) : null;
+                return `<button class="next-day-row ${Store.subjClass(c.subjectId)}" style="${Store.subjStyle(c.subjectId)}" data-action="occ-open" data-id="${c.id}" data-date="${U.ymd(nd.date)}"><time>${c.start}</time><span class="dot"></span><span class="nd-text"><span>${esc(s ? s.name : '')}</span>${t ? `<span class="nd-topic">${esc(t.text)}</span>` : ''}</span></button>`;
               }).join('')}
             </div>`;
         }

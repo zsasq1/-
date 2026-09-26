@@ -1296,6 +1296,70 @@ details.more[open] .more-body { animation: rise .35s var(--ease-out) both; }
 
 .link { color: var(--accent-text); text-decoration: underline; text-underline-offset: 2px; }
 
+/* ---------- Темы занятий ---------- */
+
+.cls-time, .cls-name, .cls-meta { flex-shrink: 0; }
+.cls-topic {
+  flex: 0 1 auto; min-height: 0;
+  margin-top: 3px; font-size: 11.5px; line-height: 1.3; opacity: .8;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.cls-final {
+  font-size: 10px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase;
+  padding: 0 4px; border-radius: 4px; background: var(--accent); color: var(--on-accent);
+}
+.wk-col.is-holiday { background-image: none; background-color: color-mix(in srgb, var(--active) 60%, transparent); }
+.wk-holiday {
+  position: absolute; top: 40%; left: 8px; right: 8px; text-align: center;
+  font-size: 12px; color: var(--muted); line-height: 1.4;
+}
+
+.tl-topic { display: flex; align-items: flex-start; gap: 6px; margin-top: 5px; font-size: 13px; color: var(--text-2); line-height: 1.4; }
+.tl-topic > span:last-child { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.tl-topic .pill { height: 19px; padding: 0 7px; font-size: 11px; flex: none; }
+.tl-note { display: flex; align-items: flex-start; gap: 5px; margin-top: 4px; font-size: 12.5px; color: var(--muted); font-style: italic; }
+.tl-note .ico { width: 13px; height: 13px; margin-top: 2px; }
+.tl-item.is-now .tl-topic { color: hsl(var(--h, 40) var(--sub-text-s) var(--sub-text-l)); }
+
+.next-day-row { width: 100%; text-align: left; border-radius: 8px; transition: background .15s ease; align-items: flex-start; }
+.next-day-row:hover { background: var(--hover); }
+.nd-text { display: flex; flex-direction: column; min-width: 0; }
+.nd-text > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nd-topic { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.next-day-row .dot { margin-top: 7px; }
+
+.ag-topic { display: block; margin-top: 4px; font-size: 12.5px; line-height: 1.35; opacity: .9; }
+.ag-final { font-size: 10.5px; font-weight: 700; text-transform: uppercase; padding: 1px 5px; border-radius: 4px; background: var(--accent); color: var(--on-accent); vertical-align: 2px; }
+
+.occ { display: flex; flex-direction: column; gap: 16px; }
+.occ-meta { display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; color: var(--text-2); }
+.occ-meta > span { display: flex; align-items: flex-start; gap: 8px; }
+.occ-meta .ico { width: 16px; height: 16px; margin-top: 2px; color: var(--muted); }
+.occ-box {
+  padding: 14px 16px; border-radius: var(--r);
+  background: hsl(var(--h, 40) var(--sub-s) var(--sub-l));
+  color: hsl(var(--h, 40) var(--sub-text-s) var(--sub-text-l));
+  display: flex; flex-direction: column; gap: 10px;
+}
+.occ-label { font-size: 12px; font-weight: 600; letter-spacing: .03em; opacity: .8; }
+.occ-title { font-family: var(--font-serif); font-size: 19px; line-height: 1.3; font-weight: 500; }
+.occ-title .pill { vertical-align: 3px; }
+.occ-content { margin-top: 4px; font-size: 13.5px; line-height: 1.5; opacity: .9; }
+.occ-topic-item + .occ-topic-item { padding-top: 10px; border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent); }
+.occ-empty { font-size: 14px; }
+.occ-choose p { font-size: 14px; margin-bottom: 10px; }
+.occ-choose-btns { display: flex; flex-direction: column; gap: 8px; }
+.occ-choose-btns .btn { height: auto; min-height: 38px; padding: 8px 12px; white-space: normal; text-align: left; justify-content: flex-start; }
+.occ-note { height: auto; min-height: 76px; padding: 10px 12px; resize: vertical; line-height: 1.45; }
+.occ-list { margin: 0; padding: 4px 12px 12px 12px; list-style: none; max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+.occ-list li { display: grid; grid-template-columns: 46px 1fr; gap: 10px; padding: 6px 8px; border-radius: 8px; font-size: 13px; line-height: 1.4; }
+.occ-list li time { color: var(--muted); font-variant-numeric: tabular-nums; }
+.occ-list li.is-past { opacity: .55; }
+.occ-list li.is-current { background: var(--accent-soft); color: var(--accent-text); opacity: 1; font-weight: 500; }
+.kg-row { cursor: default; flex-wrap: wrap; }
+.kg-row .kg-text { flex: 1 1 200px; cursor: pointer; }
+.kg-pick { flex: 1 1 100%; margin-left: 30px; max-width: calc(100% - 30px); }
+
 /* ---------- Адаптив ---------- */
 
 @media (max-width: 900px) {

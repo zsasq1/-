@@ -99,7 +99,8 @@
             this.push({
               kind: 'class',
               title: `Через ${U.relIn(diff)} — ${s ? s.name : 'занятие'}`,
-              body: [Store.CLASS_TYPES_FULL[c.type], App.Schedule.roomText(c) || App.Schedule.placeShort(c), `${c.start}–${c.end}`].filter(Boolean).join(' · '),
+              body: [Store.CLASS_TYPES_FULL[c.type], App.Schedule.roomText(c) || App.Schedule.placeShort(c), `${c.start}–${c.end}`].filter(Boolean).join(' · ')
+                + ((App.Topics && App.Topics.line(c, now)) ? `. Тема: ${App.Topics.line(c, now).text}` : ''),
               route: 'schedule',
             });
           }

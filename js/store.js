@@ -30,6 +30,8 @@
     KEY, HUES, PAIRS, CLASS_TYPES, CLASS_TYPES_FULL,
     VERSION: 2,
     DEFAULT_GROUP: '314',
+    // Студент 314 группы записан на электив кафедры патофизиологии (пятница)
+    DEFAULT_ELECTIVES: { 5: 'Электив на кафедре патофизиологии' },
     state: null,
     storageOk: true,
     firstRun: false,
@@ -50,6 +52,8 @@
           filesView: 'grid',
           hideOnboard: false,
           autoImported: false,
+          electivesSynced: false,
+          electives: {},
         },
         subjects: [],
         classes: [],
@@ -59,6 +63,7 @@
         fired: {},
         sampleBanner: false,
         kgmuCustom: null,
+        topicNotes: {},
       };
     },
 
@@ -88,6 +93,7 @@
         if (!Array.isArray(st[k])) st[k] = [];
       });
       if (!st.fired || typeof st.fired !== 'object') st.fired = {};
+      if (!st.topicNotes || typeof st.topicNotes !== 'object') st.topicNotes = {};
 
       // Первая версия показывала общий пример (матанализ, Python) — меняем его на медицинский
       if ((data.version || 1) < 2) {
@@ -103,7 +109,10 @@
       return st;
     },
 
+    rev: 0, // растёт при каждом сохранении — по нему сбрасываются вычисленные кэши
+
     save() {
+      this.rev++;
       this.storageOk = U.ls.set(KEY, JSON.stringify(this.state));
       return this.storageOk;
     },

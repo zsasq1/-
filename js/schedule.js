@@ -7,6 +7,16 @@
 
   const PPM = 1.05; // пикселей на минуту в сетке недели
 
+  // Нерабочие праздничные дни — занятий нет
+  const HOLIDAYS = {
+    '2026-11-04': 'День народного единства',
+    '2027-01-01': 'Новогодние каникулы', '2027-01-02': 'Новогодние каникулы', '2027-01-03': 'Новогодние каникулы',
+    '2027-01-04': 'Новогодние каникулы', '2027-01-05': 'Новогодние каникулы', '2027-01-06': 'Новогодние каникулы',
+    '2027-01-07': 'Рождество', '2027-01-08': 'Новогодние каникулы',
+    '2027-02-23': 'День защитника Отечества', '2027-03-08': 'Международный женский день',
+    '2027-05-01': 'Праздник весны и труда', '2027-05-09': 'День Победы', '2027-06-12': 'День России',
+  };
+
   const Sched = {
     weekOffset: 0,
     animateBlocks: false,
@@ -35,8 +45,13 @@
       return `<span class="pill ${p.odd ? 'accent' : ''}">${esc(U.cap(this.weekName(p.odd)))}</span>`;
     },
 
+    holiday(date) {
+      return HOLIDAYS[typeof date === 'string' ? date : U.ymd(date)] || null;
+    },
+
     matches(c, date) {
       const iso = U.ymd(date);
+      if (HOLIDAYS[iso]) return false;
       if (c.dates && c.dates.length) return c.dates.includes(iso);
       if (Number(c.day) !== U.isoDay(date)) return false;
       if (c.from && iso < c.from) return false;
@@ -174,21 +189,25 @@
           const status = this.status(c, d, now);
           const subj = Store.subject(c.subjectId);
           const compact = h < 58;
+          const topic = App.Topics ? App.Topics.line(c, d) : null;
           const style = `${Store.subjStyle(c.subjectId)};--i:${idx++};top:calc(var(--pad) + ${top}px);height:${h}px;left:calc(${(lane / lanes) * 100}% + 4px);width:calc(${100 / lanes}% - 8px)`;
           return `
             <button class="cls ${compact ? 'is-compact' : ''} ${status === 'now' ? 'is-now' : ''} ${status === 'past' && isToday ? 'is-past' : ''} ${Store.subjClass(c.subjectId)}"
-              style="${style}" data-action="class-edit" data-id="${c.id}"
-              aria-label="${esc(`${subj ? subj.name : 'Пара'}, ${c.start}–${c.end}`)}">
-              <span class="cls-time">${c.start}–${c.end}</span>
+              style="${style}" data-action="occ-open" data-id="${c.id}" data-date="${U.ymd(d)}"
+              title="${esc(topic ? topic.text : '')}"
+              aria-label="${esc(`${subj ? subj.name : 'Пара'}, ${c.start}–${c.end}${topic ? `. Тема: ${topic.text}` : ''}`)}">
+              <span class="cls-time">${c.start}–${c.end}${topic && topic.final ? ' <b class="cls-final">итог.</b>' : ''}</span>
               <span class="cls-name">${esc(subj ? subj.name : 'Без названия')}</span>
               ${compact ? '' : `<span class="cls-meta">${esc(this.metaLine(c, false))}</span>`}
+              ${topic && !compact ? `<span class="cls-topic">${esc(topic.text)}</span>` : ''}
               ${(c.weeks === 'odd' || c.weeks === 'even') && !(c.dates && c.dates.length) && !compact ? `<span class="cls-weeks" title="Только ${esc(this.weekName(c.weeks === 'odd'))}">${this.weekName(c.weeks === 'odd', true)}</span>` : ''}
             </button>`;
         }).join('');
         const nowM = now.getHours() * 60 + now.getMinutes();
         const nowLine = isToday && nowM >= minM && nowM <= maxM
           ? `<div class="now-line" style="top:calc(var(--pad) + ${(nowM - minM) * PPM}px)"></div>` : '';
-        return `<div class="wk-col ${isToday ? 'is-today' : ''}" data-action="slot" data-date="${U.ymd(d)}" data-min="${minM}">${blocks}${nowLine}</div>`;
+        const hol = this.holiday(d);
+        return `<div class="wk-col ${isToday ? 'is-today' : ''} ${hol ? 'is-holiday' : ''}" data-action="slot" data-date="${U.ymd(d)}" data-min="${minM}">${hol ? `<span class="wk-holiday">${esc(hol)}<br>занятий нет</span>` : ''}${blocks}${nowLine}</div>`;
       }).join('');
 
       const heads = dates.map((d) => `
@@ -216,12 +235,13 @@
                 <div class="ag-list">
                   ${list.length ? list.map((c) => {
                     const subj = Store.subject(c.subjectId);
+                    const topic = App.Topics ? App.Topics.line(c, d) : null;
                     return `
-                      <button class="ag-item ${this.status(c, d, now) === 'now' ? 'is-now' : ''} ${Store.subjClass(c.subjectId)}" style="${Store.subjStyle(c.subjectId)}" data-action="class-edit" data-id="${c.id}">
+                      <button class="ag-item ${this.status(c, d, now) === 'now' ? 'is-now' : ''} ${Store.subjClass(c.subjectId)}" style="${Store.subjStyle(c.subjectId)}" data-action="occ-open" data-id="${c.id}" data-date="${U.ymd(d)}">
                         <span class="ag-time"><b>${c.start}</b>${c.end}</span>
-                        <span><span class="ag-name">${esc(subj ? subj.name : 'Без названия')}</span><span class="ag-meta">${esc([Store.CLASS_TYPES[c.type], this.roomText(c), c.place, c.teacher].filter(Boolean).join(' · '))}</span></span>
+                        <span><span class="ag-name">${esc(subj ? subj.name : 'Без названия')}${topic && topic.final ? ' <span class="ag-final">итоговое</span>' : ''}</span><span class="ag-meta">${esc([Store.CLASS_TYPES[c.type], this.roomText(c), c.place, c.teacher].filter(Boolean).join(' · '))}</span>${topic ? `<span class="ag-topic">${esc(topic.text)}</span>` : ''}</span>
                       </button>`;
-                  }).join('') : `<button class="ag-empty" data-action="class-new" data-day="${U.isoDay(d)}">Нет занятий — добавить</button>`}
+                  }).join('') : this.holiday(d) ? `<p class="ag-empty">${esc(this.holiday(d))} — занятий нет</p>` : `<button class="ag-empty" data-action="class-new" data-day="${U.isoDay(d)}">Нет занятий — добавить</button>`}
                 </div>
               </section>`;
           }).join('')}

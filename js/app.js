@@ -230,6 +230,7 @@
   async function init() {
     Store.load();
     const autoGroup = App.KGMU ? App.KGMU.autoImport() : false;
+    const electiveAdded = !autoGroup && App.KGMU ? App.KGMU.syncElectives() : false;
     App.applyTheme();
     if (Store.state.settings.sidebarCollapsed) $app().classList.add('is-collapsed');
     App.route = parseRoute();
@@ -267,10 +268,16 @@
       App.Files.hydrate($view());
     }
     if (autoGroup) {
-      UI.toast(`Загружено расписание группы ${autoGroup}. Дисциплины по выбору можно добавить в настройках`, {
+      const withElective = Object.keys(Store.state.settings.electives || {}).length;
+      UI.toast(withElective
+        ? `Загружено расписание группы ${autoGroup} с элективом на кафедре патофизиологии и темами занятий`
+        : `Загружено расписание группы ${autoGroup}. Дисциплины по выбору можно добавить в настройках`, {
         timeout: 8000,
         action: { label: 'Сменить', fn: () => App.KGMU.openImport(autoGroup) },
       });
+    }
+    if (electiveAdded) {
+      UI.toast('Добавлен электив на кафедре патофизиологии: пятница, 13:00. Темы — в карточке занятия', { timeout: 8000 });
     }
     if (!Store.storageOk) {
       UI.toast('Браузер не даёт сохранять данные — изменения пропадут после перезагрузки', { timeout: 8000 });

@@ -17,14 +17,17 @@
     { re: /^топографическая анатомия/, name: 'Топографическая анатомия и оперативная хирургия', hue: 248 },
     { re: /^электив.*физическ/, name: 'Физическая культура', hue: 95 },
     { re: /^дисциплина по выбору/, name: 'Дисциплина по выбору', hue: 8, elective: true, generic: true },
-    { re: /^молекулярные механизмы/, name: 'Молекулярные механизмы в патологии человека', hue: 8, elective: true },
-    { re: /^межкультурная/, name: 'Межкультурная профессиональная коммуникация', hue: 8, elective: true },
-    { re: /^статистические методы/, name: 'Статистика в доказательной медицине', hue: 8, elective: true },
-    { re: /^современные методы функциональной/, name: 'Функциональная диагностика донозологических состояний', hue: 8, elective: true },
-    { re: /^латинская/, name: 'Латинская фармацевтическая терминология', hue: 8, elective: true },
-    { re: /^диетология/, name: 'Диетология', hue: 8, elective: true },
-    { re: /^биохимические основы/, name: 'Биохимические основы здорового образа жизни', hue: 8, elective: true },
+    { re: /^молекулярные механизмы/, kw: /молекулярн\S* механизм/, name: 'Молекулярные механизмы в патологии человека', hue: 8, elective: true, patofiz: true },
+    { re: /^современные методы функциональной/, kw: /функциональной диагностики/, name: 'Функциональная диагностика донозологических состояний', hue: 8, elective: true, patofiz: true },
+    { re: /^электив на кафедре патофизиологии/, name: 'Электив на кафедре патофизиологии', hue: 8, elective: true, patofiz: true, placeholder: true },
+    { re: /^межкультурная/, kw: /межкультурн/, name: 'Межкультурная профессиональная коммуникация', hue: 8, elective: true },
+    { re: /^статистические методы/, kw: /статистическ/, name: 'Статистика в доказательной медицине', hue: 8, elective: true },
+    { re: /^латинская/, kw: /латинск/, name: 'Латинская фармацевтическая терминология', hue: 8, elective: true },
+    { re: /^диетология/, kw: /диетолог/, name: 'Диетология', hue: 8, elective: true },
+    { re: /^биохимические основы/, kw: /биохимическ\S* основ/, name: 'Биохимические основы здорового образа жизни', hue: 8, elective: true },
   ];
+  const PATOFIZ_ELECTIVE = 'Электив на кафедре патофизиологии';
+  const PATOFIZ_PLACE = 'каф. патофизиологии (3 корпус, ул. Владимирская, 112)';
 
   const DAY_LABELS = { 'ПН': 1, 'ВТ': 2, 'СР': 3, 'ЧТ': 4, 'ПТ': 5, 'СБ': 6, 'ВС': 7 };
   const MONTHS = { 'января': 1, 'февраля': 2, 'марта': 3, 'апреля': 4, 'мая': 5, 'июня': 6, 'июля': 7, 'августа': 8, 'сентября': 9, 'октября': 10, 'ноября': 11, 'декабря': 12 };
@@ -90,8 +93,13 @@
       const body = text.slice(s.index + s.len, i + 1 < starts.length ? starts[i + 1].index : text.length).trim();
       const subj = canon(body);
       if (subj.generic) {
-        // Сводные строки «Дисциплина по выбору» перечисляют разные курсы — берём общее время и период
-        out.push(...parseBody(text.slice(s.index + s.len), s.times, day, ctx, subj, true));
+        // Сводные строки «Дисциплина по выбору» перечисляют разные курсы — берём общее время и период,
+        // а названия курсов сохраняем, чтобы студент выбрал свой
+        const low = text.toLowerCase();
+        const options = SUBJECTS.filter((x) => x.kw && x.kw.test(low)).map((x) => x.name);
+        if (options.some((o) => SUBJECTS.find((x) => x.name === o).patofiz)) options.push(PATOFIZ_ELECTIVE);
+        parseBody(text.slice(s.index + s.len), s.times, day, ctx, subj, true)
+          .forEach((e) => out.push(Object.assign(e, { slot: String(day), options })));
         break;
       }
       out.push(...parseBody(body, s.times, day, ctx, subj, false));
@@ -327,17 +335,26 @@
     },
 
     // Сводка по дисциплинам группы для окна предпросмотра
+    keyOf(e) {
+      return e.slot ? `${e.subject}|${e.slot}` : e.subject;
+    },
+
     summary(group) {
       const legend = this.legendFor(group);
       const map = new Map();
       this.entriesFor(group).forEach((e) => {
-        const item = map.get(e.subject) || { name: e.subject, hue: e.hue, elective: e.elective, types: new Set(), count: 0 };
+        const key = this.keyOf(e);
+        const item = map.get(key) || {
+          key, name: e.slot ? `${e.subject} · ${U.DAYS[Number(e.slot)]}` : e.subject,
+          hue: e.hue, elective: e.elective, slot: e.slot || null, options: new Set(), types: new Set(), count: 0,
+        };
         item.types.add(e.type);
+        (e.options || []).forEach((o) => item.options.add(o));
         item.count++;
-        map.set(e.subject, item);
+        map.set(key, item);
       });
       return [...map.values()]
-        .map((it) => Object.assign(it, { exam: (legend[it.name] || {}).exam || '' }))
+        .map((it) => Object.assign(it, { options: [...it.options], exam: (legend[it.slot ? 'Дисциплина по выбору' : it.name] || {}).exam || '' }))
         .sort((a, b) => (a.elective - b.elective) || a.name.localeCompare(b.name, 'ru'));
     },
 
@@ -346,15 +363,19 @@
       const st = Store.state;
       const removed = st.classes.filter((c) => c.source === 'kgmu').length;
       st.classes = st.classes.filter((c) => c.source !== 'kgmu');
-      const entries = this.entriesFor(group).filter((e) => include.has(e.subject));
+      const electives = Object.assign({}, st.settings.electives || {}, opts.electives || {});
+      const entries = this.entriesFor(group).filter((e) => include.has(this.keyOf(e)));
       entries.forEach((e) => {
-        const subject = Store.subjectByName(e.subject);
+        const name = e.slot ? (electives[e.slot] || e.subject) : e.subject;
+        const known = SUBJECTS.find((x) => x.name === name);
+        const subject = Store.subjectByName(name);
         const c = {
           id: U.uid() + Math.random().toString(36).slice(2, 4),
           subjectId: subject.id, type: e.type, day: e.day, start: e.start, end: e.end,
-          room: e.room || '', place: e.place || '', teacher: '', weeks: e.weeks || 'all',
+          room: e.room || '', place: known && known.patofiz ? PATOFIZ_PLACE : (e.place || ''), teacher: '', weeks: e.weeks || 'all',
           source: 'kgmu',
         };
+        if (e.slot) c.slot = e.slot;
         if (e.from) c.from = e.from;
         if (e.until) c.until = e.until;
         if (e.dates) c.dates = e.dates.slice();
@@ -366,6 +387,7 @@
       if (sheet && sheet.course) st.profile.course = Number(sheet.course);
       if (sheet && sheet.semStart) st.settings.semesterStart = sheet.semStart;
       st.settings.weekNames = 'num';
+      st.settings.electives = electives;
       Store.gcSubjects();
       Store.save();
       if (opts.silent) return entries.length;
@@ -390,15 +412,23 @@
       const list = () => {
         const items = this.summary(current);
         if (!items.length) return '<div class="empty"><p>Для этой группы в таблице нет занятий.</p></div>';
+        const chosen = Object.assign({}, Store.state.settings.electives || {}, this.defaultElectives(current));
         return items.map((it, i) => {
           const types = [...it.types].map((t) => (t === 'lecture' ? 'лекции' : 'практические')).join(' и ');
-          const meta = [types, it.exam, it.elective && 'по выбору — отметьте, если записаны'].filter(Boolean).join(' · ');
+          const meta = [types, it.exam, it.elective && !it.slot && 'по выбору — отметьте, если записаны'].filter(Boolean).join(' · ');
+          const pick = it.slot && it.options.length ? `
+            <select class="input input-sm kg-pick" data-slot="${it.slot}" aria-label="Какой курс">
+              <option value="">Курс не выбран</option>
+              ${it.options.map((o) => `<option value="${esc(o)}" ${chosen[it.slot] === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}
+            </select>` : '';
+          const on = it.slot ? !!chosen[it.slot] : !it.elective;
           return `
-            <label class="kg-row" for="kg-s-${i}" style="--h:${it.hue != null ? it.hue : 40}">
-              <input type="checkbox" id="kg-s-${i}" value="${esc(it.name)}" ${it.elective ? '' : 'checked'}>
+            <div class="kg-row" style="--h:${it.hue != null ? it.hue : 40}">
+              <input type="checkbox" id="kg-s-${i}" value="${esc(it.key)}" ${on ? 'checked' : ''}>
               <span class="dot"></span>
-              <span class="kg-text"><span class="kg-name">${esc(it.name)}</span><span class="kg-meta">${esc(U.cap(meta))}</span></span>
-            </label>`;
+              <label class="kg-text" for="kg-s-${i}"><span class="kg-name">${esc(it.name)}</span><span class="kg-meta">${esc(U.cap(meta || 'дисциплина по выбору'))}</span></label>
+              ${pick}
+            </div>`;
         }).join('');
       };
 
@@ -427,14 +457,33 @@
             current = e.target.value;
             box.innerHTML = list();
           });
+          box.addEventListener('change', (e) => {
+            // Выбрали курс — сразу отмечаем строку
+            if (e.target.matches('.kg-pick') && e.target.value) {
+              const cb = e.target.closest('.kg-row').querySelector('input[type=checkbox]');
+              if (cb) cb.checked = true;
+            }
+          });
           el.querySelector('[data-go]').addEventListener('click', () => {
             const include = new Set(U.$$('input[type=checkbox]:checked', box).map((x) => x.value));
             if (!include.size) { UI.toast('Отметьте хотя бы одну дисциплину'); return; }
+            const electives = {};
+            U.$$('.kg-pick', box).forEach((sel) => { if (sel.value) electives[sel.dataset.slot] = sel.value; });
             api.close();
-            this.apply(current, include);
+            this.apply(current, include, { electives });
           });
         },
       });
+    },
+
+    // Элективы, о которых мы уже знаем для группы по умолчанию (314: курс на кафедре патофизиологии по пятницам)
+    defaultElectives(group) {
+      const { Store } = App;
+      if (String(group) !== Store.DEFAULT_GROUP) return {};
+      const set = Store.state.settings.electives || {};
+      const out = {};
+      Object.entries(Store.DEFAULT_ELECTIVES).forEach(([slot, name]) => { if (!set[slot]) out[slot] = name; });
+      return out;
     },
 
     // Первый запуск: сразу подтягиваем обязательные дисциплины группы из профиля
@@ -443,11 +492,32 @@
       const st = Store.state;
       if (st.settings.autoImported || this.hasImported() || !this.available()) return false;
       st.settings.autoImported = true;
+      st.settings.electivesSynced = true;
       const group = st.profile.group || Store.DEFAULT_GROUP;
-      const mandatory = new Set(this.summary(group).filter((it) => !it.elective).map((it) => it.name));
-      if (!mandatory.size) { Store.save(); return false; }
-      this.apply(group, mandatory, { silent: true });
+      const electives = this.defaultElectives(group);
+      const items = this.summary(group);
+      const include = new Set(items.filter((it) => (it.slot ? !!electives[it.slot] : !it.elective)).map((it) => it.key));
+      if (!include.size) { Store.save(); return false; }
+      this.apply(group, include, { silent: true, electives });
       return group;
+    },
+
+    // Расписание уже загружено раньше, а про электив мы узнали позже — добавляем его пары
+    syncElectives() {
+      const { Store } = App;
+      const st = Store.state;
+      if (st.settings.electivesSynced || !this.hasImported() || !this.available()) return false;
+      st.settings.electivesSynced = true;
+      const group = st.profile.group;
+      const electives = this.defaultElectives(group);
+      if (!Object.keys(electives).length) { Store.save(); return false; }
+      const have = new Set(st.classes.filter((c) => c.source === 'kgmu').map((c) => {
+        const s = Store.subject(c.subjectId);
+        return c.slot ? `Дисциплина по выбору|${c.slot}` : (s ? s.name : '');
+      }));
+      const include = new Set(this.summary(group).filter((it) => have.has(it.key) || (it.slot && electives[it.slot])).map((it) => it.key));
+      this.apply(group, include, { silent: true, electives });
+      return true;
     },
 
     /* ---------- Обновление из свежего файла ---------- */

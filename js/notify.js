@@ -6,7 +6,7 @@
   const { esc, ico } = U;
 
   const LEADS = { 0: 'В момент срока', 15: 'За 15 минут', 60: 'За час', 180: 'За 3 часа', 1440: 'За день' };
-  const DEADLINE_RE = /(сдать|сдача|дедлайн|экзамен|зач[её]т|коллоквиум|контрольн|курсов|защит|отч[её]т|эссе|реферат|доклад)/i;
+  const DEADLINE_RE = /(сдать|сдача|дедлайн|экзамен|зач[её]т|коллоквиум|колло\b|контрольн|курсов|защит|отч[её]т|эссе|реферат|доклад|отработ|итогов|тест|модул|истори[яюи] болезни|курац|допуск|рецептур)/i;
 
   let lastUnread = -1;
 
@@ -98,8 +98,8 @@
             const s = Store.subject(c.subjectId);
             this.push({
               kind: 'class',
-              title: `Через ${U.relIn(diff)} — ${s ? s.name : 'пара'}`,
-              body: [Store.CLASS_TYPES_FULL[c.type], c.room && (/^\d/.test(c.room) ? `ауд. ${c.room}` : c.room), `${c.start}–${c.end}`].filter(Boolean).join(' · '),
+              title: `Через ${U.relIn(diff)} — ${s ? s.name : 'занятие'}`,
+              body: [Store.CLASS_TYPES_FULL[c.type], App.Schedule.roomText(c) || App.Schedule.placeShort(c), `${c.start}–${c.end}`].filter(Boolean).join(' · '),
               route: 'schedule',
             });
           }
@@ -358,7 +358,7 @@
     openModal(rem, preset = {}) {
       const isEdit = !!rem;
       const r = rem || {
-        title: '', kind: preset.kind || 'reminder', subjectId: preset.subjectId || null,
+        title: preset.title || '', kind: preset.kind || 'reminder', subjectId: preset.subjectId || null,
         due: preset.due || null, lead: preset.kind === 'deadline' ? 1440 : 0,
       };
       const subj = Store.subject(r.subjectId);
@@ -371,7 +371,7 @@
           <form id="rf" class="form-grid" autocomplete="off" novalidate>
             <div class="field span-2">
               <label for="rf-title">Что сделать</label>
-              <input id="rf-title" class="input" value="${esc(r.title)}" placeholder="Например, сдать лабораторную №3" required autofocus>
+              <input id="rf-title" class="input" value="${esc(r.title)}" placeholder="Например, отработка по фармакологии" required autofocus>
             </div>
             <div class="field span-2">
               <span class="field-label">Тип</span>
@@ -400,6 +400,7 @@
         onMount: (el, api) => {
           const title = el.querySelector('#rf-title');
           const err = el.querySelector('#rf-err');
+          setTimeout(() => title.setSelectionRange(title.value.length, title.value.length), 90);
           if (isEdit) {
             el.querySelector('[data-del]').addEventListener('click', () => { api.close(); this.remove(rem.id); });
           }
@@ -449,7 +450,7 @@
       App.refresh();
     },
     'perm-enable': () => Notify.enableSystem(),
-    'rem-new': (el) => Notify.openModal(null, { kind: el.dataset.kind }),
+    'rem-new': (el) => Notify.openModal(null, { kind: el.dataset.kind, title: el.dataset.title }),
     'rem-edit': (el) => {
       const r = Store.state.reminders.find((x) => x.id === el.dataset.id);
       if (r) Notify.openModal(r);

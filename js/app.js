@@ -119,7 +119,7 @@
       <div class="sb-foot">
         <button class="profile ${App.route === 'settings' ? 'is-active' : ''}" data-action="go" data-route="settings" title="Настройки">
           <span class="avatar">${esc((name || 'С').charAt(0).toUpperCase())}</span>
-          <span class="profile-text sb-label"><span class="profile-name">${esc(name || 'Студент')}</span><span class="profile-sub">Настройки</span></span>
+          <span class="profile-text sb-label"><span class="profile-name">${esc(name || 'Студент')}</span><span class="profile-sub">${esc(Store.profileLine() || 'Настройки')}</span></span>
         </button>
       </div>`;
   };
@@ -180,8 +180,8 @@
     },
     'new-menu': (el) => {
       UI.popover(el, `
-        <button class="menu-item" role="menuitem" data-action="class-new">${ico('calendar')}<span>Пара<span class="menu-sub">В расписание</span></span></button>
-        <button class="menu-item" role="menuitem" data-action="rem-new" data-kind="deadline">${ico('flag')}<span>Дедлайн<span class="menu-sub">Сдача, экзамен, коллоквиум</span></span></button>
+        <button class="menu-item" role="menuitem" data-action="class-new">${ico('calendar')}<span>Занятие<span class="menu-sub">В расписание</span></span></button>
+        <button class="menu-item" role="menuitem" data-action="rem-new" data-kind="deadline">${ico('flag')}<span>Дедлайн<span class="menu-sub">Отработка, коллоквиум, экзамен</span></span></button>
         <button class="menu-item" role="menuitem" data-action="rem-new">${ico('bell')}<span>Напоминание<span class="menu-sub">Любое дело со сроком</span></span></button>
         <button class="menu-item" role="menuitem" data-action="files-pick">${ico('upload')}<span>Файлы<span class="menu-sub">Конспекты и методички</span></span></button>`,
       { align: 'left', role: 'menu', focusFirst: false });
@@ -254,6 +254,10 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(UI.refreshSegs);
 
     const dbOk = await FileDB.open();
+    if (Store.oldSampleFiles) {
+      await Promise.all(Store.oldSampleFiles.map((id) => FileDB.del(id)));
+      Store.oldSampleFiles = null;
+    }
     if (Store.seedBlobs) {
       for (const { id, blob } of Store.seedBlobs) {
         try { await FileDB.put(id, blob); } catch (e) { /* останется в памяти */ }

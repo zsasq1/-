@@ -21,17 +21,17 @@
       return `
         <section class="hero">
           <h1 class="greet">${U.mark()}<span>${words}</span></h1>
-          <p class="hero-meta rise" style="--i:3">${U.cap(U.fmtDayLong(now))}<span class="pill ${p.odd ? 'accent' : ''}">${esc(App.Schedule.weekLabel(p))}</span></p>
+          <p class="hero-meta rise" style="--i:3">${U.cap(U.fmtDayLong(now))} · ${esc(App.Schedule.weekLabel(p))}${App.Schedule.weekPill(p)}</p>
           ${this.composer()}
           <div class="suggest rise" style="--i:5">
-            <button type="button" data-action="class-new">${ico('calendar')}Добавить пару</button>
-            <button type="button" data-action="files-pick">${ico('upload')}Загрузить конспект</button>
-            <button type="button" data-action="rem-new" data-kind="deadline">${ico('flag')}Новый дедлайн</button>
+            <button type="button" data-action="rem-new" data-kind="deadline" data-title="Отработка: ">${ico('flag')}Отработка</button>
+            <button type="button" data-action="files-pick">${ico('upload')}Загрузить методичку</button>
+            <button type="button" data-action="rem-new" data-kind="deadline">${ico('clock')}Коллоквиум или тест</button>
             <button type="button" data-action="go" data-route="schedule">${ico('grid')}Расписание недели</button>
           </div>
         </section>
         <div id="home-banner">${this.banner()}</div>
-        <div class="home-grid ${st.sampleBanner ? '' : 'no-banner'}" id="home-grid">
+        <div class="home-grid ${this.banner() ? '' : 'no-banner'}" id="home-grid">
           <div class="col">
             <section class="card rise" style="--i:7" id="card-today">${this.todayCard(now)}</section>
           </div>
@@ -43,10 +43,12 @@
     },
 
     banner() {
+      const onboard = App.KGMU ? App.KGMU.onboardCard() : '';
+      if (onboard) return `<div class="sample-banner">${onboard}</div>`;
       if (!Store.state.sampleBanner || !Store.hasSample()) return '';
       return `
         <div class="banner sample-banner rise" style="--i:6">${ico('info')}
-          <div class="banner-text"><b>Это пример.</b> Мы заполнили расписание, дела и файлы, чтобы было видно, как всё работает. Добавьте свои пары или уберите пример целиком.</div>
+          <div class="banner-text"><b>Дела и файлы ниже — пример.</b> Они показывают, как всё работает. Когда добавите свои, пример можно убрать одной кнопкой.</div>
           <div class="banner-actions">
             <button class="btn btn-sm" data-action="sample-clear">Очистить пример</button>
             <button class="icon-btn sm" data-action="sample-hide" aria-label="Скрыть подсказку">${ico('x')}</button>
@@ -59,7 +61,7 @@
         <form class="composer rise" style="--i:4" id="composer" autocomplete="off">
           <div class="att-list" id="att-list" ${this.att.length ? '' : 'hidden'}>${this.attHtml()}</div>
           <label for="composer-input" class="sr-only">Новое напоминание</label>
-          <textarea id="composer-input" rows="1" placeholder="Что не забыть? Например: сдать лабу по Python в пятницу в 18:00"></textarea>
+          <textarea id="composer-input" rows="1" placeholder="Что не забыть? Например: отработка по патанатомии в пятницу в 15:45"></textarea>
           <div class="composer-bar">
             <button type="button" class="icon-btn" data-action="composer-attach" title="Прикрепить файлы" aria-label="Прикрепить файлы">${ico('paperclip')}</button>
             <label class="chip-select" title="Предмет">${ico('book')}<span class="sr-only">Предмет</span>
@@ -113,7 +115,7 @@
               <span class="tl-name"><span class="dot"></span><span>${esc(subj ? subj.name : 'Без названия')}</span></span>
               <span class="tl-meta">
                 <span>${esc(Store.CLASS_TYPES_FULL[c.type] || '')}</span>
-                ${c.room ? `<span>${ico('pin')}${esc(c.room)}</span>` : ''}
+                ${c.room || c.place ? `<span title="${esc(c.place || '')}">${ico('pin')}${esc([App.Schedule.roomText(c), App.Schedule.placeShort(c)].filter(Boolean).join(' · '))}</span>` : ''}
                 ${c.teacher ? `<span>${ico('user')}${esc(c.teacher)}</span>` : ''}
               </span>
               ${extra}
@@ -127,7 +129,7 @@
         if (nd) {
           next = `
             <div class="next-day">
-              <div class="next-day-label">${U.cap(U.dayWord(nd.date, now))}${U.dayDiff(now, nd.date) > 1 ? '' : `, ${U.fmtDate(nd.date)}`} · ${U.count(nd.list.length, ['пара', 'пары', 'пар'])}</div>
+              <div class="next-day-label">${U.cap(U.dayWord(nd.date, now))}${U.dayDiff(now, nd.date) > 1 ? '' : `, ${U.fmtDate(nd.date)}`} · ${U.count(nd.list.length, ['занятие', 'занятия', 'занятий'])}</div>
               ${nd.list.map((c) => {
                 const s = Store.subject(c.subjectId);
                 return `<div class="next-day-row ${Store.subjClass(c.subjectId)}" style="${Store.subjStyle(c.subjectId)}"><time>${c.start}</time><span class="dot"></span><span>${esc(s ? s.name : '')}</span></div>`;
@@ -137,12 +139,12 @@
       }
 
       const empty = !list.length
-        ? `<div class="empty"><div class="empty-title">Сегодня пар нет</div>${Store.state.classes.length ? '<p>Можно выдохнуть или заняться дедлайнами.</p>' : '<p>Добавьте расписание, и здесь появится план на день.</p><button class="btn btn-sm" data-action="class-new">' + ico('plus') + ' Добавить пару</button>'}</div>`
-        : allPast ? `<p class="empty" style="padding:4px 16px 10px">На сегодня пары закончились.</p>` : '';
+        ? `<div class="empty"><div class="empty-title">Сегодня занятий нет</div>${Store.state.classes.length ? '<p>Можно выдохнуть или заняться отработками.</p>' : '<p>Выберите группу — и здесь появится план на день.</p><button class="btn btn-sm" data-action="kgmu-import">' + ico('calendar') + ' Выбрать группу</button>'}</div>`
+        : allPast ? `<p class="empty" style="padding:4px 16px 10px">На сегодня занятия закончились.</p>` : '';
 
       return `
         <div class="card-head">
-          <h2 class="card-title">Сегодня${list.length ? `<span class="count">${U.count(list.length, ['пара', 'пары', 'пар'])}</span>` : ''}</h2>
+          <h2 class="card-title">Сегодня${list.length ? `<span class="count">${U.count(list.length, ['занятие', 'занятия', 'занятий'])}</span>` : ''}</h2>
           <a class="card-link" href="#schedule" data-action="go" data-route="schedule">Вся неделя${ico('chevron-right')}</a>
         </div>
         ${list.length ? `<div class="tl">${items}</div>` : ''}

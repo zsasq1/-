@@ -36,6 +36,24 @@
           </section>
 
           <section class="set-group rise" style="--i:2">
+            <h2>Учёба</h2>
+            <div class="set-card">
+              ${row('Вуз и специальность', 'Показываются в боковой панели',
+                `<input id="set-uni" class="input" placeholder="Вуз" value="${esc(st.profile.university || '')}">
+                 <input id="set-program" class="input" placeholder="Специальность" value="${esc(st.profile.program || '')}">`)}
+              ${App.KGMU && App.KGMU.available() ? row('Группа',
+                App.KGMU.hasImported() ? `Загружено расписание группы ${esc(st.profile.group)}.` : 'Выберите группу, чтобы загрузить официальное расписание.',
+                `<button class="btn btn-primary" data-action="kgmu-import">${ico('calendar')} ${App.KGMU.hasImported() ? 'Сменить или обновить' : 'Выбрать группу'}</button>`) : ''}
+              ${App.KGMU ? row('Файл расписания',
+                `${App.KGMU.parsed() && App.KGMU.parsed().custom ? 'Используется файл, который вы загрузили.' : 'Встроена версия от 2 сентября 2026.'} Если на <a class="link" href="${esc(App.KGMU_DATA.page)}" target="_blank" rel="noopener">странице лечебного факультета</a> вышла новая, скачайте .xlsx своего потока и загрузите сюда.`,
+                `<button class="btn" data-action="kgmu-upload">${ico('upload')} Загрузить .xlsx</button>
+                 ${App.KGMU.parsed() && App.KGMU.parsed().custom ? `<button class="btn btn-ghost" data-action="kgmu-reset-data">Вернуть встроенный</button>` : ''}`) : ''}
+              ${row('Как называть недели', 'В КГМУ — «1 неделя» и «2 неделя», в других вузах — числитель и знаменатель',
+                UI.seg('wn', 'week-names', { num: '1 и 2 неделя', frac: 'Числитель' }, s.weekNames || 'num'))}
+            </div>
+          </section>
+
+          <section class="set-group rise" style="--i:3">
             <h2>Оформление</h2>
             <div class="set-card">
               ${row('Тема', 'Тёплая светлая, тёмная или как в системе',
@@ -43,7 +61,7 @@
             </div>
           </section>
 
-          <section class="set-group rise" style="--i:3">
+          <section class="set-group rise" style="--i:4">
             <h2>Уведомления</h2>
             <div class="set-card">
               ${row('Напоминать о паре', 'Уведомление появится перед началом занятия',
@@ -55,17 +73,17 @@
             </div>
           </section>
 
-          <section class="set-group rise" style="--i:4">
+          <section class="set-group rise" style="--i:5">
             <h2>Учебный план</h2>
             <div class="set-card">
-              ${row('Начало семестра', `Неделя с этой датой — первая, она же числитель. Сейчас: ${esc(App.Schedule.weekLabel(p))}.`,
+              ${row('Начало семестра', `Неделя с этой датой — ${esc(App.Schedule.weekName(true))}. Сейчас ${esc(App.Schedule.weekLabel(p))}, ${esc(App.Schedule.weekName(p.odd))}.`,
                 `<input id="set-start" type="date" class="input" value="${esc(s.semesterStart)}">`)}
               ${row('Показывать воскресенье', 'Если занятия бывают и в воскресенье',
                 `<label class="switch"><input type="checkbox" id="set-sun" ${s.showSunday ? 'checked' : ''} aria-label="Показывать воскресенье"><span></span></label>`)}
             </div>
           </section>
 
-          <section class="set-group rise" style="--i:5">
+          <section class="set-group rise" style="--i:6">
             <h2>Данные</h2>
             <div class="set-card">
               ${row('Резервная копия', 'Расписание, дела и настройки в файле JSON. Сами файлы в копию не входят.',
@@ -85,6 +103,10 @@
       const name = U.$('#set-name', view);
       const saveName = U.debounce(() => { Store.save(); App.renderSidebar(); }, 300);
       name.addEventListener('input', () => { st.profile.name = name.value.trim(); saveName(); });
+      [['#set-uni', 'university'], ['#set-program', 'program']].forEach(([sel, key]) => {
+        const input = U.$(sel, view);
+        input.addEventListener('input', () => { st.profile[key] = input.value.trim(); saveName(); });
+      });
 
       U.$('#set-lead', view).addEventListener('change', (e) => {
         st.settings.classLead = Number(e.target.value);
@@ -109,7 +131,8 @@
         st.settings.semesterStart = e.target.value;
         Store.save();
         App.renderView(false);
-        UI.toast(`Сейчас ${App.Schedule.weekLabel(App.Schedule.parity(new Date()))}`);
+        const np = App.Schedule.parity(new Date());
+        UI.toast(`Сейчас ${App.Schedule.weekLabel(np)}, ${App.Schedule.weekName(np.odd)}`);
       });
 
       U.$('#set-sun', view).addEventListener('change', (e) => {
@@ -163,6 +186,7 @@
         delete next.exportedAt;
         delete next.app;
         Store.state = next;
+        if (App.KGMU) App.KGMU._parsed = null;
         Store.save();
         App.applyTheme();
         App.renderSidebar();
@@ -179,6 +203,7 @@
       });
       if (!ok) return;
       await FileDB.clear();
+      if (App.KGMU) App.KGMU._parsed = null;
       const theme = Store.state.settings.theme;
       Store.state = Store.defaults();
       Store.state.settings.theme = theme;
@@ -234,6 +259,11 @@
   });
 
   Object.assign(App.changes, {
+    'week-names': (el, e) => {
+      Store.state.settings.weekNames = e.target.value;
+      Store.save();
+      setTimeout(() => App.renderView(false), 200);
+    },
     theme: (el, e) => {
       Store.state.settings.theme = e.target.value;
       Store.save();

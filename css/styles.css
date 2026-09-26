@@ -1233,6 +1233,69 @@ select.input-sm { padding-right: 30px; background-position: right 8px center; }
 .set-control .input { width: 240px; max-width: 100%; }
 .danger-text { color: var(--danger); }
 
+/* ---------- Расписание КГМУ ---------- */
+
+.onboard {
+  padding: 18px 18px 20px 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+}
+.onboard-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.onboard-title { font-family: var(--font-serif); font-size: 23px; font-weight: 500; letter-spacing: -.01em; }
+.onboard-sub { margin-top: 4px; color: var(--text-2); font-size: 14px; max-width: 68ch; }
+.onboard-streams { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+.stream { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.stream-label { width: 64px; flex: none; font-size: 13px; color: var(--muted); }
+.group-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.group-chip {
+  min-width: 56px; height: 38px; padding: 0 12px; border-radius: 11px;
+  border: 1px solid var(--border-strong); background: var(--surface-2);
+  font-weight: 600; font-size: 15px; font-variant-numeric: tabular-nums;
+  transition: background .2s ease, border-color .2s ease, color .2s ease, transform .25s var(--spring);
+  animation: chip-in .45s var(--spring) both;
+  animation-delay: calc(300ms + var(--i, 0) * 22ms);
+}
+.group-chip:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-text); transform: translateY(-2px); }
+.group-chip:active { transform: scale(.95); }
+
+.kg-list {
+  display: flex; flex-direction: column;
+  border: 1px solid var(--border); border-radius: var(--r); overflow: hidden;
+  max-height: 46vh; overflow-y: auto;
+}
+.kg-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; cursor: pointer;
+  transition: background .15s ease;
+  animation: rise .4s var(--ease-out) both;
+}
+.kg-row + .kg-row { border-top: 1px solid var(--border); }
+.kg-row:hover { background: var(--hover); }
+.kg-row input { width: 18px; height: 18px; margin: 0; flex: none; accent-color: var(--accent); cursor: pointer; }
+.kg-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.kg-name { font-size: 14px; font-weight: 500; }
+.kg-meta { font-size: 12.5px; color: var(--muted); }
+
+details.more { border: 1px solid var(--border); border-radius: var(--r); background: var(--surface-2); }
+details.more > summary {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; cursor: pointer; list-style: none;
+  font-size: 13.5px; font-weight: 500; color: var(--text-2);
+}
+details.more > summary::-webkit-details-marker { display: none; }
+details.more > summary::before {
+  content: ""; width: 7px; height: 7px; flex: none;
+  border-right: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor;
+  transform: rotate(-45deg); transition: transform .25s var(--ease);
+}
+details.more[open] > summary::before { transform: rotate(45deg); }
+details.more[open] .more-body { animation: rise .35s var(--ease-out) both; }
+.more-body { padding: 2px 12px 14px; }
+
+.link { color: var(--accent-text); text-decoration: underline; text-underline-offset: 2px; }
+
 /* ---------- Адаптив ---------- */
 
 @media (max-width: 900px) {

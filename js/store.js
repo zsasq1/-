@@ -8,14 +8,15 @@
   // Оттенки предметов: подобраны так, чтобы различаться и в светлой, и в тёмной теме
   const HUES = [18, 210, 145, 40, 285, 350, 178, 95, 248, 8];
 
-  // Типичное расписание звонков: пары по 90 минут
+  // Частое время занятий в КГМУ: практические — два часа с перерывом, лекции — 90 минут
   const PAIRS = [
-    ['08:30', '10:00'], ['10:10', '11:40'], ['11:50', '13:20'], ['13:50', '15:20'],
-    ['15:30', '17:00'], ['17:10', '18:40'], ['18:50', '20:20'],
+    ['08:00', '10:25'], ['08:00', '11:10'], ['08:30', '10:00'], ['10:30', '12:55'],
+    ['10:40', '13:05'], ['11:00', '12:30'], ['13:00', '14:30'], ['13:05', '15:30'],
+    ['15:45', '18:10'],
   ];
 
   const CLASS_TYPES = { lecture: 'Лекция', practice: 'Практика', lab: 'Лаба', seminar: 'Семинар' };
-  const CLASS_TYPES_FULL = { lecture: 'Лекция', practice: 'Практика', lab: 'Лабораторная', seminar: 'Семинар' };
+  const CLASS_TYPES_FULL = { lecture: 'Лекция', practice: 'Практическое занятие', lab: 'Лабораторная', seminar: 'Семинар' };
 
   function semesterStartFor(now) {
     const y = now.getFullYear();
@@ -27,6 +28,7 @@
 
   const Store = {
     KEY, HUES, PAIRS, CLASS_TYPES, CLASS_TYPES_FULL,
+    VERSION: 2,
     state: null,
     storageOk: true,
     firstRun: false,
@@ -34,16 +36,18 @@
 
     defaults() {
       return {
-        version: 1,
-        profile: { name: '' },
+        version: this.VERSION,
+        profile: { name: '', university: 'Кировский ГМУ', program: 'Лечебное дело', course: 3, group: '' },
         settings: {
           theme: 'system',
           classLead: 15,
           systemNotify: false,
           semesterStart: semesterStartFor(new Date()),
+          weekNames: 'num',
           showSunday: false,
           sidebarCollapsed: false,
           filesView: 'grid',
+          hideOnboard: false,
         },
         subjects: [],
         classes: [],
@@ -52,6 +56,7 @@
         notifications: [],
         fired: {},
         sampleBanner: false,
+        kgmuCustom: null,
       };
     },
 
@@ -69,17 +74,30 @@
         return;
       }
       this.state = this.normalize(data);
+      this.save();
     },
 
     normalize(data) {
       const def = this.defaults();
       const st = Object.assign(def, data);
       st.settings = Object.assign(this.defaults().settings, data.settings || {});
-      st.profile = Object.assign({ name: '' }, data.profile || {});
+      st.profile = Object.assign(this.defaults().profile, data.profile || {});
       ['subjects', 'classes', 'reminders', 'files', 'notifications'].forEach((k) => {
         if (!Array.isArray(st[k])) st[k] = [];
       });
       if (!st.fired || typeof st.fired !== 'object') st.fired = {};
+
+      // Первая версия показывала общий пример (матанализ, Python) — меняем его на медицинский
+      if ((data.version || 1) < 2) {
+        const hadSample = ['classes', 'reminders', 'files'].some((k) => st[k].some((x) => x.sample));
+        this.oldSampleFiles = st.files.filter((f) => f.sample).map((f) => f.id);
+        ['classes', 'reminders', 'files'].forEach((k) => { st[k] = st[k].filter((x) => !x.sample); });
+        st.settings.weekNames = 'num';
+        this.state = st;
+        this.gcSubjects();
+        if (hadSample) this.seed(true);
+        st.version = this.VERSION;
+      }
       return st;
     },
 
@@ -100,12 +118,21 @@
       return free != null ? free : HUES[this.state.subjects.length % HUES.length];
     },
 
+    // Постоянный цвет для известных дисциплин, если он ещё не занят
+    defaultHue(name) {
+      const known = App.KGMU && App.KGMU.SUBJECTS.find((s) => s.name.toLowerCase() === name.toLowerCase());
+      if (known && !this.state.subjects.some((s) => s.hue === known.hue && !(App.KGMU.SUBJECTS.find((k) => k.name === s.name) || {}).elective)) {
+        return known.hue;
+      }
+      return this.nextHue();
+    },
+
     subjectByName(name, hue) {
       const n = String(name || '').trim().replace(/\s+/g, ' ');
       if (!n) return null;
       let s = this.state.subjects.find((x) => x.name.toLowerCase() === n.toLowerCase());
       if (!s) {
-        s = { id: U.uid(), name: n, hue: hue != null ? hue : this.nextHue() };
+        s = { id: U.uid(), name: n, hue: hue != null ? hue : this.defaultHue(n) };
         this.state.subjects.push(s);
       } else if (hue != null) {
         s.hue = hue;
@@ -141,68 +168,44 @@
       return [st.classes, st.reminders, st.files].some((list) => list.some((x) => x.sample));
     },
 
-    /* ---------- Пример данных для первого запуска ---------- */
+    profileLine() {
+      const p = this.state.profile;
+      return [p.course && `${p.course} курс`, p.group ? `гр. ${p.group}` : p.program].filter(Boolean).join(' · ');
+    },
 
-    seed() {
+    /* ---------- Пример данных для первого запуска ----------
+       Расписание не придумываем: его загружают из официальной таблицы КГМУ по номеру группы. */
+
+    seed(keepNotifications = false) {
       const st = this.state;
       const now = new Date();
       const sub = {};
-      const add = (key, name, hue) => { sub[key] = this.subjectByName(name, hue); };
-      add('calc', 'Математический анализ', 18);
-      add('alg', 'Линейная алгебра', 210);
-      add('py', 'Программирование на Python', 145);
-      add('phys', 'Физика', 40);
-      add('hist', 'История России', 285);
-      add('eng', 'Английский язык', 350);
-      add('pe', 'Физическая культура', 178);
-
-      const P = PAIRS;
-      const cls = (subject, type, day, pair, room, teacher, weeks = 'all') => ({
-        id: U.uid(), subjectId: sub[subject].id, type, day,
-        start: P[pair - 1][0], end: P[pair - 1][1], room, teacher, weeks, sample: true,
-      });
-
-      st.classes = [
-        cls('calc', 'lecture', 1, 1, '305', 'Смирнов А. В.'),
-        cls('alg', 'practice', 1, 2, '214', 'Котова Е. Н.'),
-        cls('eng', 'practice', 1, 3, '118', 'Джонсон М.'),
-        cls('phys', 'lecture', 2, 2, 'Большая физ.', 'Орлов П. С.'),
-        cls('py', 'lab', 2, 3, '412', 'Белов Д. А.', 'odd'),
-        cls('phys', 'practice', 2, 3, '221', 'Орлов П. С.', 'even'),
-        cls('hist', 'seminar', 2, 4, '507', 'Лебедева Т. И.'),
-        cls('alg', 'lecture', 3, 1, '305', 'Котова Е. Н.'),
-        cls('calc', 'practice', 3, 2, '214', 'Смирнов А. В.'),
-        cls('pe', 'practice', 3, 4, 'Спортзал', ''),
-        cls('py', 'lecture', 4, 2, '301', 'Белов Д. А.'),
-        cls('py', 'lab', 4, 3, '412', 'Белов Д. А.'),
-        cls('eng', 'practice', 4, 4, '118', 'Джонсон М.'),
-        cls('phys', 'lab', 5, 1, '120', 'Орлов П. С.', 'even'),
-        cls('calc', 'practice', 5, 2, '214', 'Смирнов А. В.'),
-        cls('hist', 'lecture', 5, 3, '305', 'Лебедева Т. И.'),
-        cls('calc', 'seminar', 6, 2, '305', 'Смирнов А. В.'),
-        cls('pe', 'practice', 6, 3, 'Спортзал', ''),
-      ];
+      const add = (key, name) => { sub[key] = this.subjectByName(name); };
+      add('pharm', 'Фармакология');
+      add('path', 'Патологическая анатомия');
+      add('prop', 'Пропедевтика внутренних болезней');
+      add('micro', 'Микробиология, вирусология');
 
       const at = (days, t) => U.atTime(U.addDays(now, days), t).toISOString();
       const rem = (title, subject, due, kind, lead, done = false) => ({
         id: U.uid(), title, subjectId: subject ? sub[subject].id : null, due, kind, lead, done,
         createdAt: now.toISOString(), doneAt: done ? now.toISOString() : null, sample: true,
       });
-      st.reminders = [
-        rem('Сдать лабораторную №2 — списки и словари', 'py', at(2, '23:59'), 'deadline', 1440),
-        rem('Прочитать Фихтенгольца, т. 1, гл. 2 — пределы', 'calc', at(1, '19:00'), 'reminder', 15),
-        rem('Коллоквиум: пределы и непрерывность', 'calc', at(5, '10:10'), 'deadline', 1440),
-        rem('Эссе «Реформы Петра I», 5000 знаков', 'hist', at(9, '23:59'), 'deadline', 1440),
-        rem('Купить тетрадь для лабораторных', null, null, 'reminder', 0, true),
-      ];
+      st.reminders = st.reminders.concat([
+        rem('Выучить схему расспроса больного: жалобы и анамнез', 'prop', at(1, '19:00'), 'reminder', 15),
+        rem('Отработка по патанатомии за пропущенное занятие', 'path', at(3, '15:45'), 'deadline', 1440),
+        rem('Контрольная по рецептуре: 20 рецептов', 'pharm', at(4, '09:20'), 'deadline', 1440),
+        rem('Коллоквиум: стафилококки и стрептококки', 'micro', at(6, '08:00'), 'deadline', 1440),
+        rem('Купить халат, шапочку и сменную обувь для клиники', null, null, 'reminder', 0, true),
+      ]);
 
       const files = [
-        { name: 'Вопросы к коллоквиуму — пределы.txt', type: 'text/plain', subject: 'calc', body: SAMPLE_QUESTIONS },
-        { name: 'Шпаргалка по Python.md', type: 'text/markdown', subject: 'py', body: SAMPLE_PYTHON },
-        { name: 'График sin x — к лабораторной.svg', type: 'image/svg+xml', subject: 'phys', body: sineSvg() },
+        { name: 'Рецептура — шпаргалка к контрольной.md', type: 'text/markdown', subject: 'pharm', body: SAMPLE_RECIPES },
+        { name: 'Микропрепараты к итоговому занятию.txt', type: 'text/plain', subject: 'path', body: SAMPLE_MICRO },
+        { name: 'Нормальная ЭКГ — схема.svg', type: 'image/svg+xml', subject: 'prop', body: ecgSvg() },
       ];
       this.seedBlobs = [];
-      st.files = files.map((f, i) => {
+      st.files = st.files.concat(files.map((f, i) => {
         const blob = new Blob([f.body], { type: f.type });
         const id = U.uid() + i;
         this.seedBlobs.push({ id, blob });
@@ -210,79 +213,107 @@
           id, name: f.name, size: blob.size, type: f.type, subjectId: sub[f.subject].id,
           addedAt: new Date(now.getTime() - (i + 1) * 3.6e6).toISOString(), sample: true,
         };
-      });
+      }));
 
-      st.notifications = [
-        {
-          id: U.uid(), kind: 'system', read: false, at: new Date(now.getTime() - 6e4).toISOString(),
-          title: 'Добро пожаловать в Семестр',
-          body: 'Здесь появятся напоминания о парах и дедлайнах. Системные уведомления включаются в настройках.',
-          route: 'settings',
-        },
-        {
-          id: U.uid(), kind: 'file', read: true, at: new Date(now.getTime() - 36e5).toISOString(),
-          title: 'Добавлено 3 файла', body: 'Примеры конспектов лежат в разделе «Файлы».', route: 'files',
-        },
-      ];
+      if (!keepNotifications) {
+        st.notifications = [
+          {
+            id: U.uid(), kind: 'system', read: false, at: new Date(now.getTime() - 6e4).toISOString(),
+            title: 'Добро пожаловать в Семестр',
+            body: 'Выберите свою группу на главной — расписание 3 курса лечебного факультета КГМУ загрузится само.',
+            route: 'home',
+          },
+          {
+            id: U.uid(), kind: 'file', read: true, at: new Date(now.getTime() - 36e5).toISOString(),
+            title: 'Добавлено 3 файла', body: 'Примеры конспектов лежат в разделе «Файлы».', route: 'files',
+          },
+        ];
+      }
       st.sampleBanner = true;
     },
   };
 
-  const SAMPLE_QUESTIONS = `Коллоквиум по математическому анализу
-Тема: пределы и непрерывность
+  const SAMPLE_RECIPES = `# Рецептура — шпаргалка к контрольной
 
-1. Определение предела последовательности (на языке ε–N).
-2. Единственность предела. Ограниченность сходящейся последовательности.
-3. Предельный переход в неравенствах. Лемма о двух милиционерах.
-4. Монотонные последовательности. Теорема Вейерштрасса.
-5. Число e как предел последовательности (1 + 1/n)^n.
-6. Первый и второй замечательные пределы.
-7. Непрерывность функции в точке. Классификация точек разрыва.
-8. Теоремы Больцано — Коши и Вейерштрасса для функций на отрезке.
+Проверяйте формулировки по методичке кафедры фармакологии.
 
-Консультация: суббота, 2-я пара, ауд. 305.
+## Твёрдые формы
+Rp.: Tabulettas Acidi acetylsalicylici 0,5 N. 20
+D.S. По 1 таблетке 3 раза в день после еды.
+
+## Жидкие формы
+Rp.: Tincturae Valerianae 30 ml
+D.S. По 20–30 капель 3 раза в день.
+
+Rp.: Solutionis Glucosi 5% — 400 ml
+Sterilisetur!
+D.S. Для внутривенного капельного введения.
+
+## Ампулы
+Rp.: Solutionis Atropini sulfatis 0,1% — 1 ml
+D.t.d. N. 6 in ampullis
+S. Вводить подкожно по 1 мл.
+
+## Мягкие формы
+Rp.: Unguenti Tetracyclini 3% — 15,0
+D.S. Наносить на поражённый участок кожи.
+
+## Сокращения
+- D.t.d. — Da tales doses, выдай такие дозы
+- M.f. — Misce, fiat, смешай, пусть получится
+- S. — Signa, обозначь
 `;
 
-  const SAMPLE_PYTHON = `# Шпаргалка по Python
+  const SAMPLE_MICRO = `Микропрепараты к итоговому занятию
+Общая патологическая анатомия
 
-## Списки
-- lst.append(x) — добавить в конец
-- lst[::-1] — развернуть
-- [x * 2 for x in lst if x > 0] — генератор списка
+Дистрофии
+1. Жировая дистрофия печени (окраска суданом III)
+2. Гиалиноз стенок артериол почки
+3. Амилоидоз почки (окраска конго красным)
 
-## Словари
-- d.get(key, default) — значение или запасной вариант
-- for k, v in d.items(): ... — обход пар
+Расстройства кровообращения
+4. Бурая индурация лёгких (гемосидероз)
+5. Мускатная печень (хроническое венозное полнокровие)
+6. Геморрагический инфаркт лёгкого
+7. Смешанный тромб
 
-## Файлы
-with open("data.txt", encoding="utf-8") as f:
-    lines = f.read().splitlines()
+Некроз и воспаление
+8. Ишемический инфаркт почки
+9. Казеозный некроз в лимфатическом узле при туберкулёзе
+10. Фибринозный перикардит
 
-## Лаба №2
-Сдать до конца недели: функции для частотного словаря
-и сортировки слов по количеству вхождений.
+Для каждого препарата: орган, окраска, что видно при малом и большом увеличении.
 `;
 
-  function sineSvg() {
-    let d = '';
-    for (let i = 0; i <= 120; i++) {
-      const x = 30 + i * 3;
-      const y = 110 - Math.sin((i / 120) * Math.PI * 2) * 70;
-      d += `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`;
-    }
+  // Схема нормальной ЭКГ на миллиметровке: зубцы, сегменты, интервалы
+  function ecgSvg() {
+    const base = 150;
+    // 1 мм = 8 px; 25 мм/с → 1 мм = 0,04 с. ЧСС 60: RR = 25 мм
+    const beat = (x) => [
+      `L${x} ${base}`, `Q${x + 10} ${base - 14} ${x + 20} ${base}`,     // P, 0,10 с
+      `L${x + 36} ${base}`, `L${x + 39} ${base + 8}`,                  // сегмент PQ, Q
+      `L${x + 44} ${base - 92}`, `L${x + 50} ${base + 20}`,            // R, S
+      `L${x + 54} ${base}`, `L${x + 80} ${base}`,                      // сегмент ST
+      `Q${x + 101} ${base - 40} ${x + 122} ${base}`,                   // T
+    ].join(' ');
+    const d = `M20 ${base} ${beat(40)} ${beat(240)} L460 ${base}`;
     let grid = '';
-    for (let i = 0; i <= 8; i++) grid += `<path d="M${30 + i * 45} 30V190"/>`;
-    for (let j = 0; j <= 4; j++) grid += `<path d="M30 ${40 + j * 35}H390"/>`;
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" width="840" height="440">
-<rect width="420" height="220" fill="#FBFAF6"/>
-<g stroke="#ECE8DD" stroke-width="1">${grid}</g>
-<path d="M30 110H396M30 24V196" stroke="#8A857B" stroke-width="1.2" fill="none"/>
-<path d="${d}" fill="none" stroke="#C96442" stroke-width="2.6" stroke-linecap="round"/>
-<g font-family="Georgia, serif" font-size="13" fill="#5A564E">
-<text x="38" y="28">y = sin x</text>
-<text x="202" y="128">π</text><text x="382" y="128">2π</text>
-<text x="112" y="128">π/2</text><text x="285" y="128">3π/2</text>
-<text x="14" y="44">1</text><text x="8" y="184">−1</text>
+    for (let x = 0; x <= 480; x += 8) grid += `<path d="M${x} 0V260" stroke="${x % 40 ? '#F6D9D2' : '#EDB8AB'}"/>`;
+    for (let y = 0; y <= 260; y += 8) grid += `<path d="M0 ${y}H480" stroke="${y % 40 ? '#F6D9D2' : '#EDB8AB'}"/>`;
+    const label = (x, y, t) => `<text x="${x}" y="${y}" text-anchor="middle">${t}</text>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 260" width="960" height="520">
+<rect width="480" height="260" fill="#FFF8F5"/>
+<g stroke-width="1">${grid}</g>
+<path d="${d}" fill="none" stroke="#2B2924" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<g font-family="Georgia, serif" font-size="14" fill="#A9502F" font-weight="bold">
+${label(50, base - 16, 'P')}${label(76, base + 26, 'Q')}${label(84, base - 98, 'R')}${label(94, base + 40, 'S')}${label(141, base - 28, 'T')}
+</g>
+<g font-family="Georgia, serif" font-size="12" fill="#5A564E">
+<path d="M40 205H76M40 200v10M76 200v10" stroke="#5A564E"/>${label(58, 223, 'PQ 0,12–0,20 с')}
+<path d="M76 238H94M76 233v10M94 233v10" stroke="#5A564E"/>${label(150, 243, 'QRS ≤ 0,10 с')}
+${label(107, base - 8, 'ST')}
+<text x="16" y="24">Нормальная ЭКГ, II отведение (схема). 25 мм/с: 1 мм = 0,04 с</text>
 </g>
 </svg>`;
   }

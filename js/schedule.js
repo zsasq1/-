@@ -6,7 +6,6 @@
   const { esc, ico } = U;
 
   const PPM = 1.05; // пикселей на минуту в сетке недели
-  const WEEKS_SHORT = { odd: 'чис', even: 'знам' };
 
   const Sched = {
     weekOffset: 0,
@@ -21,14 +20,55 @@
       return { week, odd, label: odd ? 'числитель' : 'знаменатель' };
     },
 
+    // В КГМУ чередование называют «1 неделя» и «2 неделя», в других вузах — числитель и знаменатель
+    weekName(odd, short = false) {
+      const num = (Store.state.settings.weekNames || 'num') === 'num';
+      if (short) return num ? (odd ? '1 нед' : '2 нед') : (odd ? 'чис' : 'знам');
+      return num ? (odd ? '1 неделя' : '2 неделя') : (odd ? 'числитель' : 'знаменатель');
+    },
+
     weekLabel(p) {
-      return p.week >= 1 ? `${p.week}-я неделя · ${p.label}` : `до начала семестра · ${p.label}`;
+      return p.week >= 1 ? `${p.week}-я учебная неделя` : 'до начала семестра';
+    },
+
+    weekPill(p) {
+      return `<span class="pill ${p.odd ? 'accent' : ''}">${esc(U.cap(this.weekName(p.odd)))}</span>`;
     },
 
     matches(c, date) {
+      const iso = U.ymd(date);
+      if (c.dates && c.dates.length) return c.dates.includes(iso);
       if (Number(c.day) !== U.isoDay(date)) return false;
+      if (c.from && iso < c.from) return false;
+      if (c.until && iso > c.until) return false;
       if (c.weeks === 'odd' || c.weeks === 'even') return (c.weeks === 'odd') === this.parity(date).odd;
       return true;
+    },
+
+    // «30.11, 14.12» → ISO-даты в пределах учебного года
+    parseDates(text) {
+      const sem = U.parseYmd(Store.state.settings.semesterStart);
+      const fall = sem.getMonth() >= 7;
+      const out = [];
+      String(text || '').split(/[\s,;]+/).forEach((tok) => {
+        const m = tok.match(/^(\d{1,2})\.(\d{1,2})(?:\.(\d{2,4}))?$/);
+        if (!m) return;
+        const d = Number(m[1]);
+        const mo = Number(m[2]);
+        let y = m[3] ? Number(m[3]) : (fall && mo < 8 ? sem.getFullYear() + 1 : sem.getFullYear());
+        if (y < 100) y += 2000;
+        const date = new Date(y, mo - 1, d);
+        if (date.getDate() === d && date.getMonth() === mo - 1) out.push(U.ymd(date));
+      });
+      return [...new Set(out)].sort();
+    },
+
+    fmtDates(list) {
+      return (list || []).map((iso) => `${iso.slice(8)}.${iso.slice(5, 7)}`).join(', ');
+    },
+
+    placeShort(c) {
+      return (c.place || '').split(/[(,/]/)[0].trim();
     },
 
     classesOn(date) {
@@ -54,9 +94,14 @@
       return 'later';
     },
 
-    metaLine(c, withTeacher = true) {
-      return [Store.CLASS_TYPES[c.type], c.room && (/^\d/.test(c.room) ? `ауд. ${c.room}` : c.room), withTeacher && c.teacher]
-        .filter(Boolean).join(' · ');
+    roomText(c) {
+      return c.room ? (/^\d/.test(c.room) ? `ауд. ${c.room}` : c.room) : '';
+    },
+
+    // Коротко для блока в сетке, подробно — для списка и уведомлений
+    metaLine(c, full = true) {
+      const where = this.roomText(c) || this.placeShort(c);
+      return [Store.CLASS_TYPES[c.type], where, full && c.teacher].filter(Boolean).join(' · ');
     },
 
     /* ---------- Экран ---------- */
@@ -80,7 +125,7 @@
         <div class="page-head rise" style="--i:0">
           <div>
             <h1 class="page-title">Расписание</h1>
-            <p class="page-sub"><span class="pill ${p.odd ? 'accent' : ''}">${esc(this.weekLabel(p))}</span>${total ? U.count(total, ['пара', 'пары', 'пар']) + ' на неделе' : 'пар нет'}</p>
+            <p class="page-sub">${this.weekPill(p)}${esc(this.weekLabel(p))} · ${total ? U.count(total, ['занятие', 'занятия', 'занятий']) + ' на неделе' : 'занятий нет'}</p>
           </div>
           <div class="head-actions">
             <div class="week-nav">
@@ -89,12 +134,13 @@
               <span class="week-range">${range}</span>
               <button class="icon-btn" data-action="week-next" aria-label="Следующая неделя">${ico('chevron-right')}</button>
             </div>
-            <button class="btn btn-primary" data-action="class-new">${ico('plus')} Пара</button>
+            <button class="btn btn-primary" data-action="class-new">${ico('plus')} Занятие</button>
           </div>
         </div>
         ${st.classes.length ? '' : `
         <div class="banner sched-hint rise" style="--i:1">${ico('info')}
-          <div class="banner-text">Расписание пока пустое. Нажмите на свободное место в сетке — время подставится само.</div>
+          <div class="banner-text">Расписание пока пустое. Загрузите официальное расписание своей группы или нажмите на свободное место в сетке, чтобы добавить пару вручную.</div>
+          ${App.KGMU && App.KGMU.parsed() ? '<div class="banner-actions"><button class="btn btn-sm" data-action="kgmu-import">Выбрать группу</button></div>' : ''}
         </div>`}
         ${this.renderWeek(dates, perDay, now)}
         ${this.renderAgenda(dates, perDay, now)}`;
@@ -136,7 +182,7 @@
               <span class="cls-time">${c.start}–${c.end}</span>
               <span class="cls-name">${esc(subj ? subj.name : 'Без названия')}</span>
               ${compact ? '' : `<span class="cls-meta">${esc(this.metaLine(c, false))}</span>`}
-              ${WEEKS_SHORT[c.weeks] && !compact ? `<span class="cls-weeks" title="${c.weeks === 'odd' ? 'Только по числителям' : 'Только по знаменателям'}">${WEEKS_SHORT[c.weeks]}</span>` : ''}
+              ${(c.weeks === 'odd' || c.weeks === 'even') && !(c.dates && c.dates.length) && !compact ? `<span class="cls-weeks" title="Только ${esc(this.weekName(c.weeks === 'odd'))}">${this.weekName(c.weeks === 'odd', true)}</span>` : ''}
             </button>`;
         }).join('');
         const nowM = now.getHours() * 60 + now.getMinutes();
@@ -173,9 +219,9 @@
                     return `
                       <button class="ag-item ${this.status(c, d, now) === 'now' ? 'is-now' : ''} ${Store.subjClass(c.subjectId)}" style="${Store.subjStyle(c.subjectId)}" data-action="class-edit" data-id="${c.id}">
                         <span class="ag-time"><b>${c.start}</b>${c.end}</span>
-                        <span><span class="ag-name">${esc(subj ? subj.name : 'Без названия')}</span><span class="ag-meta">${esc(this.metaLine(c))}</span></span>
+                        <span><span class="ag-name">${esc(subj ? subj.name : 'Без названия')}</span><span class="ag-meta">${esc([Store.CLASS_TYPES[c.type], this.roomText(c), c.place, c.teacher].filter(Boolean).join(' · '))}</span></span>
                       </button>`;
-                  }).join('') : `<button class="ag-empty" data-action="class-new" data-day="${U.isoDay(d)}">Нет пар — добавить</button>`}
+                  }).join('') : `<button class="ag-empty" data-action="class-new" data-day="${U.isoDay(d)}">Нет занятий — добавить</button>`}
                 </div>
               </section>`;
           }).join('')}
@@ -211,8 +257,10 @@
         day: preset.day || (today === 7 && !st.settings.showSunday ? 1 : today),
         start: preset.start || Store.PAIRS[0][0],
         end: preset.end || Store.PAIRS[0][1],
-        room: '', teacher: '', weeks: 'all',
+        room: '', teacher: '', place: '', weeks: 'all',
       };
+      const hasPeriod = !!(c.from || c.until || (c.dates && c.dates.length));
+      const places = [...new Set(st.classes.map((x) => x.place).filter(Boolean))];
       const subj = Store.subject(c.subjectId);
       const hue = subj ? subj.hue : Store.nextHue();
       const pairIdx = Store.PAIRS.findIndex((p) => p[0] === c.start && p[1] === c.end);
@@ -221,9 +269,10 @@
 
       const body = `
         <form id="cf" class="form-grid" autocomplete="off" novalidate>
+          ${c.source === 'kgmu' ? `<p class="field-hint span-2">Из официального расписания КГМУ. Если на кафедре что-то поменяли, исправьте здесь.</p>` : ''}
           <div class="field span-2">
             <label for="cf-subj">Предмет</label>
-            <input id="cf-subj" class="input" list="cf-subj-list" placeholder="Например, Математический анализ" value="${esc(subj ? subj.name : '')}" required>
+            <input id="cf-subj" class="input" list="cf-subj-list" placeholder="Например, Фармакология" value="${esc(subj ? subj.name : '')}" required>
             <datalist id="cf-subj-list">${subjects.map((s) => `<option value="${esc(s.name)}"></option>`).join('')}</datalist>
           </div>
           <div class="field span-2">
@@ -241,9 +290,9 @@
             <select id="cf-day" class="input">${[1, 2, 3, 4, 5, 6, 7].map((d) => `<option value="${d}" ${Number(c.day) === d ? 'selected' : ''}>${U.cap(U.DAYS[d])}</option>`).join('')}</select>
           </div>
           <div class="field">
-            <label for="cf-pair">Пара</label>
+            <label for="cf-pair">Время</label>
             <select id="cf-pair" class="input">
-              ${Store.PAIRS.map((p, i) => `<option value="${i}" ${i === pairIdx ? 'selected' : ''}>${i + 1}-я · ${p[0]}–${p[1]}</option>`).join('')}
+              ${Store.PAIRS.map((p, i) => `<option value="${i}" ${i === pairIdx ? 'selected' : ''}>${p[0]}–${p[1]}</option>`).join('')}
               <option value="custom" ${pairIdx < 0 ? 'selected' : ''}>Своё время</option>
             </select>
           </div>
@@ -257,7 +306,7 @@
           </div>
           <div class="field">
             <label for="cf-room">Аудитория</label>
-            <input id="cf-room" class="input" placeholder="305" value="${esc(c.room)}">
+            <input id="cf-room" class="input" placeholder="3-803" value="${esc(c.room)}">
           </div>
           <div class="field">
             <label for="cf-teacher">Преподаватель</label>
@@ -265,19 +314,42 @@
             <datalist id="cf-teacher-list">${teachers.map((t) => `<option value="${esc(t)}"></option>`).join('')}</datalist>
           </div>
           <div class="field span-2">
-            <span class="field-label">Повторять</span>
-            ${UI.seg('cf-weeks', 'weeks', { all: 'Каждую неделю', odd: 'Числитель', even: 'Знаменатель' }, c.weeks || 'all', 'full')}
+            <label for="cf-place">Место</label>
+            <input id="cf-place" class="input" list="cf-place-list" placeholder="Кафедра, корпус или клиническая база" value="${esc(c.place || '')}">
+            <datalist id="cf-place-list">${places.map((t) => `<option value="${esc(t)}"></option>`).join('')}</datalist>
           </div>
+          <div class="field span-2">
+            <span class="field-label">Повторять</span>
+            ${UI.seg('cf-weeks', 'weeks', { all: 'Каждую неделю', odd: U.cap(this.weekName(true)), even: U.cap(this.weekName(false)) }, c.weeks || 'all', 'full')}
+          </div>
+          <details class="span-2 more" ${hasPeriod ? 'open' : ''}>
+            <summary>Период и отдельные даты</summary>
+            <div class="form-grid more-body">
+              <div class="field">
+                <label for="cf-from">С</label>
+                <input id="cf-from" type="date" class="input" value="${esc(c.from || '')}">
+              </div>
+              <div class="field">
+                <label for="cf-until">По</label>
+                <input id="cf-until" type="date" class="input" value="${esc(c.until || '')}">
+              </div>
+              <div class="field span-2">
+                <label for="cf-dates">Только в эти даты</label>
+                <input id="cf-dates" class="input" placeholder="30.11, 14.12" value="${esc(this.fmtDates(c.dates))}">
+                <span class="field-hint">Если заполнено, занятие будет только в эти дни — день недели и повторение не учитываются.</span>
+              </div>
+            </div>
+          </details>
           <p class="form-error span-2" id="cf-err" hidden></p>
         </form>`;
 
       const foot = `
         ${isEdit ? `<button class="btn btn-ghost btn-danger" type="button" data-del>${ico('trash')} Удалить</button><span class="spacer"></span>` : ''}
         <button class="btn btn-ghost" type="button" data-close>Отмена</button>
-        <button class="btn btn-primary" type="submit" form="cf">${isEdit ? 'Сохранить' : 'Добавить пару'}</button>`;
+        <button class="btn btn-primary" type="submit" form="cf">${isEdit ? 'Сохранить' : 'Добавить'}</button>`;
 
       UI.modal({
-        title: isEdit ? 'Пара' : 'Новая пара',
+        title: isEdit ? 'Занятие' : 'Новое занятие',
         body, foot,
         onMount: (el, api) => {
           const f = (id) => el.querySelector(`#${id}`);
@@ -325,7 +397,13 @@
             const fail = (msg, input) => { err.textContent = msg; err.hidden = false; if (input) input.focus(); };
             if (!name) return fail('Укажите предмет.', subjInput);
             if (!startIn.value || !endIn.value) return fail('Укажите время начала и конца.', startIn);
-            if (en <= s) return fail('Пара должна заканчиваться позже, чем начинается.', endIn);
+            if (en <= s) return fail('Занятие должно заканчиваться позже, чем начинается.', endIn);
+            const from = f('cf-from').value;
+            const until = f('cf-until').value;
+            if (from && until && until < from) return fail('Дата окончания раньше даты начала.', f('cf-until'));
+            const datesText = f('cf-dates').value.trim();
+            const dates = this.parseDates(datesText);
+            if (datesText && !dates.length) return fail('Не удалось разобрать даты. Пишите через запятую: 30.11, 14.12', f('cf-dates'));
 
             const hueVal = Number((el.querySelector('input[name=hue]:checked') || {}).value);
             const subject = Store.subjectByName(name, Number.isFinite(hueVal) ? hueVal : undefined);
@@ -337,10 +415,15 @@
               end: endIn.value,
               room: f('cf-room').value.trim(),
               teacher: f('cf-teacher').value.trim(),
+              place: f('cf-place').value.trim(),
               weeks: (el.querySelector('input[name=weeks]:checked') || {}).value || 'all',
+              from: from || undefined,
+              until: until || undefined,
+              dates: dates.length ? dates : undefined,
             };
             if (isEdit) {
               Object.assign(cls, data);
+              ['from', 'until', 'dates'].forEach((k) => { if (data[k] === undefined) delete cls[k]; });
               delete cls.sample;
             } else {
               Store.state.classes.push(Object.assign({ id: U.uid() }, data));
@@ -350,7 +433,7 @@
             api.close();
             this.animateBlocks = true;
             App.refresh();
-            UI.toast(isEdit ? 'Изменения сохранены' : `Пара добавлена: ${U.DAYS_SHORT[data.day]}, ${data.start}`);
+            UI.toast(isEdit ? 'Изменения сохранены' : dates.length ? `Занятие добавлено: ${this.fmtDates(dates)}` : `Занятие добавлено: ${U.DAYS_SHORT[data.day]}, ${data.start}`);
           });
         },
       });
@@ -365,7 +448,7 @@
       Store.gcSubjects();
       Store.save();
       App.refresh();
-      UI.toast('Пара удалена', {
+      UI.toast('Занятие удалено', {
         action: {
           label: 'Вернуть',
           fn: () => {

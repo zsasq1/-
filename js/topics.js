@@ -219,7 +219,7 @@
       st.classes.forEach((c) => { if (c.subjectId === old.id) c.subjectId = target.id; });
       st.reminders.forEach((r) => { if (r.subjectId === old.id) r.subjectId = target.id; });
       st.files.forEach((f) => { if (f.subjectId === old.id) f.subjectId = target.id; });
-      Object.keys(st.settings.electives || {}).forEach((k) => { if (st.settings.electives[k] === from) st.settings.electives[k] = to; });
+      st.settings.electiveCourses = (st.settings.electiveCourses || []).map((x) => (x === from ? to : x));
       Store.gcSubjects();
       Store.save();
       App.refresh();

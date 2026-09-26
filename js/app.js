@@ -268,7 +268,7 @@
       App.Files.hydrate($view());
     }
     if (autoGroup) {
-      const withElective = Object.keys(Store.state.settings.electives || {}).length;
+      const withElective = (Store.state.settings.electiveCourses || []).length;
       UI.toast(withElective
         ? `Загружено расписание группы ${autoGroup} с элективом на кафедре патофизиологии и темами занятий`
         : `Загружено расписание группы ${autoGroup}. Дисциплины по выбору можно добавить в настройках`, {

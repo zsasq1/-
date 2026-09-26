@@ -42,7 +42,9 @@
                 `<input id="set-uni" class="input" placeholder="Вуз" value="${esc(st.profile.university || '')}">
                  <input id="set-program" class="input" placeholder="Специальность" value="${esc(st.profile.program || '')}">`)}
               ${App.KGMU && App.KGMU.available() ? row('Группа',
-                App.KGMU.hasImported() ? `Загружено расписание группы ${esc(st.profile.group)}.` : 'Выберите группу, чтобы загрузить официальное расписание.',
+                App.KGMU.hasImported()
+                  ? `Загружено расписание группы ${esc(st.profile.group)}. Дисциплины по выбору: ${esc((st.settings.electiveCourses || []).join(', ') || 'не выбраны')}. Здесь же можно отметить остальные курсы по выбору.`
+                  : 'Выберите группу, чтобы загрузить официальное расписание.',
                 `<button class="btn btn-primary" data-action="kgmu-import">${ico('calendar')} ${App.KGMU.hasImported() ? 'Сменить или обновить' : 'Выбрать группу'}</button>`) : ''}
               ${App.KGMU ? row('Файл расписания',
                 `${App.KGMU.parsed() && App.KGMU.parsed().custom ? 'Используется файл, который вы загрузили.' : 'Встроена версия от 2 сентября 2026.'} Если на <a class="link" href="${esc(App.KGMU_DATA.page)}" target="_blank" rel="noopener">странице лечебного факультета</a> вышла новая, скачайте .xlsx своего потока и загрузите сюда.`,

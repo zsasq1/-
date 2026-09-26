@@ -31,7 +31,7 @@
     VERSION: 2,
     DEFAULT_GROUP: '314',
     // Студент 314 группы записан на электив кафедры патофизиологии (пятница)
-    DEFAULT_ELECTIVES: { 5: 'Электив на кафедре патофизиологии' },
+    DEFAULT_ELECTIVES: ['Электив на кафедре патофизиологии'],
     state: null,
     storageOk: true,
     firstRun: false,
@@ -53,7 +53,7 @@
           hideOnboard: false,
           autoImported: false,
           electivesSynced: false,
-          electives: {},
+          electiveCourses: [],
         },
         subjects: [],
         classes: [],
@@ -94,6 +94,12 @@
       });
       if (!st.fired || typeof st.fired !== 'object') st.fired = {};
       if (!st.topicNotes || typeof st.topicNotes !== 'object') st.topicNotes = {};
+      // Раньше элективы хранились по дням недели: { 5: 'курс' }
+      if (!Array.isArray(st.settings.electiveCourses)) st.settings.electiveCourses = [];
+      if (st.settings.electives && !st.settings.electiveCourses.length) {
+        st.settings.electiveCourses = [...new Set(Object.values(st.settings.electives).filter(Boolean))];
+      }
+      delete st.settings.electives;
 
       // Первая версия показывала общий пример (матанализ, Python) — меняем его на медицинский
       if ((data.version || 1) < 2) {

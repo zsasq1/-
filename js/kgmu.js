@@ -20,13 +20,15 @@
     { re: /^молекулярные механизмы/, kw: /молекулярн\S* механизм/, name: 'Молекулярные механизмы в патологии человека', hue: 8, elective: true, patofiz: true },
     { re: /^современные методы функциональной/, kw: /функциональной диагностики/, name: 'Функциональная диагностика донозологических состояний', hue: 8, elective: true, patofiz: true },
     { re: /^электив на кафедре патофизиологии/, name: 'Электив на кафедре патофизиологии', hue: 8, elective: true, patofiz: true, placeholder: true },
-    { re: /^межкультурная/, kw: /межкультурн/, name: 'Межкультурная профессиональная коммуникация', hue: 8, elective: true },
-    { re: /^статистические методы/, kw: /статистическ/, name: 'Статистика в доказательной медицине', hue: 8, elective: true },
-    { re: /^латинская/, kw: /латинск/, name: 'Латинская фармацевтическая терминология', hue: 8, elective: true },
-    { re: /^диетология/, kw: /диетолог/, name: 'Диетология', hue: 8, elective: true },
-    { re: /^биохимические основы/, kw: /биохимическ\S* основ/, name: 'Биохимические основы здорового образа жизни', hue: 8, elective: true },
+    { re: /^межкультурная/, kw: /межкультурн/, name: 'Межкультурная профессиональная коммуникация', hue: 8, elective: true, dept: 'каф. иностранных языков' },
+    { re: /^статистические методы/, kw: /статистическ/, name: 'Статистика в доказательной медицине', hue: 8, elective: true, dept: 'каф. физики и медицинской информатики' },
+    { re: /^латинская/, kw: /латинск/, name: 'Латинская фармацевтическая терминология', hue: 8, elective: true, dept: 'каф. иностранных языков' },
+    { re: /^диетология/, kw: /диетолог/, name: 'Диетология', hue: 8, elective: true, dept: 'каф. гигиены' },
+    { re: /^биохимические основы/, kw: /биохимическ\S* основ/, name: 'Биохимические основы здорового образа жизни', hue: 8, elective: true, dept: 'каф. биохимии' },
   ];
   const PATOFIZ_ELECTIVE = 'Электив на кафедре патофизиологии';
+  const MOLMECH = 'Молекулярные механизмы в патологии человека';
+  const FUNCDIAG = 'Функциональная диагностика донозологических состояний';
   const PATOFIZ_PLACE = 'каф. патофизиологии (3 корпус, ул. Владимирская, 112)';
 
   const DAY_LABELS = { 'ПН': 1, 'ВТ': 2, 'СР': 3, 'ЧТ': 4, 'ПТ': 5, 'СБ': 6, 'ВС': 7 };
@@ -93,17 +95,55 @@
       const body = text.slice(s.index + s.len, i + 1 < starts.length ? starts[i + 1].index : text.length).trim();
       const subj = canon(body);
       if (subj.generic) {
-        // Сводные строки «Дисциплина по выбору» перечисляют разные курсы — берём общее время и период,
-        // а названия курсов сохраняем, чтобы студент выбрал свой
-        const low = text.toLowerCase();
-        const options = SUBJECTS.filter((x) => x.kw && x.kw.test(low)).map((x) => x.name);
-        if (options.some((o) => SUBJECTS.find((x) => x.name === o).patofiz)) options.push(PATOFIZ_ELECTIVE);
-        parseBody(text.slice(s.index + s.len), s.times, day, ctx, subj, true)
-          .forEach((e) => out.push(Object.assign(e, { slot: String(day), options })));
+        out.push(...parseElectives(text, s, day, ctx, subj));
         break;
       }
       out.push(...parseBody(body, s.times, day, ctx, subj, false));
     }
+    return out;
+  }
+
+  /* Сводная строка «Дисциплина по выбору» перечисляет разные курсы. Общее время и период берём
+     из начала строки, а у каждого курса ищем свои: период — сразу после названия
+     («Латинская … 07.09-21.11»), время и аудиторию — рядом («12.30-14.00 каф. биохимии (…)-1-406»). */
+  function parseElectives(text, s, day, ctx, subj) {
+    const base = parseBody(text.slice(s.index + s.len), s.times, day, ctx, subj, true);
+    const low = text.toLowerCase();
+    const found = SUBJECTS
+      .filter((x) => x.kw)
+      .map((x) => { const m = x.kw.exec(low); return m ? { x, at: m.index, end: m.index + m[0].length } : null; })
+      .filter(Boolean)
+      .sort((a, b) => a.at - b.at);
+    if (!found.length) return base;
+    const out = [];
+    found.forEach((f, i) => {
+      const after = text.slice(f.end, i + 1 < found.length ? found[i + 1].at : text.length);
+      const before = text.slice(i > 0 ? found[i - 1].end : s.index + s.len, f.at)
+        .replace(new RegExp(`${D}\\s*-\\s*${TR}`, 'g'), ' ')
+        .replace(new RegExp(`${TR}\\s*-\\s*${D}(?!\\d)`, 'g'), ' ');
+      const range = after.match(new RegExp(`(?<![\\d.])${D}\\s*-\\s*${D}(?![\\d])`));
+      const from = range && ctx.readDate(range[1], range[2]);
+      const until = range && ctx.readDate(range[3], range[4]);
+      let time = null;
+      for (const m of before.matchAll(new RegExp(TR, 'g'))) time = readTimes(m.slice(1, 5)) || time;
+      const room = after.match(/(?:^|[\s)(-])(\d)-(\d{3})(?=[\s),;]|$)/);
+      // Кафедра: «Диетология (каф. гигиены)» или «каф. биохимии (Биохимические основы…)»
+      const depAfter = after.match(/^[^;(]*\(\s*(каф\.[^)]*?)\s*\)/i);
+      const depBefore = before.match(/(каф\.[^;()]*?)\s*\(\s*$/i);
+      const dep = (depAfter && depAfter[1]) || (depBefore && depBefore[1]) || '';
+      base.forEach((e) => {
+        const own = from && until && until >= from;
+        if (own && e.dates) return; // у курса свой период — общие разовые даты к нему не относятся
+        const v = Object.assign({}, e, {
+          subject: f.x.name, hue: f.x.hue, elective: true,
+          place: f.x.patofiz ? PATOFIZ_PLACE : dep.replace(/\s+/g, ' ').replace(/ин\.\s*яз/i, 'иностранных языков').trim(),
+        });
+        if (own) { v.from = from; v.until = until; }
+        if (time && !e.dates) { v.start = time.start; v.end = time.end; }
+        if (room) v.room = `${room[1]}-${room[2]}`;
+        out.push(v);
+      });
+    });
     return out;
   }
 
@@ -268,6 +308,8 @@
     }
     entries.forEach((e) => {
       if (!e.place && legend[e.subject] && e.type !== 'lecture') e.place = legend[e.subject].place;
+      const known = SUBJECTS.find((x) => x.name === e.subject);
+      if (!e.place && known && known.dept) e.place = known.dept;
     });
 
     return {
@@ -290,6 +332,7 @@
 
   const KGMU = {
     SUBJECTS,
+    PATOFIZ_ELECTIVE,
     parseSheet,
     parseCell: (text, day, sem = '2026-09-01') => parseCell(text, day, { semStart: sem, readDate: makeDateReader(U.parseYmd(sem)) }),
     _parsed: null,
@@ -335,27 +378,41 @@
     },
 
     // Сводка по дисциплинам группы для окна предпросмотра
-    keyOf(e) {
-      return e.slot ? `${e.subject}|${e.slot}` : e.subject;
+    isElective(name) {
+      const k = SUBJECTS.find((x) => x.name === name);
+      return !!(k && k.elective);
     },
 
+    // Сводка по дисциплинам группы для окна предпросмотра
     summary(group) {
       const legend = this.legendFor(group);
       const map = new Map();
       this.entriesFor(group).forEach((e) => {
-        const key = this.keyOf(e);
-        const item = map.get(key) || {
-          key, name: e.slot ? `${e.subject} · ${U.DAYS[Number(e.slot)]}` : e.subject,
-          hue: e.hue, elective: e.elective, slot: e.slot || null, options: new Set(), types: new Set(), count: 0,
-        };
+        const item = map.get(e.subject) || { key: e.subject, name: e.subject, hue: e.hue, elective: e.elective, when: new Set(), types: new Set() };
         item.types.add(e.type);
-        (e.options || []).forEach((o) => item.options.add(o));
-        item.count++;
-        map.set(key, item);
+        item.when.add(`${e.type === 'lecture' ? 'лекции' : 'практические'} ${U.DAYS_SHORT[e.day].toLowerCase()}`);
+        map.set(e.subject, item);
       });
-      return [...map.values()]
-        .map((it) => Object.assign(it, { options: [...it.options], exam: (legend[it.slot ? 'Дисциплина по выбору' : it.name] || {}).exam || '' }))
-        .sort((a, b) => (a.elective - b.elective) || a.name.localeCompare(b.name, 'ru'));
+      const items = [...map.values()];
+      // «Курс на кафедре патофизиологии уточню позже» — то же время, что у обоих курсов кафедры
+      const molmech = map.get(MOLMECH);
+      if (molmech) {
+        items.push(Object.assign({}, molmech, { key: PATOFIZ_ELECTIVE, name: `${PATOFIZ_ELECTIVE} (курс уточню)`, placeholder: true }));
+      }
+      return items
+        .map((it) => Object.assign(it, { when: [...it.when], exam: (legend[it.name] || legend['Дисциплина по выбору'] || {}).exam || '' }))
+        .sort((a, b) => (a.elective - b.elective) || (!!a.placeholder - !!b.placeholder) || a.name.localeCompare(b.name, 'ru'));
+    },
+
+    // Какие записи таблицы брать и под каким названием
+    pick(group, include) {
+      const usePlaceholder = include.has(PATOFIZ_ELECTIVE) && !include.has(MOLMECH) && !include.has(FUNCDIAG);
+      const out = [];
+      this.entriesFor(group).forEach((e) => {
+        if (include.has(e.subject)) out.push([e, e.subject]);
+        else if (usePlaceholder && e.subject === MOLMECH) out.push([e, PATOFIZ_ELECTIVE]);
+      });
+      return out;
     },
 
     apply(group, include, opts = {}) {
@@ -363,19 +420,15 @@
       const st = Store.state;
       const removed = st.classes.filter((c) => c.source === 'kgmu').length;
       st.classes = st.classes.filter((c) => c.source !== 'kgmu');
-      const electives = Object.assign({}, st.settings.electives || {}, opts.electives || {});
-      const entries = this.entriesFor(group).filter((e) => include.has(this.keyOf(e)));
-      entries.forEach((e) => {
-        const name = e.slot ? (electives[e.slot] || e.subject) : e.subject;
-        const known = SUBJECTS.find((x) => x.name === name);
+      const entries = this.pick(group, include);
+      entries.forEach(([e, name]) => {
         const subject = Store.subjectByName(name);
         const c = {
           id: U.uid() + Math.random().toString(36).slice(2, 4),
           subjectId: subject.id, type: e.type, day: e.day, start: e.start, end: e.end,
-          room: e.room || '', place: known && known.patofiz ? PATOFIZ_PLACE : (e.place || ''), teacher: '', weeks: e.weeks || 'all',
+          room: e.room || '', place: e.place || '', teacher: '', weeks: e.weeks || 'all',
           source: 'kgmu',
         };
-        if (e.slot) c.slot = e.slot;
         if (e.from) c.from = e.from;
         if (e.until) c.until = e.until;
         if (e.dates) c.dates = e.dates.slice();
@@ -387,7 +440,7 @@
       if (sheet && sheet.course) st.profile.course = Number(sheet.course);
       if (sheet && sheet.semStart) st.settings.semesterStart = sheet.semStart;
       st.settings.weekNames = 'num';
-      st.settings.electives = electives;
+      st.settings.electiveCourses = [...include].filter((k) => this.isElective(k));
       Store.gcSubjects();
       Store.save();
       if (opts.silent) return entries.length;
@@ -400,6 +453,13 @@
       return entries.length;
     },
 
+    chosenElectives(group) {
+      const { Store } = App;
+      const list = Store.state.settings.electiveCourses || [];
+      if (list.length) return list;
+      return String(group) === Store.DEFAULT_GROUP ? Store.DEFAULT_ELECTIVES.slice() : [];
+    },
+
     openImport(group) {
       const { Store, UI } = App;
       const esc = U.esc;
@@ -409,27 +469,26 @@
       const manual = Store.state.classes.filter((c) => c.source !== 'kgmu' && !c.sample).length;
       const updated = U.parseYmd(p.updated || '2026-09-02');
 
+      const row = (it, i, on) => {
+        const types = [...it.types].map((t) => (t === 'lecture' ? 'лекции' : 'практические')).join(' и ');
+        const meta = it.elective ? [it.when.join(', '), it.exam].filter(Boolean).join(' · ') : [types, it.exam].filter(Boolean).join(' · ');
+        return `
+          <label class="kg-row" for="kg-s-${i}" style="--h:${it.hue != null ? it.hue : 40}">
+            <input type="checkbox" id="kg-s-${i}" value="${esc(it.key)}" ${on ? 'checked' : ''}>
+            <span class="dot"></span>
+            <span class="kg-text"><span class="kg-name">${esc(it.name)}</span><span class="kg-meta">${esc(U.cap(meta))}</span></span>
+          </label>`;
+      };
       const list = () => {
         const items = this.summary(current);
         if (!items.length) return '<div class="empty"><p>Для этой группы в таблице нет занятий.</p></div>';
-        const chosen = Object.assign({}, Store.state.settings.electives || {}, this.defaultElectives(current));
-        return items.map((it, i) => {
-          const types = [...it.types].map((t) => (t === 'lecture' ? 'лекции' : 'практические')).join(' и ');
-          const meta = [types, it.exam, it.elective && !it.slot && 'по выбору — отметьте, если записаны'].filter(Boolean).join(' · ');
-          const pick = it.slot && it.options.length ? `
-            <select class="input input-sm kg-pick" data-slot="${it.slot}" aria-label="Какой курс">
-              <option value="">Курс не выбран</option>
-              ${it.options.map((o) => `<option value="${esc(o)}" ${chosen[it.slot] === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}
-            </select>` : '';
-          const on = it.slot ? !!chosen[it.slot] : !it.elective;
-          return `
-            <div class="kg-row" style="--h:${it.hue != null ? it.hue : 40}">
-              <input type="checkbox" id="kg-s-${i}" value="${esc(it.key)}" ${on ? 'checked' : ''}>
-              <span class="dot"></span>
-              <label class="kg-text" for="kg-s-${i}"><span class="kg-name">${esc(it.name)}</span><span class="kg-meta">${esc(U.cap(meta || 'дисциплина по выбору'))}</span></label>
-              ${pick}
-            </div>`;
-        }).join('');
+        const chosen = new Set(this.chosenElectives(current));
+        const must = items.filter((it) => !it.elective);
+        const opt = items.filter((it) => it.elective);
+        return `
+          ${must.map((it, i) => row(it, i, true)).join('')}
+          ${opt.length ? `<div class="kg-sep">Дисциплины по выбору — отметьте все, на которые записаны</div>
+            ${opt.map((it, i) => row(it, must.length + i, chosen.has(it.key))).join('')}` : ''}`;
       };
 
       UI.modal({
@@ -446,7 +505,7 @@
               <span class="field-label">Что загрузить</span>
               <div class="kg-list" id="kg-list">${list()}</div>
             </div>
-            <p class="field-hint span-2">Источник: официальное расписание лечебного факультета с сайта kirovgma.ru${p.custom ? ', загруженное вами' : `, версия от ${U.fmtDate(updated)}`}. Если на кафедре что-то поменяли, пару можно исправить вручную.${manual ? ' Пары, которые вы добавили сами, останутся.' : ''}</p>
+            <p class="field-hint span-2">Источник: официальное расписание лечебного факультета с сайта kirovgma.ru${p.custom ? ', загруженное вами' : `, версия от ${U.fmtDate(updated)}`}. Время, период и аудитория у каждого курса по выбору взяты из таблицы. Если на кафедре что-то поменяли, пару можно исправить вручную.${manual ? ' Пары, которые вы добавили сами, останутся.' : ''}</p>
           </div>`,
         foot: `
           <button class="btn btn-ghost" type="button" data-close>Отмена</button>
@@ -457,36 +516,17 @@
             current = e.target.value;
             box.innerHTML = list();
           });
-          box.addEventListener('change', (e) => {
-            // Выбрали курс — сразу отмечаем строку
-            if (e.target.matches('.kg-pick') && e.target.value) {
-              const cb = e.target.closest('.kg-row').querySelector('input[type=checkbox]');
-              if (cb) cb.checked = true;
-            }
-          });
           el.querySelector('[data-go]').addEventListener('click', () => {
             const include = new Set(U.$$('input[type=checkbox]:checked', box).map((x) => x.value));
             if (!include.size) { UI.toast('Отметьте хотя бы одну дисциплину'); return; }
-            const electives = {};
-            U.$$('.kg-pick', box).forEach((sel) => { if (sel.value) electives[sel.dataset.slot] = sel.value; });
             api.close();
-            this.apply(current, include, { electives });
+            this.apply(current, include);
           });
         },
       });
     },
 
-    // Элективы, о которых мы уже знаем для группы по умолчанию (314: курс на кафедре патофизиологии по пятницам)
-    defaultElectives(group) {
-      const { Store } = App;
-      if (String(group) !== Store.DEFAULT_GROUP) return {};
-      const set = Store.state.settings.electives || {};
-      const out = {};
-      Object.entries(Store.DEFAULT_ELECTIVES).forEach(([slot, name]) => { if (!set[slot]) out[slot] = name; });
-      return out;
-    },
-
-    // Первый запуск: сразу подтягиваем обязательные дисциплины группы из профиля
+    // Первый запуск: сразу подтягиваем обязательные дисциплины и известные элективы группы из профиля
     autoImport() {
       const { Store } = App;
       const st = Store.state;
@@ -494,11 +534,10 @@
       st.settings.autoImported = true;
       st.settings.electivesSynced = true;
       const group = st.profile.group || Store.DEFAULT_GROUP;
-      const electives = this.defaultElectives(group);
-      const items = this.summary(group);
-      const include = new Set(items.filter((it) => (it.slot ? !!electives[it.slot] : !it.elective)).map((it) => it.key));
+      const chosen = new Set(this.chosenElectives(group));
+      const include = new Set(this.summary(group).filter((it) => (it.elective ? chosen.has(it.key) : true)).map((it) => it.key));
       if (!include.size) { Store.save(); return false; }
-      this.apply(group, include, { silent: true, electives });
+      this.apply(group, include, { silent: true });
       return group;
     },
 
@@ -509,14 +548,11 @@
       if (st.settings.electivesSynced || !this.hasImported() || !this.available()) return false;
       st.settings.electivesSynced = true;
       const group = st.profile.group;
-      const electives = this.defaultElectives(group);
-      if (!Object.keys(electives).length) { Store.save(); return false; }
-      const have = new Set(st.classes.filter((c) => c.source === 'kgmu').map((c) => {
-        const s = Store.subject(c.subjectId);
-        return c.slot ? `Дисциплина по выбору|${c.slot}` : (s ? s.name : '');
-      }));
-      const include = new Set(this.summary(group).filter((it) => have.has(it.key) || (it.slot && electives[it.slot])).map((it) => it.key));
-      this.apply(group, include, { silent: true, electives });
+      const chosen = this.chosenElectives(group);
+      if (!chosen.length) { Store.save(); return false; }
+      const have = new Set(st.classes.filter((c) => c.source === 'kgmu').map((c) => (Store.subject(c.subjectId) || {}).name));
+      const include = new Set(this.summary(group).filter((it) => have.has(it.key) || chosen.includes(it.key)).map((it) => it.key));
+      this.apply(group, include, { silent: true });
       return true;
     },
 

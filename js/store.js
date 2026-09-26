@@ -29,6 +29,7 @@
   const Store = {
     KEY, HUES, PAIRS, CLASS_TYPES, CLASS_TYPES_FULL,
     VERSION: 2,
+    DEFAULT_GROUP: '314',
     state: null,
     storageOk: true,
     firstRun: false,
@@ -37,7 +38,7 @@
     defaults() {
       return {
         version: this.VERSION,
-        profile: { name: '', university: 'Кировский ГМУ', program: 'Лечебное дело', course: 3, group: '' },
+        profile: { name: '', university: 'Кировский ГМУ', program: 'Лечебное дело', course: 3, group: this.DEFAULT_GROUP },
         settings: {
           theme: 'system',
           classLead: 15,
@@ -48,6 +49,7 @@
           sidebarCollapsed: false,
           filesView: 'grid',
           hideOnboard: false,
+          autoImported: false,
         },
         subjects: [],
         classes: [],

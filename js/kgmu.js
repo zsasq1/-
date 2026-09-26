@@ -341,7 +341,7 @@
         .sort((a, b) => (a.elective - b.elective) || a.name.localeCompare(b.name, 'ru'));
     },
 
-    apply(group, include) {
+    apply(group, include, opts = {}) {
       const { Store, UI } = App;
       const st = Store.state;
       const removed = st.classes.filter((c) => c.source === 'kgmu').length;
@@ -368,12 +368,14 @@
       st.settings.weekNames = 'num';
       Store.gcSubjects();
       Store.save();
+      if (opts.silent) return entries.length;
       App.Schedule.animateBlocks = true;
       App.Schedule.weekOffset = 0;
       if (App.route === 'schedule') App.renderView(false);
       else App.go('schedule');
       App.renderSidebar();
       UI.toast(`Расписание группы ${group} ${removed ? 'обновлено' : 'загружено'}`);
+      return entries.length;
     },
 
     openImport(group) {
@@ -433,6 +435,19 @@
           });
         },
       });
+    },
+
+    // Первый запуск: сразу подтягиваем обязательные дисциплины группы из профиля
+    autoImport() {
+      const { Store } = App;
+      const st = Store.state;
+      if (st.settings.autoImported || this.hasImported() || !this.available()) return false;
+      st.settings.autoImported = true;
+      const group = st.profile.group || Store.DEFAULT_GROUP;
+      const mandatory = new Set(this.summary(group).filter((it) => !it.elective).map((it) => it.name));
+      if (!mandatory.size) { Store.save(); return false; }
+      this.apply(group, mandatory, { silent: true });
+      return group;
     },
 
     /* ---------- Обновление из свежего файла ---------- */

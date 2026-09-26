@@ -229,6 +229,7 @@
 
   async function init() {
     Store.load();
+    const autoGroup = App.KGMU ? App.KGMU.autoImport() : false;
     App.applyTheme();
     if (Store.state.settings.sidebarCollapsed) $app().classList.add('is-collapsed');
     App.route = parseRoute();
@@ -264,6 +265,12 @@
       }
       Store.seedBlobs = null;
       App.Files.hydrate($view());
+    }
+    if (autoGroup) {
+      UI.toast(`Загружено расписание группы ${autoGroup}. Дисциплины по выбору можно добавить в настройках`, {
+        timeout: 8000,
+        action: { label: 'Сменить', fn: () => App.KGMU.openImport(autoGroup) },
+      });
     }
     if (!Store.storageOk) {
       UI.toast('Браузер не даёт сохранять данные — изменения пропадут после перезагрузки', { timeout: 8000 });

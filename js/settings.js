@@ -1,0 +1,245 @@
+/* Семестр — настройки: профиль, тема, уведомления, учебный план, данные */
+(function (App) {
+  'use strict';
+
+  const { U, Store, UI, FileDB } = App;
+  const { esc, ico } = U;
+
+  const CLASS_LEADS = { 0: 'Не напоминать', 5: 'За 5 минут', 10: 'За 10 минут', 15: 'За 15 минут', 30: 'За 30 минут', 60: 'За час' };
+
+  const Settings = {
+    render() {
+      const st = Store.state;
+      const s = st.settings;
+      const p = App.Schedule.parity(new Date());
+      const sysOn = s.systemNotify && 'Notification' in window && Notification.permission === 'granted';
+      const row = (label, desc, control, extra = '') => `
+        <div class="set-row">
+          <div class="set-text"><div class="set-label ${extra}">${label}</div>${desc ? `<div class="set-desc">${desc}</div>` : ''}</div>
+          <div class="set-control">${control}</div>
+        </div>`;
+
+      return `
+        <div class="page-head rise" style="--i:0">
+          <div>
+            <h1 class="page-title">Настройки</h1>
+            <p class="page-sub">Все данные хранятся только в этом браузере</p>
+          </div>
+        </div>
+        <div class="settings">
+          <section class="set-group rise" style="--i:1">
+            <h2>Профиль</h2>
+            <div class="set-card">
+              ${row('Как к вам обращаться', 'Имя появится в приветствии на главной',
+                `<input id="set-name" class="input" placeholder="Имя" maxlength="40" value="${esc(st.profile.name)}">`)}
+            </div>
+          </section>
+
+          <section class="set-group rise" style="--i:2">
+            <h2>Оформление</h2>
+            <div class="set-card">
+              ${row('Тема', 'Тёплая светлая, тёмная или как в системе',
+                UI.seg('st', 'theme', { light: 'Светлая', dark: 'Тёмная', system: 'Системная' }, s.theme))}
+            </div>
+          </section>
+
+          <section class="set-group rise" style="--i:3">
+            <h2>Уведомления</h2>
+            <div class="set-card">
+              ${row('Напоминать о паре', 'Уведомление появится перед началом занятия',
+                `<select id="set-lead" class="input">${Object.entries(CLASS_LEADS).map(([v, l]) => `<option value="${v}" ${Number(v) === Number(s.classLead) ? 'selected' : ''}>${l}</option>`).join('')}</select>`)}
+              ${row('Системные уведомления', `${App.Notify.permissionText()}. Приходят, пока сайт открыт во вкладке браузера.`,
+                `<label class="switch"><input type="checkbox" id="set-sys" ${sysOn ? 'checked' : ''} aria-label="Системные уведомления"><span></span></label>`)}
+              ${row('Проверка', 'Покажет пример уведомления о паре',
+                `<button class="btn" data-action="notif-test">${ico('bell')} Отправить тестовое</button>`)}
+            </div>
+          </section>
+
+          <section class="set-group rise" style="--i:4">
+            <h2>Учебный план</h2>
+            <div class="set-card">
+              ${row('Начало семестра', `Неделя с этой датой — первая, она же числитель. Сейчас: ${esc(App.Schedule.weekLabel(p))}.`,
+                `<input id="set-start" type="date" class="input" value="${esc(s.semesterStart)}">`)}
+              ${row('Показывать воскресенье', 'Если занятия бывают и в воскресенье',
+                `<label class="switch"><input type="checkbox" id="set-sun" ${s.showSunday ? 'checked' : ''} aria-label="Показывать воскресенье"><span></span></label>`)}
+            </div>
+          </section>
+
+          <section class="set-group rise" style="--i:5">
+            <h2>Данные</h2>
+            <div class="set-card">
+              ${row('Резервная копия', 'Расписание, дела и настройки в файле JSON. Сами файлы в копию не входят.',
+                `<button class="btn" data-action="data-export">${ico('download')} Скачать</button>
+                 <button class="btn" data-action="data-import">${ico('upload')} Восстановить</button>`)}
+              ${Store.hasSample() ? row('Пример', 'Убрать демонстрационные пары, дела и файлы, оставив ваши',
+                `<button class="btn" data-action="sample-clear">Очистить пример</button>`) : ''}
+              ${row('Удалить всё', 'Сотрёт расписание, дела, уведомления и файлы в этом браузере',
+                `<button class="btn btn-danger" data-action="data-reset">${ico('trash')} Удалить всё</button>`, 'danger-text')}
+            </div>
+          </section>
+        </div>`;
+    },
+
+    mount(view) {
+      const st = Store.state;
+      const name = U.$('#set-name', view);
+      const saveName = U.debounce(() => { Store.save(); App.renderSidebar(); }, 300);
+      name.addEventListener('input', () => { st.profile.name = name.value.trim(); saveName(); });
+
+      U.$('#set-lead', view).addEventListener('change', (e) => {
+        st.settings.classLead = Number(e.target.value);
+        Store.save();
+        UI.toast(st.settings.classLead ? `Напомним ${CLASS_LEADS[st.settings.classLead].toLowerCase()} до пары` : 'Напоминания о парах выключены');
+      });
+
+      U.$('#set-sys', view).addEventListener('change', async (e) => {
+        if (e.target.checked) {
+          const ok = await App.Notify.enableSystem();
+          e.target.checked = ok;
+        } else {
+          st.settings.systemNotify = false;
+          Store.save();
+          UI.toast('Системные уведомления выключены');
+        }
+        App.renderView(false);
+      });
+
+      U.$('#set-start', view).addEventListener('change', (e) => {
+        if (!e.target.value) return;
+        st.settings.semesterStart = e.target.value;
+        Store.save();
+        App.renderView(false);
+        UI.toast(`Сейчас ${App.Schedule.weekLabel(App.Schedule.parity(new Date()))}`);
+      });
+
+      U.$('#set-sun', view).addEventListener('change', (e) => {
+        st.settings.showSunday = e.target.checked;
+        Store.save();
+      });
+    },
+
+    // Экран настроек не зависит от живых данных — не перерисовываем, чтобы не сбить ввод
+    refresh() {},
+
+    exportData() {
+      const data = JSON.stringify(Object.assign({}, Store.state, { exportedAt: new Date().toISOString(), app: 'semestr' }), null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `semestr-${U.ymd(new Date())}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      UI.toast('Резервная копия скачана');
+    },
+
+    importData() {
+      App.Files.pick(async (list) => {
+        const file = list[0];
+        let data;
+        try { data = JSON.parse(await file.text()); } catch (e) { data = null; }
+        if (!data || !Array.isArray(data.classes) || !Array.isArray(data.reminders)) {
+          UI.toast('Это не резервная копия Семестра — выберите файл semestr-….json');
+          return;
+        }
+        const ok = await UI.confirm({
+          title: 'Восстановить из копии?',
+          text: 'Текущее расписание, дела и настройки заменятся данными из файла. Загруженные файлы останутся на месте.',
+          ok: 'Восстановить', danger: false,
+        });
+        if (!ok) return;
+        const files = Store.state.files;
+        const next = Store.normalize(data);
+        next.files = files;
+        // Предметы файлов должны сохраниться, даже если в копии их нет
+        files.forEach((f) => {
+          if (f.subjectId && !next.subjects.some((s) => s.id === f.subjectId)) {
+            const old = Store.subject(f.subjectId);
+            if (old) next.subjects.push(old);
+          }
+        });
+        delete next.exportedAt;
+        delete next.app;
+        Store.state = next;
+        Store.save();
+        App.applyTheme();
+        App.renderSidebar();
+        App.renderView(true);
+        UI.toast('Данные восстановлены');
+      }, 'application/json,.json');
+    },
+
+    async resetAll() {
+      const ok = await UI.confirm({
+        title: 'Удалить все данные?',
+        text: 'Расписание, дела, уведомления и файлы будут удалены из этого браузера без возможности восстановления.',
+        ok: 'Удалить всё',
+      });
+      if (!ok) return;
+      await FileDB.clear();
+      const theme = Store.state.settings.theme;
+      Store.state = Store.defaults();
+      Store.state.settings.theme = theme;
+      Store.save();
+      App.go('home');
+      UI.toast('Все данные удалены');
+    },
+
+    async clearSample() {
+      const st = Store.state;
+      const sampleFiles = st.files.filter((f) => f.sample);
+      st.classes = st.classes.filter((c) => !c.sample);
+      st.reminders = st.reminders.filter((r) => !r.sample);
+      st.files = st.files.filter((f) => !f.sample);
+      st.sampleBanner = false;
+      Store.gcSubjects();
+      Store.save();
+      await Promise.all(sampleFiles.map((f) => FileDB.del(f.id)));
+      App.refresh();
+      if (App.route === 'settings') App.renderView(false);
+      UI.toast('Пример удалён — можно заполнять своё расписание');
+    },
+  };
+
+  Object.assign(App.actions, {
+    'notif-test': () => {
+      const c = App.Schedule.classesOn(new Date())[0] || Store.state.classes[0];
+      const s = c && Store.subject(c.subjectId);
+      App.Notify.push({
+        kind: 'class',
+        title: `Через 15 мин — ${s ? s.name : 'Математический анализ'}`,
+        body: c ? App.Schedule.metaLine(c, false) + ` · ${c.start}–${c.end}` : 'Лекция · ауд. 305 · 08:30–10:00',
+        route: 'schedule',
+      });
+    },
+    'data-export': () => Settings.exportData(),
+    'data-import': () => Settings.importData(),
+    'data-reset': () => Settings.resetAll(),
+    'sample-clear': () => Settings.clearSample(),
+    'sample-hide': () => {
+      Store.state.sampleBanner = false;
+      Store.save();
+      const b = U.$('#home-banner .banner');
+      if (b) {
+        b.style.transition = 'opacity .25s ease, transform .25s ease';
+        b.style.opacity = '0';
+        b.style.transform = 'translateY(-6px)';
+        setTimeout(() => App.refresh(), 250);
+      } else {
+        App.refresh();
+      }
+    },
+  });
+
+  Object.assign(App.changes, {
+    theme: (el, e) => {
+      Store.state.settings.theme = e.target.value;
+      Store.save();
+      App.applyTheme();
+    },
+  });
+
+  App.Settings = Settings;
+})(window.App);

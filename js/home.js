@@ -52,6 +52,17 @@
     banner() {
       const onboard = App.KGMU ? App.KGMU.onboardCard() : '';
       if (onboard) return `<div class="sample-banner">${onboard}</div>`;
+      const P = App.PWA;
+      if (P && P.mobile() && !Store.state.settings.hideInstall && ['prompt', 'ios'].includes(P.installMode())) {
+        return `
+          <div class="banner sample-banner rise" style="--i:6">${ico('download')}
+            <div class="banner-text"><b>Установите Семестр на телефон.</b> Он будет открываться со значка на главном экране и работать без интернета.</div>
+            <div class="banner-actions">
+              <button class="btn btn-sm" data-action="pwa-install">${P.installMode() === 'prompt' ? 'Установить' : 'Как установить'}</button>
+              <button class="icon-btn sm" data-action="pwa-hide" aria-label="Скрыть">${ico('x')}</button>
+            </div>
+          </div>`;
+      }
       const last = App.Schedule.semesterOver(new Date());
       if (last && App.KGMU) {
         return `

@@ -85,7 +85,9 @@
             </div>
           </section>
 
-          <section class="set-group rise" style="--i:6">
+          ${this.appSection(row)}
+
+          <section class="set-group rise" style="--i:7">
             <h2>Данные</h2>
             <div class="set-card">
               ${row('Резервная копия', 'Расписание, дела и настройки в файле JSON. Сами файлы в копию не входят.',
@@ -98,6 +100,33 @@
             </div>
           </section>
         </div>`;
+    },
+
+    appSection(row) {
+      const P = App.PWA;
+      if (!P) return '';
+      const mode = P.installMode();
+      const installDesc = {
+        installed: 'Семестр установлен и открыт как приложение.',
+        prompt: 'Появится значок на главном экране; открывается без адресной строки, как обычное приложение.',
+        ios: 'На iPhone: «Поделиться» → «На экран „Домой“» в Safari.',
+        menu: 'Через меню браузера: «Установить приложение» или «Добавить на главный экран».',
+        unavailable: 'Установка работает, когда сайт открыт по адресу https — например, с GitHub Pages.',
+      }[mode];
+      const installBtn = mode === 'installed'
+        ? `<span class="pill accent">${ico('check')} Установлено</span>`
+        : `<button class="btn ${mode === 'prompt' ? 'btn-primary' : ''}" data-action="pwa-install">${ico('download')} ${mode === 'prompt' ? 'Установить' : 'Как установить'}</button>`;
+      const offlineDesc = P.offlineReady
+        ? 'Готово: расписание, темы, дела и файлы открываются и без интернета. Новые версии скачиваются сами — появится кнопка «Обновить».'
+        : P.supported ? 'Сохраняем сайт на устройство — это займёт несколько секунд.' : 'Недоступно в этом режиме просмотра: нужен адрес https.';
+      return `
+          <section class="set-group rise" style="--i:6">
+            <h2>Приложение</h2>
+            <div class="set-card">
+              ${row('Установить на телефон', installDesc, installBtn)}
+              ${row('Работа без интернета', offlineDesc, P.offlineReady ? `<span class="pill accent">${ico('check')} Включено</span>` : '<span class="pill">Выключено</span>')}
+            </div>
+          </section>`;
     },
 
     mount(view) {

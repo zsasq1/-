@@ -36,9 +36,11 @@
       return item;
     },
 
-    system(n) {
+    async system(n) {
       if (!Store.state.settings.systemNotify) return;
       if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      const shown = App.PWA && await App.PWA.notify(n.title, { body: n.body || '', tag: n.id, data: { id: n.id, route: n.route } });
+      if (shown) return;
       try {
         const x = new Notification(n.title, { body: n.body || '', tag: n.id, icon: App.iconUrl });
         x.onclick = () => { window.focus(); this.openItem(n.id); x.close(); };

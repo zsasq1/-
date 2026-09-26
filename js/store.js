@@ -52,6 +52,7 @@
           filesView: 'grid',
           hideOnboard: false,
           autoImported: false,
+          hideInstall: false,
           electivesSynced: false,
           electiveCourses: [],
         },

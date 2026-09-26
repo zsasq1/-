@@ -255,6 +255,7 @@
     App.Files.initDrop();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(UI.refreshSegs);
 
+    if (App.PWA) App.PWA.init();
     const dbOk = await FileDB.open();
     if (Store.oldSampleFiles) {
       await Promise.all(Store.oldSampleFiles.map((id) => FileDB.del(id)));

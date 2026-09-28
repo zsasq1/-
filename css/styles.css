@@ -473,6 +473,8 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 .empty-title { font-family: var(--font-serif); font-size: 19px; color: var(--text-2); }
 .empty .btn { margin-top: 8px; }
+.boot-error { padding-top: 12vh; max-width: 46ch; margin: 0 auto; }
+.boot-why { font-size: 12.5px; word-break: break-word; }
 
 .banner {
   display: flex; align-items: center; gap: 14px; flex-wrap: wrap;

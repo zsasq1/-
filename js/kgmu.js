@@ -38,6 +38,9 @@
   const TR = `${T}\\s*-\\s*${T}`;
   const D = '(\\d{1,2})\\.(\\d{2})';
   const LETTER = '[A-Za-zА-Яа-яЁё]';
+  // Число не должно продолжать другое: «(?<![\d.])» пишем через захват соседнего символа,
+  // потому что просмотр назад не работает в Safari до 16.4 — там сайт не запускался бы вовсе
+  const NOT_AFTER_NUM = '(^|[^\\d.])';
 
   function canon(text) {
     const low = text.toLowerCase().replace(/^\s*(лекция|пр\.\s*занятие)\s*/i, '').trim();
@@ -82,12 +85,12 @@
   /* ---------- Разбор одной ячейки ---------- */
 
   function parseCell(text, day, ctx) {
-    const entryRe = new RegExp(`(?<![\\d.])${TR}(?:\\s*,\\s*${TR})?(?=\\s+${LETTER})`, 'g');
+    const entryRe = new RegExp(`${NOT_AFTER_NUM}${TR}(?:\\s*,\\s*${TR})?(?=\\s+${LETTER})`, 'g');
     const starts = [];
     let m;
     while ((m = entryRe.exec(text))) {
-      const times = readTimes(m.slice(1, 9));
-      if (times) starts.push({ index: m.index, len: m[0].length, times });
+      const times = readTimes(m.slice(2, 10));
+      if (times) starts.push({ index: m.index + m[1].length, len: m[0].length - m[1].length, times });
     }
     const out = [];
     for (let i = 0; i < starts.length; i++) {
@@ -121,9 +124,9 @@
       const before = text.slice(i > 0 ? found[i - 1].end : s.index + s.len, f.at)
         .replace(new RegExp(`${D}\\s*-\\s*${TR}`, 'g'), ' ')
         .replace(new RegExp(`${TR}\\s*-\\s*${D}(?!\\d)`, 'g'), ' ');
-      const range = after.match(new RegExp(`(?<![\\d.])${D}\\s*-\\s*${D}(?![\\d])`));
-      const from = range && ctx.readDate(range[1], range[2]);
-      const until = range && ctx.readDate(range[3], range[4]);
+      const range = after.match(new RegExp(`${NOT_AFTER_NUM}${D}\\s*-\\s*${D}(?![\\d])`));
+      const from = range && ctx.readDate(range[2], range[3]);
+      const until = range && ctx.readDate(range[4], range[5]);
       let time = null;
       for (const m of before.matchAll(new RegExp(TR, 'g'))) time = readTimes(m.slice(1, 5)) || time;
       const room = after.match(/(?:^|[\s)(-])(\d)-(\d{3})(?=[\s),;]|$)/);
@@ -189,17 +192,17 @@
       return ' ';
     });
     // «07.09-28.12» — каждую неделю в этом периоде
-    rest = rest.replace(new RegExp(`(?<![\\d.])${D}\\s*-\\s*${D}(?![\\d])`, 'g'), (all, d1, m1, d2, m2) => {
+    rest = rest.replace(new RegExp(`${NOT_AFTER_NUM}${D}\\s*-\\s*${D}(?![\\d])`, 'g'), (all, pre, d1, m1, d2, m2) => {
       const from = date(d1, m1);
       const until = date(d2, m2);
       if (!from || !until || until < from) return all;
       if (!(firstRangeOnly && rules.length)) rules.push({ weeks: 'all', from, until });
-      return ' ';
+      return `${pre} `;
     });
     // Отдельные даты: «14.09, 28.09, 12.10»
     const singles = [];
     if (!firstRangeOnly) {
-      rest.replace(new RegExp(`(?<![\\d.])${D}(?![\\d])`, 'g'), (all, dd, mm) => {
+      rest.replace(new RegExp(`${NOT_AFTER_NUM}${D}(?![\\d])`, 'g'), (all, pre, dd, mm) => {
         const iso = date(dd, mm);
         if (iso && !singles.includes(iso)) singles.push(iso);
         return all;

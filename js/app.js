@@ -229,8 +229,16 @@
 
   async function init() {
     Store.load();
-    const autoGroup = App.KGMU ? App.KGMU.autoImport() : false;
-    const electiveAdded = !autoGroup && App.KGMU ? App.KGMU.syncElectives() : false;
+    // Ошибка при загрузке расписания группы не должна мешать остальному приложению
+    let autoGroup = false;
+    let electiveAdded = false;
+    try {
+      autoGroup = App.KGMU ? App.KGMU.autoImport() : false;
+      electiveAdded = !autoGroup && App.KGMU ? App.KGMU.syncElectives() : false;
+    } catch (e) {
+      console.error(e);
+      setTimeout(() => UI.toast(`Не удалось загрузить расписание группы: ${e.message}`, { timeout: 8000 }), 600);
+    }
     App.applyTheme();
     if (Store.state.settings.sidebarCollapsed) $app().classList.add('is-collapsed');
     App.route = parseRoute();
@@ -246,7 +254,9 @@
       App.renderSidebar();
     });
     U.$('#file-input').addEventListener('change', (e) => App.Files.onPicked(e.target.files));
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', App.applyTheme);
+    const scheme = window.matchMedia('(prefers-color-scheme: dark)');
+    if (scheme.addEventListener) scheme.addEventListener('change', App.applyTheme);
+    else if (scheme.addListener) scheme.addListener(App.applyTheme); // Safari до 14
     window.addEventListener('resize', U.debounce(UI.refreshSegs, 150));
 
     App.renderSidebar();
@@ -311,6 +321,10 @@
     setTimeout(tick, 1500);
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
+  const start = () => init().catch((e) => {
+    console.error(e);
+    if (window.__bootFail) window.__bootFail(e);
+  });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
 })(window.App);

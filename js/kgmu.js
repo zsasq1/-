@@ -128,7 +128,8 @@
       const from = range && ctx.readDate(range[2], range[3]);
       const until = range && ctx.readDate(range[4], range[5]);
       let time = null;
-      for (const m of before.matchAll(new RegExp(TR, 'g'))) time = readTimes(m.slice(1, 5)) || time;
+      const trRe = new RegExp(TR, 'g');
+      for (let m = trRe.exec(before); m; m = trRe.exec(before)) time = readTimes(m.slice(1, 5)) || time;
       const room = after.match(/(?:^|[\s)(-])(\d)-(\d{3})(?=[\s),;]|$)/);
       // Кафедра: «Диетология (каф. гигиены)» или «каф. биохимии (Биохимические основы…)»
       const depAfter = after.match(/^[^;(]*\(\s*(каф\.[^)]*?)\s*\)/i);

@@ -23,7 +23,7 @@
         <div class="page-head rise" style="--i:0">
           <div>
             <h1 class="page-title">Настройки</h1>
-            <p class="page-sub">${App.Cloud && App.Cloud.on() ? 'Данные сохраняются в вашем аккаунте Claude' : 'Все данные хранятся только в этом браузере'}</p>
+            <p class="page-sub">${{ claude: 'Данные сохраняются в вашем аккаунте Claude', disk: 'Данные хранятся на этом Mac', browser: 'Все данные хранятся только в этом браузере' }[App.Cloud && App.Cloud.on() ? App.Cloud.kind() : 'browser']}</p>
           </div>
         </div>
         <div class="settings">
@@ -95,7 +95,7 @@
             <div class="set-card">
               ${App.Cloud ? `
                 <div class="set-row">
-                  <div class="set-text"><div class="set-label">${App.Cloud.available() ? 'Сохранение в аккаунте' : 'Где хранятся данные'}</div><div class="set-desc" id="cloud-desc">${App.Cloud.describe()}</div></div>
+                  <div class="set-text"><div class="set-label">${App.Cloud.label()}</div><div class="set-desc" id="cloud-desc">${App.Cloud.describe()}</div></div>
                   <div class="set-control" id="cloud-status">${App.Cloud.pill()}</div>
                 </div>` : ''}
               ${row('Резервная копия', 'Расписание, дела и настройки в файле JSON. Сами файлы в копию не входят.',
@@ -103,7 +103,7 @@
                  <button class="btn" data-action="data-import">${ico('upload')} Восстановить</button>`)}
               ${Store.hasSample() ? row('Пример', 'Убрать демонстрационные пары, дела и файлы, оставив ваши',
                 `<button class="btn" data-action="sample-clear">Очистить пример</button>`) : ''}
-              ${row('Удалить всё', `Сотрёт расписание, дела, уведомления и файлы ${App.Cloud && App.Cloud.on() ? 'в аккаунте и на всех устройствах' : 'в этом браузере'}`,
+              ${row('Удалить всё', `Сотрёт расписание, дела, уведомления и файлы ${App.Cloud ? App.Cloud.whereText() : 'из этого браузера'}`,
                 `<button class="btn btn-danger" data-action="data-reset">${ico('trash')} Удалить всё</button>`, 'danger-text')}
             </div>
           </section>
@@ -228,10 +228,9 @@
     },
 
     async resetAll() {
-      const cloud = App.Cloud && App.Cloud.on();
       const ok = await UI.confirm({
         title: 'Удалить все данные?',
-        text: `Расписание, дела, уведомления и файлы будут удалены ${cloud ? 'из аккаунта и со всех устройств' : 'из этого браузера'} без возможности восстановления.`,
+        text: `Расписание, дела, уведомления и файлы будут удалены ${App.Cloud ? App.Cloud.whereText() : 'из этого браузера'} без возможности восстановления.`,
         ok: 'Удалить всё',
       });
       if (!ok) return;
@@ -244,6 +243,7 @@
       Store.state.settings.autoImported = true;
       Store.state.settings.electivesSynced = true;
       Store.state.settings.cloudWelcomed = true;
+      Store.state.settings.diskWelcomed = true;
       Store.save();
       App.go('home');
       UI.toast('Все данные удалены');

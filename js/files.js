@@ -237,7 +237,10 @@
 
       let failed = 0;
       const started = Date.now();
+      // В «Семестре для Mac» файл сразу пишется на диск — без копии в браузере и без ограничений по размеру
+      const direct = App.Cloud && App.Cloud.direct();
       for (let i = 0; i < metas.length; i++) {
+        if (direct && await App.Cloud.uploadFile(metas[i].id, files[i])) continue;
         try { await FileDB.put(metas[i].id, files[i]); } catch (e) { failed++; }
       }
       const elapsed = Date.now() - started;
@@ -286,6 +289,7 @@
             </label>
             <span class="pv-meta">${U.fmtSize(f.size)} · ${U.fmtDate(new Date(f.addedAt))}</span>
             <span class="grow"></span>
+            ${App.Cloud && App.Cloud.kind() === 'disk' ? `<button class="btn btn-ghost" type="button" data-action="disk-reveal" data-id="${esc(f.id)}">${ico('folder')} В Finder</button>` : ''}
             <button class="btn btn-ghost btn-danger" type="button" data-del>${ico('trash')} Удалить</button>
             <button class="btn btn-primary" type="button" data-dl>${ico('download')} Скачать</button>
           </div>`,
@@ -308,13 +312,15 @@
       });
 
       const pv = modal.el.querySelector('#pv');
-      const blob = await FileDB.get(id);
+      // Файл с диска Mac открываем по ссылке — даже очень большой не нужно читать в память
+      const directUrl = App.Cloud && App.Cloud.directUrl(f);
+      const blob = directUrl && !k.text ? null : await FileDB.get(id);
       if (!document.contains(pv)) return;
-      if (!blob) {
+      if (!blob && !directUrl) {
         pv.innerHTML = `<div class="pv-empty">${this.tile(f)}<p>${this.missingText(f)}</p></div>`;
         return;
       }
-      const url = await FileDB.url(id);
+      const url = directUrl || await FileDB.url(id);
       if (k.image) {
         pv.innerHTML = `<img src="${url}" alt="${esc(f.name)}">`;
       } else if (k.pdf) {
@@ -323,7 +329,7 @@
         pv.innerHTML = `<audio controls src="${url}"></audio>`;
       } else if (k.video) {
         pv.innerHTML = `<video controls src="${url}"></video>`;
-      } else if (k.text && blob.size < 2e6) {
+      } else if (k.text && blob && blob.size < 2e6) {
         const text = await blob.slice(0, 400000).text();
         pv.classList.add('is-text');
         pv.innerHTML = `<pre class="pv-text">${esc(text)}</pre>`;
@@ -336,6 +342,16 @@
 
     async download(id) {
       const f = Store.state.files.find((x) => x.id === id);
+      const direct = App.Cloud && App.Cloud.directUrl(f);
+      if (direct) {
+        const a = document.createElement('a');
+        a.href = `${direct}?download=1`;
+        a.download = f.name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        return;
+      }
       const blob = f && await FileDB.get(id);
       if (!blob) { UI.toast(this.missingText(f)); return; }
       const res = await U.saveFile(blob, f.name);
@@ -351,10 +367,9 @@
     async remove(id) {
       const f = Store.state.files.find((x) => x.id === id);
       if (!f) return;
-      const cloud = App.Cloud && App.Cloud.on();
       const ok = await UI.confirm({
         title: 'Удалить файл?',
-        text: `«${f.name}» будет удалён ${cloud ? 'из аккаунта и со всех устройств' : 'из этого браузера'}. Отменить это действие нельзя.`,
+        text: `«${f.name}» будет удалён ${App.Cloud ? App.Cloud.whereText() : 'из этого браузера'}. Отменить это действие нельзя.`,
       });
       if (!ok) return;
       Store.state.files = Store.state.files.filter((x) => x.id !== id);

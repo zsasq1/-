@@ -1,7 +1,8 @@
-/* Семестр — сохранение в аккаунте Claude.
-   Когда Семестр открыт через Claude, расписание, дела, заметки и файлы хранятся в аккаунте:
-   не пропадают после перезагрузки и одинаковы на телефоне и компьютере. Вне Claude (сайт,
-   отдельный файл) всё по-прежнему хранится только в этом браузере. */
+/* Семестр — постоянное хранение данных.
+   Через Claude расписание, дела, заметки и файлы хранятся в аккаунте: не пропадают после
+   перезагрузки и одинаковы на телефоне и компьютере. В «Семестре для Mac» маленький сервер
+   на компьютере хранит всё в папке на диске — без ограничений на размер. На сайте и в
+   отдельном файле данные по-прежнему живут только в этом браузере. */
 (function (App) {
   'use strict';
 
@@ -198,33 +199,135 @@
     }
   }
 
+  /* ---------- Где хранить ---------- */
+
+  // Через Claude — хранилище аккаунта
+  async function claudeStore() {
+    const use = (name) => Promise.resolve().then(() => window.claude.use(name)).catch(() => null);
+    const [db, user, assets] = await Promise.all([use('db'), use('user'), use('assets')]);
+    const uid = user ? await user.id() : null;
+    if (!db || !uid) return null;
+    return {
+      kind: 'claude',
+      ref: db.doc(`data/users/${uid}/state`),
+      maxDoc: MAX_DOC,
+      files: assets && {
+        direct: false,
+        async upload(blob) {
+          const type = String(blob.type || '').split(';')[0].trim().toLowerCase();
+          const native = NATIVE.includes(type);
+          const data = native ? blob : await wrap(blob, type || 'application/octet-stream');
+          if (data.size > MAX_ASSET) throw { code: 'too_large', message: 'too_large' };
+          const res = await assets.upload(data, { type: native ? type : 'text/plain' });
+          return res.id;
+        },
+        remove: (id) => assets.delete(id),
+        url: (id) => `/_blob/${id}`,
+      },
+    };
+  }
+
+  // «Семестр для Mac»: сервер на этом компьютере (server.py) хранит всё в папке на диске
+  function diskStore() {
+    const call = async (path, opts) => {
+      let res;
+      try {
+        res = await fetch(`api/${path}`, Object.assign({ cache: 'no-store' }, opts));
+      } catch (e) {
+        throw { code: 'unavailable', message: 'Семестр на Mac не запущен' };
+      }
+      if (res.status >= 500) throw { code: 'unavailable', message: `ошибка ${res.status}` };
+      if (res.status >= 400 && res.status !== 404) throw { code: 'invalid_argument', message: `ошибка ${res.status}` };
+      return res;
+    };
+    const snap = (data) => ({ exists: !!data, data: () => data || undefined, metadata: { fromCache: false, hasPendingWrites: false } });
+    return {
+      kind: 'disk',
+      dir: window.SEMESTR_DISK.dir || '',
+      maxDoc: Infinity,
+      ref: {
+        async get() {
+          const res = await call('state');
+          return snap(res.status === 404 ? null : await res.json());
+        },
+        async set(p) {
+          await call('state', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
+        },
+        // Семестр могли изменить в другой вкладке — проверяем каждые пару секунд
+        onSnapshot(next) {
+          let tag = '';
+          let dead = false;
+          const poll = async () => {
+            if (dead) return;
+            try {
+              const res = await call('state', { headers: tag ? { 'If-None-Match': tag } : {} });
+              if (res.status === 200) {
+                tag = res.headers.get('ETag') || '';
+                next(snap(await res.json()));
+              }
+            } catch (e) { /* сервер выключен — проверим позже */ }
+            setTimeout(poll, document.hidden ? 15000 : 2500);
+          };
+          poll();
+          return () => { dead = true; };
+        },
+      },
+      files: {
+        direct: true,
+        async upload(blob, f) {
+          await call(`files/${encodeURIComponent(f.id)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': blob.type || f.type || 'application/octet-stream', 'X-File-Name': encodeURIComponent(f.name) },
+            body: blob,
+          });
+          return f.id;
+        },
+        remove: (id) => call(`files/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+        url: (id) => `api/files/${encodeURIComponent(id)}`,
+      },
+      reveal: (id) => call(`reveal${id ? `?id=${encodeURIComponent(id)}` : ''}`, { method: 'POST' }),
+    };
+  }
+
   /* ---------- Синхронизация ---------- */
 
   const Cloud = {
     status: 'off', // off | connecting | on | error
     error: '',
-    saving: false,
+    store: null,
     session: U.uid(),
     meta: loadMeta(),
     ref: null,
-    assets: null,
     pushTimer: null,
     pushing: false,
     again: false,
     pending: null,
+    connected: false,
+    watching: false,
     adoptedOnBoot: false,
     warned: false,
     fetching: new Map(),
     uploadingAll: false,
     filesReady: Promise.resolve(),
 
-    // Только внутри Claude у страницы есть хранилище аккаунта
     available() {
-      return U.inPreview();
+      return U.inPreview() || !!window.SEMESTR_DISK;
+    },
+
+    // 'claude' — аккаунт, 'disk' — папка на Mac, 'browser' — только этот браузер
+    kind() {
+      if (this.store) return this.store.kind;
+      if (window.SEMESTR_DISK) return 'disk';
+      return U.inPreview() ? 'claude' : 'browser';
     },
 
     on() {
       return this.status === 'on' || this.status === 'error';
+    },
+
+    // Файлы лежат на диске и открываются по ссылке, без копии в браузере
+    direct() {
+      return !!(this.store && this.store.files && this.store.files.direct && this.on());
     },
 
     async init(filesReady) {
@@ -232,35 +335,50 @@
       if (filesReady) this.filesReady = filesReady;
       this.status = 'connecting';
       this.renderStatus();
-      const use = (name) => Promise.resolve().then(() => window.claude.use(name)).catch(() => null);
-      const [db, user, assets] = await Promise.all([use('db'), use('user'), use('assets')]);
-      const uid = user ? await user.id() : null;
-      if (!db || !uid) {
+      this.store = window.SEMESTR_DISK ? diskStore() : await claudeStore();
+      if (!this.store) {
         this.status = 'off';
         this.renderStatus();
         return false;
       }
-      this.ref = db.doc(`data/users/${uid}/state`);
-      this.assets = assets;
+      this.ref = this.store.ref;
+      window.addEventListener('pagehide', () => this.flush());
+      document.addEventListener('visibilitychange', () => { if (document.hidden) this.flush(); });
+      setInterval(() => this.applyPending(), 2000);
+      // Хранилище было недоступно (например, сервер на Mac не запущен) — пробуем снова
+      setInterval(() => {
+        if (this.status !== 'error' || this.pushing) return;
+        if (this.connected) this.push();
+        else this.connect();
+      }, 15000);
+      return this.connect();
+    },
+
+    async connect() {
+      if (this.pushing) return false;
       this.pushing = true;
       try {
         const snap = await retry(() => this.ref.get());
         this.status = 'on';
         const remote = snap.exists ? clone(snap.data()) : null;
         if (!remote || this.absorb(remote, true)) await this.write();
+        this.connected = true;
       } catch (e) {
         this.fail(e);
-        return false;
       } finally {
         this.pushing = false;
         this.renderStatus();
       }
+      this.started();
+      return this.connected;
+    },
+
+    // После первой удачной связи с хранилищем: следим за изменениями и досылаем файлы
+    started() {
+      if (!this.connected || this.watching) return;
+      this.watching = true;
       this.watch();
       this.uploadMissing();
-      window.addEventListener('pagehide', () => this.flush());
-      document.addEventListener('visibilitychange', () => { if (document.hidden) this.flush(); });
-      setInterval(() => this.applyPending(), 2000);
-      return true;
     },
 
     localChanged() {
@@ -271,7 +389,7 @@
       return body(st) !== body(base);
     },
 
-    // Общий предок версии из аккаунта и того, что знает это устройство. Каждая версия
+    // Общий предок версии из хранилища и того, что знает это устройство. Каждая версия
     // помнит цепочку предков: если в ней есть наша последняя версия — там уже учтены наши изменения
     ancestorFor(remote) {
       const base = this.meta.base;
@@ -282,13 +400,13 @@
       return null;
     },
 
-    // Принимает версию из аккаунта; true — после этого нужно записать результат обратно
+    // Принимает версию из хранилища; true — после этого нужно записать результат обратно
     absorb(remote, boot) {
       const base = this.meta.base;
       const changed = this.localChanged();
       if (base && remote.ver === base.ver) return changed;
       if (!base) {
-        // Первая встреча устройства с аккаунтом
+        // Первая встреча устройства с хранилищем
         if (!own(Store.state)) {
           this.adopt(remote, remote, boot);
           return false;
@@ -337,6 +455,7 @@
 
     payloadOf(st) {
       const base = this.meta.base;
+      const max = this.store ? this.store.maxDoc : MAX_DOC;
       const p = clone(st);
       ['kgmuOmitted', 'ver', 'parent', 'lineage'].forEach((k) => delete p[k]);
       p.writer = this.session;
@@ -344,15 +463,15 @@
       p.parent = base ? base.ver : null;
       p.lineage = base ? [base.ver].concat(base.lineage || []).slice(0, 24) : [];
       if (!p.savedAt) p.savedAt = Date.now();
-      if (bytes(JSON.stringify(p)) > MAX_DOC && p.kgmuCustom) {
+      if (max !== Infinity && bytes(JSON.stringify(p)) > max && p.kgmuCustom) {
         p.kgmuCustom = null;
         p.kgmuOmitted = true;
       }
-      if (bytes(JSON.stringify(p)) > MAX_DOC) p.notifications = p.notifications.slice(0, 20);
+      if (max !== Infinity && bytes(JSON.stringify(p)) > max) p.notifications = p.notifications.slice(0, 20);
       return p;
     },
 
-    // Store.save сообщает об изменениях — сохраняем в аккаунт через секунду тишины
+    // Store.save сообщает об изменениях — сохраняем через секунду тишины
     changed() {
       if (!this.on()) return;
       clearTimeout(this.pushTimer);
@@ -372,10 +491,14 @@
       this.setBase(p);
       this.status = 'on';
       this.error = '';
-      if (!Store.state.settings.cloudWelcomed) {
-        Store.state.settings.cloudWelcomed = true;
+      const disk = this.kind() === 'disk';
+      const flag = disk ? 'diskWelcomed' : 'cloudWelcomed';
+      if (!Store.state.settings[flag]) {
+        Store.state.settings[flag] = true;
         Store.save();
-        UI.toast('Теперь всё, что вы добавляете, сохраняется в вашем аккаунте Claude — на телефоне и на компьютере', { timeout: 7000 });
+        UI.toast(disk
+          ? 'Всё, что вы добавляете, сохраняется на этом Mac — в папке «Данные» рядом с Семестром'
+          : 'Теперь всё, что вы добавляете, сохраняется в вашем аккаунте Claude — на телефоне и на компьютере', { timeout: 7000 });
       }
     },
 
@@ -394,19 +517,21 @@
         const snap = await retry(() => this.ref.get());
         if (snap.exists) this.absorb(clone(snap.data()));
         await this.write();
+        this.connected = true;
       } catch (e) {
         this.fail(e);
       } finally {
         this.pushing = false;
         this.renderStatus();
       }
+      this.started();
       if (this.again) {
         this.again = false;
         this.push();
       }
     },
 
-    // Изменения с другого устройства приходят сами
+    // Изменения с другого устройства или вкладки приходят сами
     watch() {
       this.ref.onSnapshot((snap) => {
         if (!snap.exists || snap.metadata.hasPendingWrites) return;
@@ -436,15 +561,17 @@
         UI.toast('В хранилище аккаунта не осталось места — изменения пока только на этом устройстве', { timeout: 8000 });
       } else if (this.status === 'error' && !this.warned) {
         this.warned = true;
-        UI.toast('Не получилось сохранить в аккаунте — изменения пока только на этом устройстве. Попробуем снова при следующем изменении', { timeout: 8000 });
+        UI.toast(this.kind() === 'disk'
+          ? 'Семестр на Mac сейчас не запущен — изменения попадут на диск, как только вы его запустите'
+          : 'Не получилось сохранить в аккаунте — изменения пока только на этом устройстве. Попробуем ещё раз', { timeout: 8000 });
       }
       this.renderStatus();
     },
 
-    /* ---------- Файлы в аккаунте ---------- */
+    /* ---------- Файлы ---------- */
 
     async uploadMissing() {
-      if (!this.assets || !this.ref || this.uploadingAll) return;
+      if (!this.store || !this.store.files || this.uploadingAll) return;
       this.uploadingAll = true;
       try {
         await this.filesReady;
@@ -458,7 +585,11 @@
       }
     },
 
+    // true — файл в хранилище
     async uploadFile(id, blob) {
+      const files = this.store && this.store.files;
+      const f0 = Store.state.files.find((x) => x.id === id);
+      if (!files || !f0) return false;
       const mark = (patch) => {
         const f = Store.state.files.find((x) => x.id === id);
         if (f) {
@@ -467,39 +598,42 @@
         }
         return f;
       };
-      const big = () => {
-        const f = mark({ cloudSkip: 'big' });
-        if (f) UI.toast(`«${f.name}» больше 20 МБ — он останется только на этом устройстве`, { timeout: 7000 });
-      };
       try {
-        const type = String(blob.type || '').split(';')[0].trim().toLowerCase();
-        const native = NATIVE.includes(type);
-        const data = native ? blob : await wrap(blob, type || 'application/octet-stream');
-        if (data.size > MAX_ASSET) {
-          big();
-          return;
+        const assetId = await files.upload(blob, f0);
+        if (!mark({ assetId })) {
+          this.deleteAsset(assetId); // файл успели удалить
+          return true;
         }
-        const res = await this.assets.upload(data, { type: native ? type : 'text/plain' });
-        if (!mark({ assetId: res.id })) this.deleteAsset(res.id); // файл успели удалить
+        // На диске файл уже есть — копия в браузере только занимает место
+        if (files.direct) await FileDB.del(id);
+        return true;
       } catch (e) {
         const code = e && e.code;
-        if (code === 'too_large') big();
-        else if (code === 'unsupported_type' || code === 'invalid_request') mark({ cloudSkip: 'type' });
-        else if (code === 'quota_or_state' && !this.quotaWarned) {
+        if (code === 'too_large') {
+          const f = mark({ cloudSkip: 'big' });
+          if (f) UI.toast(`«${f.name}» больше 20 МБ — он останется только на этом устройстве`, { timeout: 7000 });
+        } else if (code === 'unsupported_type' || code === 'invalid_request') {
+          mark({ cloudSkip: 'type' });
+        } else if (code === 'quota_or_state' && !this.quotaWarned) {
           this.quotaWarned = true;
           UI.toast('Место для файлов в аккаунте закончилось — новые файлы остаются только на этом устройстве', { timeout: 8000 });
         }
         // остальное — временное, попробуем при следующем запуске
+        return false;
       }
     },
 
-    // Файл с другого устройства скачивается из аккаунта при первом открытии
+    directUrl(f) {
+      return this.direct() && f && f.assetId ? this.store.files.url(f.assetId) : null;
+    },
+
+    // Файла нет в этом браузере — скачиваем из хранилища при первом открытии
     fetchFile(f) {
-      if (!f || !f.assetId || !this.available()) return Promise.resolve(null);
+      if (!f || !f.assetId || !this.store || !this.store.files) return Promise.resolve(null);
       if (!this.fetching.has(f.id)) {
         const job = (async () => {
           try {
-            const res = await fetch(`/_blob/${f.assetId}`);
+            const res = await fetch(this.store.files.url(f.assetId));
             if (!res.ok) return null;
             const blob = await unwrap(await res.blob());
             return blob.type ? blob : new Blob([blob], { type: f.type || '' });
@@ -515,26 +649,51 @@
     },
 
     deleteAsset(assetId) {
-      if (this.assets && assetId) this.assets.delete(assetId).catch(() => {});
+      const files = this.store && this.store.files;
+      if (files && assetId) Promise.resolve().then(() => files.remove(assetId)).catch(() => {});
     },
 
-    /* ---------- Состояние в настройках ---------- */
+    reveal(id) {
+      if (!this.store || !this.store.reveal) return;
+      this.store.reveal(id).catch(() => UI.toast('Не получилось открыть Finder — запущен ли Семестр на Mac?'));
+    },
+
+    /* ---------- Тексты для настроек и подтверждений ---------- */
+
+    // Откуда удаляется: «из аккаунта…», «с этого Mac…», «из этого браузера»
+    whereText() {
+      if (!this.on()) return 'из этого браузера';
+      return this.kind() === 'disk' ? 'с этого Mac (файлы попадут в папку «Корзина»)' : 'из аккаунта и со всех устройств';
+    },
+
+    label() {
+      return { claude: 'Сохранение в аккаунте', disk: 'Хранение на Mac', browser: 'Где хранятся данные' }[this.kind()];
+    },
 
     pill() {
       if (!this.available()) return '';
-      if (this.status === 'connecting') return '<span class="pill">Подключаемся…</span>';
-      if (this.status === 'error') return '<span class="pill cloud-err">Не сохранено</span>';
-      if (this.status === 'off') return '<span class="pill">Недоступно</span>';
-      if (this.pushing || this.pushTimer) return '<span class="pill">Сохраняем…</span>';
-      return `<span class="pill accent">${U.ico('check')} Сохранено</span>`;
+      let pill;
+      if (this.status === 'connecting') pill = '<span class="pill">Подключаемся…</span>';
+      else if (this.status === 'error') pill = '<span class="pill cloud-err">Не сохранено</span>';
+      else if (this.status === 'off') pill = '<span class="pill">Недоступно</span>';
+      else if (this.pushing || this.pushTimer) pill = '<span class="pill">Сохраняем…</span>';
+      else pill = `<span class="pill accent">${U.ico('check')} Сохранено</span>`;
+      if (this.kind() === 'disk') pill += `<button class="btn" data-action="disk-reveal">${U.ico('folder')} Открыть в Finder</button>`;
+      return pill;
     },
 
     describe() {
-      if (!this.available()) {
-        return 'Данные хранятся в этом браузере на этом устройстве. Не очищайте данные сайта и иногда скачивайте резервную копию. Чтобы всё было на всех устройствах, открывайте Семестр через Claude.';
+      const kind = this.kind();
+      if (kind === 'browser') {
+        return 'Данные хранятся в этом браузере на этом устройстве. Не очищайте данные сайта и иногда скачивайте резервную копию. Чтобы хранить всё на Mac без ограничений, запускайте «Семестр для Mac».';
+      }
+      if (kind === 'disk') {
+        if (this.status === 'error') return 'Семестр на Mac сейчас не запущен — откройте «Семестр.command». До этого изменения хранятся в браузере и попадут на диск, как только он заработает.';
+        const dir = this.store && this.store.dir ? `«${U.esc(this.store.dir)}»` : '«Данные» рядом с Семестром';
+        return `Всё хранится на этом Mac в папке ${dir}: расписание, дела, заметки и файлы любого размера, разложенные по предметам. Каждый день сохраняется копия данных в папке «Копии».`;
       }
       if (this.status === 'off') return 'Хранилище аккаунта сейчас недоступно — данные сохраняются только в этом браузере.';
-      if (this.status === 'error') return `Последнее изменение не сохранилось в аккаунте (${U.esc(this.error)}). Попробуем снова при следующем изменении.`;
+      if (this.status === 'error') return `Последнее изменение не сохранилось в аккаунте (${U.esc(this.error)}). Попробуем ещё раз.`;
       return 'Расписание, дела, заметки и файлы хранятся в вашем аккаунте Claude: не пропадут после перезагрузки и одинаковы на телефоне и компьютере.';
     },
 
@@ -545,6 +704,8 @@
       if (desc) desc.innerHTML = this.describe();
     },
   };
+
+  App.actions['disk-reveal'] = (el) => Cloud.reveal(el.dataset.id);
 
   // Для проверок
   Cloud._merge3 = merge3;

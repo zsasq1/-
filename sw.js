@@ -3,7 +3,7 @@
    и включается, только когда пользователь нажмёт «Обновить» — так страница никогда не собирается
    из файлов разных версий. VERSION пересчитывается скриптом tools/sw-version.py. */
 
-const VERSION = 'semestr-0f919d07d1';
+const VERSION = 'semestr-052b4dc309';
 const RUNTIME = 'semestr-runtime';
 
 const SHELL = [
@@ -63,6 +63,8 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
 
   if (url.origin === self.location.origin) {
+    // Данные «Семестра для Mac» всегда берём с диска, а не из кеша
+    if (url.pathname.includes('/api/')) return;
     // Любая страница приложения — это index.html: маршруты живут после «#»
     if (req.mode === 'navigate') {
       event.respondWith(fromCache('index.html', req));

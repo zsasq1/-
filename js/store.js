@@ -441,6 +441,8 @@ ${label(107, base - 8, 'ST')}
 
     async url(id) {
       if (this.urls.has(id)) return this.urls.get(id);
+      const direct = App.Cloud && App.Cloud.directUrl(Store.state.files.find((f) => f.id === id));
+      if (direct) return direct;
       const blob = await this.get(id);
       if (!blob) return null;
       const u = URL.createObjectURL(blob);

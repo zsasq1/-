@@ -246,6 +246,7 @@
       Store.save();
       App.setBusy(false);
       App.refresh();
+      if (App.Cloud) App.Cloud.uploadMissing();
 
       const n = metas.length;
       const title = n === 1 ? `Файл «${metas[0].name}» сохранён` : `Добавлено ${U.count(n, ['файл', 'файла', 'файлов'])}`;
@@ -310,7 +311,7 @@
       const blob = await FileDB.get(id);
       if (!document.contains(pv)) return;
       if (!blob) {
-        pv.innerHTML = `<div class="pv-empty">${this.tile(f)}<p>Файл не найден в хранилище браузера. Возможно, данные сайта были очищены — загрузите его заново.</p></div>`;
+        pv.innerHTML = `<div class="pv-empty">${this.tile(f)}<p>${this.missingText(f)}</p></div>`;
         return;
       }
       const url = await FileDB.url(id);
@@ -336,21 +337,29 @@
     async download(id) {
       const f = Store.state.files.find((x) => x.id === id);
       const blob = f && await FileDB.get(id);
-      if (!blob) { UI.toast('Файл не найден в хранилище браузера'); return; }
+      if (!blob) { UI.toast(this.missingText(f)); return; }
       const res = await U.saveFile(blob, f.name);
       if (res === 'blocked') UI.toast('В предпросмотре такой файл сохранить нельзя — откройте Семестр на сайте');
+    },
+
+    missingText(f) {
+      if (f && f.cloudSkip === 'big') return 'Файл больше 20 МБ, поэтому хранится только на устройстве, где его добавили.';
+      if (f && f.assetId) return 'Не получилось скачать файл из аккаунта. Проверьте интернет и попробуйте ещё раз.';
+      return 'Файл не найден в хранилище браузера. Возможно, данные сайта были очищены — загрузите его заново.';
     },
 
     async remove(id) {
       const f = Store.state.files.find((x) => x.id === id);
       if (!f) return;
+      const cloud = App.Cloud && App.Cloud.on();
       const ok = await UI.confirm({
         title: 'Удалить файл?',
-        text: `«${f.name}» будет удалён из этого браузера. Отменить это действие нельзя.`,
+        text: `«${f.name}» будет удалён ${cloud ? 'из аккаунта и со всех устройств' : 'из этого браузера'}. Отменить это действие нельзя.`,
       });
       if (!ok) return;
       Store.state.files = Store.state.files.filter((x) => x.id !== id);
       await FileDB.del(id);
+      if (App.Cloud && f.assetId) App.Cloud.deleteAsset(f.assetId);
       Store.gcSubjects();
       Store.save();
       App.refresh();

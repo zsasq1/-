@@ -259,14 +259,25 @@
     else if (scheme.addListener) scheme.addListener(App.applyTheme); // Safari до 14
     window.addEventListener('resize', U.debounce(UI.refreshSegs, 150));
 
+    const filesReady = FileDB.open();
+    // Внутри Claude данные лежат в аккаунте: сначала забираем их, чтобы не мелькали чужие примеры
+    if (App.Cloud && App.Cloud.available()) {
+      $view().innerHTML = '<div class="view-inner"><p class="boot-wait shimmer">Загружаем ваши данные…</p></div>';
+      await Promise.race([App.Cloud.init(filesReady), U.sleep(2500)]);
+    } else if (navigator.storage && navigator.storage.persist) {
+      // Просим браузер не удалять данные сайта при нехватке места
+      navigator.storage.persist().catch(() => {});
+    }
+
     App.renderSidebar();
     App.renderView(true);
+    App.booted = true;
     App.Notify.updateBadges();
     App.Files.initDrop();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(UI.refreshSegs);
 
     if (App.PWA) App.PWA.init();
-    const dbOk = await FileDB.open();
+    const dbOk = await filesReady;
     if (Store.oldSampleFiles) {
       await Promise.all(Store.oldSampleFiles.map((id) => FileDB.del(id)));
       Store.oldSampleFiles = null;
@@ -278,7 +289,10 @@
       Store.seedBlobs = null;
       App.Files.hydrate($view());
     }
-    if (autoGroup) {
+    if (App.Cloud && App.Cloud.on()) App.Cloud.uploadMissing();
+    // Данные пришли из аккаунта — сообщения о первом запуске уже не о них
+    const fromCloud = App.Cloud && App.Cloud.adoptedOnBoot;
+    if (autoGroup && !fromCloud) {
       const withElective = (Store.state.settings.electiveCourses || []).length;
       UI.toast(withElective
         ? `Загружено расписание группы ${autoGroup} с элективом на кафедре патофизиологии и темами занятий`
@@ -287,12 +301,12 @@
         action: { label: 'Сменить', fn: () => App.KGMU.openImport(autoGroup) },
       });
     }
-    if (electiveAdded) {
+    if (electiveAdded && !fromCloud) {
       UI.toast('Добавлен электив на кафедре патофизиологии: пятница, 13:00. Темы — в карточке занятия', { timeout: 8000 });
     }
     if (!Store.storageOk) {
       UI.toast('Браузер не даёт сохранять данные — изменения пропадут после перезагрузки', { timeout: 8000 });
-    } else if (!dbOk) {
+    } else if (!dbOk && !(App.Cloud && App.Cloud.on())) {
       UI.toast('Хранилище файлов недоступно — файлы сохранятся только до перезагрузки страницы', { timeout: 8000 });
     }
 

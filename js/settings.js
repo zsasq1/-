@@ -23,7 +23,7 @@
         <div class="page-head rise" style="--i:0">
           <div>
             <h1 class="page-title">Настройки</h1>
-            <p class="page-sub">Все данные хранятся только в этом браузере</p>
+            <p class="page-sub">${App.Cloud && App.Cloud.on() ? 'Данные сохраняются в вашем аккаунте Claude' : 'Все данные хранятся только в этом браузере'}</p>
           </div>
         </div>
         <div class="settings">
@@ -93,12 +93,17 @@
           <section class="set-group rise" style="--i:7">
             <h2>Данные</h2>
             <div class="set-card">
+              ${App.Cloud ? `
+                <div class="set-row">
+                  <div class="set-text"><div class="set-label">${App.Cloud.available() ? 'Сохранение в аккаунте' : 'Где хранятся данные'}</div><div class="set-desc" id="cloud-desc">${App.Cloud.describe()}</div></div>
+                  <div class="set-control" id="cloud-status">${App.Cloud.pill()}</div>
+                </div>` : ''}
               ${row('Резервная копия', 'Расписание, дела и настройки в файле JSON. Сами файлы в копию не входят.',
                 `<button class="btn" data-action="data-export">${ico('download')} Скачать</button>
                  <button class="btn" data-action="data-import">${ico('upload')} Восстановить</button>`)}
               ${Store.hasSample() ? row('Пример', 'Убрать демонстрационные пары, дела и файлы, оставив ваши',
                 `<button class="btn" data-action="sample-clear">Очистить пример</button>`) : ''}
-              ${row('Удалить всё', 'Сотрёт расписание, дела, уведомления и файлы в этом браузере',
+              ${row('Удалить всё', `Сотрёт расписание, дела, уведомления и файлы ${App.Cloud && App.Cloud.on() ? 'в аккаунте и на всех устройствах' : 'в этом браузере'}`,
                 `<button class="btn btn-danger" data-action="data-reset">${ico('trash')} Удалить всё</button>`, 'danger-text')}
             </div>
           </section>
@@ -223,12 +228,14 @@
     },
 
     async resetAll() {
+      const cloud = App.Cloud && App.Cloud.on();
       const ok = await UI.confirm({
         title: 'Удалить все данные?',
-        text: 'Расписание, дела, уведомления и файлы будут удалены из этого браузера без возможности восстановления.',
+        text: `Расписание, дела, уведомления и файлы будут удалены ${cloud ? 'из аккаунта и со всех устройств' : 'из этого браузера'} без возможности восстановления.`,
         ok: 'Удалить всё',
       });
       if (!ok) return;
+      if (App.Cloud) Store.state.files.forEach((f) => App.Cloud.deleteAsset(f.assetId));
       await FileDB.clear();
       if (App.KGMU) App.KGMU._parsed = null;
       const theme = Store.state.settings.theme;
@@ -236,6 +243,7 @@
       Store.state.settings.theme = theme;
       Store.state.settings.autoImported = true;
       Store.state.settings.electivesSynced = true;
+      Store.state.settings.cloudWelcomed = true;
       Store.save();
       App.go('home');
       UI.toast('Все данные удалены');
@@ -251,6 +259,7 @@
       Store.gcSubjects();
       Store.save();
       await Promise.all(sampleFiles.map((f) => FileDB.del(f.id)));
+      if (App.Cloud) sampleFiles.forEach((f) => App.Cloud.deleteAsset(f.assetId));
       App.refresh();
       if (App.route === 'settings') App.renderView(false);
       UI.toast('Пример удалён — можно заполнять своё расписание');

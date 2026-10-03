@@ -83,6 +83,7 @@
         return;
       }
       this.state = this.normalize(data);
+      this.lastBody = this.bodyOf(this.state);
       this.fixHueClashes();
       this.save();
     },
@@ -120,9 +121,20 @@
 
     rev: 0, // растёт при каждом сохранении — по нему сбрасываются вычисленные кэши
 
-    save() {
+    bodyOf(st) {
+      return JSON.stringify(Object.assign({}, st, { savedAt: 0 }));
+    },
+
+    // savedAt меняется, только когда данные действительно изменились, — по нему
+    // сохранение в аккаунте понимает, где версия свежее
+    save(opts = {}) {
       this.rev++;
+      const body = this.bodyOf(this.state);
+      const changed = body !== this.lastBody;
+      this.lastBody = body;
+      if (changed && !opts.fromCloud) this.state.savedAt = Date.now();
       this.storageOk = U.ls.set(KEY, JSON.stringify(this.state));
+      if (changed && !opts.fromCloud && App.Cloud) App.Cloud.changed();
       return this.storageOk;
     },
 
@@ -391,7 +403,7 @@ ${label(107, base - 8, 'ST')}
       }
     },
 
-    async get(id) {
+    async getLocal(id) {
       if (this.mem.has(id)) return this.mem.get(id);
       if (!this.ok) return null;
       try {
@@ -401,6 +413,17 @@ ${label(107, base - 8, 'ST')}
       } catch (e) {
         return null;
       }
+    },
+
+    // Файла нет в этом браузере — он мог прийти с другого устройства через аккаунт
+    async get(id) {
+      const local = await this.getLocal(id);
+      if (local || !App.Cloud) return local;
+      const blob = await App.Cloud.fetchFile(Store.state.files.find((f) => f.id === id));
+      if (blob) {
+        try { await this.put(id, blob); } catch (e) { /* останется в памяти */ }
+      }
+      return blob;
     },
 
     async del(id) {

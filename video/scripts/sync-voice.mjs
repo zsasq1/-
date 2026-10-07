@@ -2,7 +2,7 @@
 // кладёт в public/voice-processed/NN.wav и записывает длительности в src/voice.json.
 import fs from "node:fs";
 import path from "node:path";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const inDir = path.join(root, "public/voice");
@@ -13,15 +13,20 @@ const sceneCount = JSON.parse(fs.readFileSync(path.join(root, "src/lecture.json"
 const durations = {};
 const files = fs.existsSync(inDir) ? fs.readdirSync(inDir) : [];
 for (const f of files.sort()) {
+  if (f.startsWith(".")) continue;
   const m = f.match(/^(\d{1,3})\.(m4a|mp3|wav|ogg|opus|aac|webm|flac)$/i);
   if (!m) { console.warn(`пропущен: ${f} (ожидается имя вида 07.m4a)`); continue; }
   const id = String(Number(m[1])).padStart(2, "0");
   if (Number(id) < 1 || Number(id) > sceneCount) { console.warn(`нет сцены ${id}: ${f}`); continue; }
   const out = path.join(outDir, `${id}.wav`);
-  // обрезка тишины в начале/конце + нормализация громкости по EBU R128
-  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", path.join(inDir, f),
-    "-af", "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.15,areverse,silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.25,areverse,loudnorm=I=-16:TP=-1.5:LRA=11",
-    "-ar", "48000", "-ac", "1", out]);
+  // обрезка тишины в начале/конце, затем выравнивание средней громкости к −20 dB с ограничителем пиков
+  // (loudnorm здесь не используется: на некоторых файлах ffmpeg на нём зависает)
+  const trim = "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.15,areverse,silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.25,areverse";
+  const probe = spawnSync("ffmpeg", ["-nostdin", "-i", path.join(inDir, f), "-af", `${trim},volumedetect`, "-f", "null", "-"], { encoding: "utf8" });
+  const mean = Number((probe.stderr.match(/mean_volume: (-?[\d.]+) dB/) || [])[1] ?? -20);
+  execFileSync("ffmpeg", ["-nostdin", "-y", "-loglevel", "error", "-i", path.join(inDir, f),
+    "-af", `${trim},volume=${(-20 - mean).toFixed(2)}dB,alimiter=limit=0.89:level=false`,
+    "-ar", "48000", "-ac", "1", out], { stdio: "ignore" });
   const d = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", out]).toString());
   durations[id] = Math.round(d * 100) / 100;
 }

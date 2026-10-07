@@ -1,6 +1,6 @@
 """Озвучка сцен клонированным голосом (XTTS-v2).
 
-python scripts/clone-voice.py <образец_голоса> [номера сцен через запятую]
+python scripts/clone-voice.py <образец1> [образец2 ...] [--scenes 2,3,25]
 Пишет public/voice/NN.wav; уже готовые сцены пропускает (удалите файл, чтобы пересинтезировать).
 """
 import difflib
@@ -141,14 +141,19 @@ class Checker:
 
 
 def main():
-    ref = clean_reference(sys.argv[1])
-    only = {int(x) for x in sys.argv[2].split(",")} if len(sys.argv) > 2 else None
+    args = sys.argv[1:]
+    only = None
+    if "--scenes" in args:
+        k = args.index("--scenes")
+        only = {int(x) for x in args[k + 1].split(",")}
+        del args[k : k + 2]
+    refs = [clean_reference(a) for a in args]
     scenes = json.loads((ROOT / "src" / "lecture.json").read_text())["scenes"]
     OUT.mkdir(parents=True, exist_ok=True)
 
     torch.set_num_threads(os.cpu_count() or 4)
     model = TTS("tts_models/multilingual/multi-dataset/xtts_v2").synthesizer.tts_model
-    gpt_latent, spk_emb = model.get_conditioning_latents(audio_path=[ref], gpt_cond_len=30, max_ref_length=60)
+    gpt_latent, spk_emb = model.get_conditioning_latents(audio_path=refs, gpt_cond_len=120, max_ref_length=120)
     check = Checker()
 
     pause = torch.zeros(int(SR * 0.28))

@@ -24,6 +24,8 @@ ROOT = Path(__file__).resolve().parent.parent
 VOICE = ROOT / "public" / "voice"
 SR = 24000
 FADE = int(0.012 * SR)
+VERBOSE = False
+MAX_STRETCH = 1.4  # во сколько раз максимум ускорять живое слово под длину синтезированного
 
 
 def norm(s: str) -> list[str]:
@@ -51,13 +53,25 @@ def trim(x: np.ndarray, thr_db=-38.0) -> np.ndarray:
     return x[max(0, idx[0] - 120): idx[-1] + 240] if len(idx) else x
 
 
-def quiet_point(x: np.ndarray, t: int, radius: int) -> int:
-    """Ближайшая к t точка минимальной энергии — чтобы резать в паузе/на стыке слогов."""
-    lo, hi = max(0, t - radius), min(len(x), t + radius)
+def quiet_point(x: np.ndarray, t: int, lo: int, hi: int) -> int:
+    """Точка минимальной энергии в [lo, hi] (с лёгким штрафом за удаление от t) — резать в паузе/на стыке слогов."""
+    lo, hi = max(0, lo), min(len(x), hi)
     if hi - lo < 480:
         return t
     env = np.convolve(x[lo:hi] ** 2, np.ones(240) / 240, "same")
-    return lo + int(np.argmin(env))
+    db = 10 * np.log10(env + 1e-10)
+    penalty = np.abs(np.arange(lo, hi) - t) / SR * 20  # 2 дБ на каждые 100 мс
+    return lo + int(np.argmin(db + penalty))
+
+
+def stretch(x: np.ndarray, ratio: float) -> np.ndarray:
+    """Ускорение без изменения высоты голоса (rubberband)."""
+    if ratio <= 1.02:
+        return x
+    raw = subprocess.run(["ffmpeg", "-loglevel", "error", "-f", "f32le", "-ar", str(SR), "-ac", "1", "-i", "-",
+                          "-af", f"rubberband=tempo={ratio:.3f}", "-f", "f32le", "-"],
+                         input=x.astype(np.float32).tobytes(), capture_output=True, check=True).stdout
+    return np.frombuffer(raw, np.float32).copy()
 
 
 def heard_words(asr, audio: np.ndarray, prompt: str):
@@ -98,8 +112,10 @@ def align(ref: list[str], heard):
 
 def main():
     args = sys.argv[1:]
+    global VERBOSE
     replace_all = "--all" in args
-    args = [a for a in args if a != "--all"]
+    VERBOSE = "-v" in args
+    args = [a for a in args if a not in ("--all", "-v")]
     only = None
     if "--scenes" in args:
         k = args.index("--scenes")
@@ -110,11 +126,17 @@ def main():
     asr = WhisperModel("small", device="cpu", compute_type="int8")
 
     # насколько хорошо Whisper узнаёт каждое живое слово (эталон для сравнения с синтезом)
+    cache_path = Path(args[0]).with_suffix(".scores.json")
+    cache = json.loads(cache_path.read_text()) if cache_path.exists() else {}
     clips = {}
     for w in words:
         clip = trim(load(w["file"]))
-        h = " ".join(t for t, _, _ in heard_words(asr, clip, w["word"]))
-        clips[w["word"].lower()] = (clip, sim(" ".join(norm(w["word"])), h))
+        key = f'{w["file"]}:{w["start"]}:{w["end"]}'
+        if key not in cache:
+            h = " ".join(t for t, _, _ in heard_words(asr, clip, w["word"]))
+            cache[key] = sim(" ".join(norm(w["word"])), h)
+        clips[w["word"].lower()] = (clip, cache[key])
+    cache_path.write_text(json.dumps(cache))
 
     log = []
     for idx, scene in enumerate(scenes, 1):
@@ -140,19 +162,23 @@ def main():
                 if any(h is None for h in hj):
                     continue
                 synth_score = sim(" ".join(kt), " ".join(heard[h][0] for h in hj))
+                if VERBOSE:
+                    print(f"  {idx:02d} {key}: синтез «{' '.join(heard[h][0] for h in hj)}» {synth_score:.0%}, живой {live_score:.0%}")
                 if replace_all or synth_score < min(0.75, live_score - 0.1):
-                    jobs.append((heard[hj[0]][1], heard[hj[-1]][2], key, clip, synth_score, live_score))
+                    prev_mid = (heard[hj[0] - 1][1] + heard[hj[0] - 1][2]) / 2 if hj[0] > 0 else 0.0
+                    next_mid = (heard[hj[-1] + 1][1] + heard[hj[-1] + 1][2]) / 2 if hj[-1] + 1 < len(heard) else len(audio) / SR
+                    jobs.append((heard[hj[0]][1], heard[hj[-1]][2], key, clip, synth_score, live_score, prev_mid, next_mid))
         if not jobs:
             continue
         out, cur = [], 0
-        for st, en, key, clip, s_score, l_score in sorted(jobs):
-            a = quiet_point(audio, int(st * SR), int(0.06 * SR))
-            b = quiet_point(audio, int(en * SR), int(0.06 * SR))
+        for st, en, key, clip, s_score, l_score, prev_mid, next_mid in sorted(jobs, key=lambda j: j[0]):
+            a = quiet_point(audio, int(st * SR), int(max(prev_mid, st - 0.15) * SR), int((st + 0.1) * SR))
+            b = quiet_point(audio, int(en * SR), int((en - 0.1) * SR), int(min(next_mid, en + 0.15) * SR))
             if a < cur or b - a < int(0.1 * SR):
                 continue
             ctx = audio[max(0, a - SR): min(len(audio), b + SR)]
-            c = clip * (rms(ctx[np.abs(ctx) > 0.01]) / rms(clip[np.abs(clip) > 0.01]))
-            c = c.copy()
+            c = stretch(clip, min(len(clip) / (b - a), MAX_STRETCH))
+            c = c * (rms(ctx[np.abs(ctx) > 0.01]) / rms(c[np.abs(c) > 0.01]))
             c[:FADE] *= np.linspace(0, 1, FADE)
             c[-FADE:] *= np.linspace(1, 0, FADE)
             left = audio[cur:a].copy()

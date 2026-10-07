@@ -1,0 +1,22 @@
+{
+  "name": "patanatomy-lecture-video",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio",
+    "script": "node scripts/make-script.mjs",
+    "voice": "node scripts/sync-voice.mjs",
+    "render": "node scripts/sync-voice.mjs && remotion render Lecture out/lecture.mp4",
+    "still": "remotion still"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.534",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "remotion": "^4.0.534"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.8",
+    "typescript": "^5.8.3"
+  }
+}

@@ -52,6 +52,17 @@
     banner() {
       const onboard = App.KGMU ? App.KGMU.onboardCard() : '';
       if (onboard) return `<div class="sample-banner">${onboard}</div>`;
+      // На сайте: данные пока только в этом браузере — предлагаем хранилище для всех устройств
+      if (App.Cloud && App.Cloud.kind() === 'browser' && App.Cloud.siteMode() && !U.ls.get('semestr.hideSync')) {
+        return `
+          <div class="banner sample-banner rise" style="--i:6">${ico('link')}
+            <div class="banner-text"><b>Сохраняйте всё на всех устройствах.</b> Подключите хранилище — и Семестр с вашими делами, заметками и файлами откроется на любом телефоне и компьютере.</div>
+            <div class="banner-actions">
+              <button class="btn btn-sm" data-action="sync-connect">Подключить</button>
+              <button class="icon-btn sm" data-action="sync-hide" aria-label="Скрыть">${ico('x')}</button>
+            </div>
+          </div>`;
+      }
       const P = App.PWA;
       if (P && P.mobile() && !Store.state.settings.hideInstall && ['prompt', 'ios'].includes(P.installMode())) {
         return `

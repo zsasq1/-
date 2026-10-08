@@ -3,7 +3,7 @@
    и включается, только когда пользователь нажмёт «Обновить» — так страница никогда не собирается
    из файлов разных версий. VERSION пересчитывается скриптом tools/sw-version.py. */
 
-const VERSION = 'semestr-052b4dc309';
+const VERSION = 'semestr-ef334a2793';
 const RUNTIME = 'semestr-runtime';
 
 const SHELL = [
@@ -25,6 +25,7 @@ const SHELL = [
   'js/settings.js',
   'js/calendar.js',
   'js/cloud.js',
+  'js/vendor/qrcode.min.js',
   'js/pwa.js',
   'js/app.js',
   'icons/icon-192.png',

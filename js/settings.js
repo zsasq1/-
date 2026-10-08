@@ -23,7 +23,7 @@
         <div class="page-head rise" style="--i:0">
           <div>
             <h1 class="page-title">Настройки</h1>
-            <p class="page-sub">${{ claude: 'Данные сохраняются в вашем аккаунте Claude', disk: 'Данные хранятся на этом Mac', browser: 'Все данные хранятся только в этом браузере' }[App.Cloud && App.Cloud.on() ? App.Cloud.kind() : 'browser']}</p>
+            <p class="page-sub">${{ claude: 'Данные сохраняются в вашем аккаунте Claude', disk: 'Данные хранятся на этом Mac', github: 'Данные сохраняются в вашем хранилище — на всех устройствах', browser: 'Все данные хранятся только в этом браузере' }[App.Cloud && App.Cloud.on() ? App.Cloud.kind() : 'browser']}</p>
           </div>
         </div>
         <div class="settings">

@@ -228,6 +228,8 @@
   /* ---------- Запуск ---------- */
 
   async function init() {
+    // Ссылка или QR-код с другого устройства: запоминаем и убираем ключ из адресной строки
+    if (App.Cloud) App.Cloud.takeConnectLink();
     Store.load();
     // Ошибка при загрузке расписания группы не должна мешать остальному приложению
     let autoGroup = false;
@@ -290,6 +292,7 @@
       App.Files.hydrate($view());
     }
     if (App.Cloud && App.Cloud.on()) App.Cloud.uploadMissing();
+    if (App.Cloud && App.Cloud.pendingLink) App.Cloud.confirmLink();
     // Данные пришли из аккаунта — сообщения о первом запуске уже не о них
     const fromCloud = App.Cloud && App.Cloud.adoptedOnBoot;
     if (autoGroup && !fromCloud) {

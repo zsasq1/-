@@ -144,6 +144,10 @@
       const dates = Array.from({ length: days }, (_, i) => U.addDays(monday, i));
       const perDay = dates.map((d) => this.classesOn(d));
       const total = perDay.reduce((a, l) => a + l.length, 0);
+      const grid = this.viewMode() === 'grid';
+      const dues = this.duesByDay(dates);
+      const dueCount = Object.values(dues).reduce((a, l) => a + l.length, 0);
+      const finals = perDay.reduce((a, l, i) => a + l.filter((c) => { const t = App.Topics && App.Topics.line(c, dates[i]); return t && t.final; }).length, 0);
       const last = dates[dates.length - 1];
       const range = monday.getMonth() === last.getMonth()
         ? `${monday.getDate()}–${last.getDate()} ${U.MONTHS_GEN[last.getMonth()]}`
@@ -153,7 +157,7 @@
         <div class="page-head rise" style="--i:0">
           <div>
             <h1 class="page-title">Расписание</h1>
-            <p class="page-sub">${this.weekPill(p)}${esc(this.weekLabel(p))} · ${total ? U.count(total, ['занятие', 'занятия', 'занятий']) + ' на неделе' : 'занятий нет'}</p>
+            <p class="page-sub">${this.weekPill(p)}${esc(this.weekLabel(p))} · ${total ? U.count(total, ['занятие', 'занятия', 'занятий']) + ' на неделе' : 'занятий нет'}${finals ? ` · ${U.count(finals, ['итоговое', 'итоговых', 'итоговых'])}` : ''}${dueCount ? ` · ${U.count(dueCount, ['дедлайн', 'дедлайна', 'дедлайнов'])}` : ''}</p>
           </div>
           <div class="head-actions">
             <div class="week-nav">
@@ -162,6 +166,7 @@
               <span class="week-range">${range}</span>
               <button class="icon-btn" data-action="week-next" aria-label="Следующая неделя">${ico('chevron-right')}</button>
             </div>
+            <div class="view-toggle">${UI.seg('sv', 'sched-view', { cards: 'Карточки', grid: 'По времени' }, grid ? 'grid' : 'cards')}</div>
             <button class="btn cal-btn" data-action="cal-export" ${st.classes.length ? '' : 'hidden'} aria-label="Добавить в календарь телефона" title="Добавить в календарь телефона">${ico('calendar-plus')}<span class="cal-btn-text">В календарь</span></button>
             <button class="btn btn-primary" data-action="class-new">${ico('plus')} Занятие</button>
           </div>
@@ -171,8 +176,10 @@
           <div class="banner-text">Расписание пока пустое. Загрузите официальное расписание своей группы или нажмите на свободное место в сетке, чтобы добавить пару вручную.</div>
           ${App.KGMU && App.KGMU.parsed() ? '<div class="banner-actions"><button class="btn btn-sm" data-action="kgmu-import">Выбрать группу</button></div>' : ''}
         </div>`}
-        ${this.renderWeek(dates, perDay, now)}
-        ${this.renderAgenda(dates, perDay, now)}`;
+        <div class="sched ${grid ? 'is-grid' : ''}">
+          ${grid ? this.renderWeek(dates, perDay, now) : ''}
+          ${this.renderDays(dates, perDay, dues, now)}
+        </div>`;
       this.animateBlocks = false;
       this.renderedDay = U.ymd(now);
       return html;
@@ -237,41 +244,131 @@
         </div>`;
     },
 
-    renderAgenda(dates, perDay, now) {
+    // 'cards' — карточки по дням, 'grid' — сетка по времени (только на широком экране)
+    viewMode() {
+      return Store.state.settings.schedView === 'grid' ? 'grid' : 'cards';
+    },
+
+    // Дела со сроком на дни недели
+    duesByDay(dates) {
+      const days = new Set(dates.map((d) => U.ymd(d)));
+      const out = {};
+      Store.state.reminders.forEach((r) => {
+        if (r.done || !r.due) return;
+        const iso = U.ymd(new Date(r.due));
+        if (!days.has(iso)) return;
+        (out[iso] = out[iso] || []).push(r);
+      });
+      Object.values(out).forEach((l) => l.sort((a, b) => new Date(a.due) - new Date(b.due)));
+      return out;
+    },
+
+    fmtDur(min) {
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      return h ? (m ? `${h} ч ${m} мин` : `${h} ч`) : `${m} мин`;
+    },
+
+    // Неделя карточками: весь текст помещается, ничего не обрезается
+    renderDays(dates, perDay, dues, now) {
+      let idx = 0;
       return `
-        <div class="agenda rise" style="--i:2">
+        <div class="days rise" style="--i:2">
           ${dates.map((d, i) => {
-            const isToday = U.sameDay(d, now);
+            const iso = U.ymd(d);
             const list = perDay[i];
+            const dl = dues[iso] || [];
+            const isToday = U.sameDay(d, now);
+            const past = U.startOfDay(d) < U.startOfDay(now);
+            const hol = this.holiday(d);
+            const sum = list.length
+              ? `${U.count(list.length, ['занятие', 'занятия', 'занятий'])} · ${list[0].start}–${list.reduce((a, c) => (c.end > a ? c.end : a), list[0].end)}`
+              : '';
             return `
-              <section class="ag-day ${isToday ? 'is-today' : ''}">
-                <h3>${U.cap(U.DAYS[U.isoDay(d)])} <span>${U.fmtDate(d)}</span>${isToday ? '<span class="pill accent">сегодня</span>' : ''}</h3>
-                <div class="ag-list">
-                  ${list.length ? list.map((c) => {
-                    const subj = Store.subject(c.subjectId);
-                    const topic = App.Topics ? App.Topics.line(c, d) : null;
-                    return `
-                      <button class="ag-item ${this.status(c, d, now) === 'now' ? 'is-now' : ''} ${Store.subjClass(c.subjectId)}" style="${Store.subjStyle(c.subjectId)}" data-action="occ-open" data-id="${c.id}" data-date="${U.ymd(d)}">
-                        <span class="ag-time"><b>${c.start}</b>${c.end}</span>
-                        <span><span class="ag-name">${esc(subj ? subj.name : 'Без названия')}${topic && topic.final ? ' <span class="ag-final">итоговое</span>' : ''}</span><span class="ag-meta">${esc([Store.CLASS_TYPES[c.type], this.roomText(c), c.place, c.teacher].filter(Boolean).join(' · '))}</span>${topic ? `<span class="ag-topic">${esc(topic.text)}</span>` : ''}</span>
-                      </button>`;
-                  }).join('') : this.holiday(d) ? `<p class="ag-empty">${esc(this.holiday(d))} — занятий нет</p>` : `<button class="ag-empty" data-action="class-new" data-day="${U.isoDay(d)}">Нет занятий — добавить</button>`}
-                </div>
+              <section class="day ${isToday ? 'is-today' : ''} ${past ? 'is-past' : ''}" style="--i:${idx++}" aria-label="${esc(U.cap(U.fmtDayLong(d)))}">
+                <header class="day-head">
+                  <h3 class="day-name">${U.cap(U.DAYS[U.isoDay(d)])}</h3>
+                  <span class="day-date">${U.fmtDate(d)}</span>
+                  ${isToday ? '<span class="pill accent">сегодня</span>' : ''}
+                  ${sum ? `<span class="day-sum">${sum}</span>` : ''}
+                </header>
+                ${hol ? `<p class="day-off">${ico('sun')}${esc(hol)} — выходной</p>` : ''}
+                ${list.map((c) => this.classCard(c, d, now)).join('')}
+                ${dl.map((r) => this.dueCard(r)).join('')}
+                ${!list.length && !hol && !dl.length ? `<button class="day-empty" data-action="class-new" data-day="${U.isoDay(d)}">Свободный день<span>${ico('plus')} Добавить занятие</span></button>` : ''}
               </section>`;
           }).join('')}
         </div>`;
     },
 
+    classCard(c, d, now) {
+      const subj = Store.subject(c.subjectId);
+      const t = App.Topics ? App.Topics.lookup(c, d) : null;
+      const status = this.status(c, d, now);
+      const isToday = U.sameDay(d, now);
+      const where = [this.roomText(c), c.place].filter(Boolean).join(' · ');
+      const altWeeks = (c.weeks === 'odd' || c.weeks === 'even') && !(c.dates && c.dates.length);
+      const label = t && t.label ? t.label : '';
+      return `
+        <button class="cc ${status === 'now' ? 'is-now' : ''} ${status === 'past' && isToday ? 'is-done' : ''} ${Store.subjClass(c.subjectId)}"
+          style="${Store.subjStyle(c.subjectId)}" data-action="occ-open" data-id="${c.id}" data-date="${U.ymd(d)}" data-start="${c.start}" data-end="${c.end}">
+          <span class="cc-top">
+            <span class="cc-time">${c.start}–${c.end}</span>
+            <span class="cc-dur">${this.fmtDur(U.toMin(c.end) - U.toMin(c.start))}</span>
+            <span class="cc-badges">
+              ${t && t.final ? '<span class="cc-badge is-final">итоговое</span>' : ''}
+              ${altWeeks ? `<span class="cc-badge">${esc(this.weekName(c.weeks === 'odd', true))}</span>` : ''}
+            </span>
+          </span>
+          <span class="cc-name">${esc(subj ? subj.name : 'Без названия')}</span>
+          <span class="cc-type">${esc(Store.CLASS_TYPES_FULL[c.type] || '')}${t && t.n > 0 ? ` ${t.n} из ${t.total}` : ''}</span>
+          ${where ? `<span class="cc-line">${ico('pin')}<span>${esc(where)}</span></span>` : ''}
+          ${c.teacher ? `<span class="cc-line">${ico('user')}<span>${esc(c.teacher)}</span></span>` : ''}
+          ${label ? `<span class="cc-topic"><span class="cc-label">${t.continued && !t.custom ? 'Продолжение темы' : 'Тема'}</span>${esc(label)}</span>` : ''}
+          ${t && t.note ? `<span class="cc-line cc-note">${ico('pencil')}<span>${esc(t.note)}</span></span>` : ''}
+          ${isToday && status !== 'past' ? `<span class="cc-live">${this.liveText(c, now)}</span>` : ''}
+        </button>`;
+    },
+
+    // «Идёт · осталось 25 мин» с полоской или «Через 40 мин»
+    liveText(c, now) {
+      const m = now.getHours() * 60 + now.getMinutes();
+      const s = U.toMin(c.start);
+      const e = U.toMin(c.end);
+      if (m >= s) {
+        const pct = Math.round(((m - s) / Math.max(1, e - s)) * 100);
+        return `<span class="cc-state">Идёт · осталось ${U.relIn((e - m) * 6e4)}</span><span class="cc-bar"><i style="width:${pct}%"></i></span>`;
+      }
+      return `<span class="cc-state is-soon">Через ${U.relIn((s - m) * 6e4)}</span>`;
+    },
+
+    dueCard(r) {
+      const s = Store.subject(r.subjectId);
+      const due = new Date(r.due);
+      return `
+        <button class="dc ${r.kind === 'deadline' ? 'is-deadline' : ''}" data-action="rem-edit" data-id="${r.id}">
+          ${ico(r.kind === 'deadline' ? 'flag' : 'bell')}
+          <span class="dc-body">
+            <span class="dc-title">${esc(r.title)}</span>
+            <span class="dc-meta">${r.kind === 'deadline' ? 'Дедлайн' : 'Напоминание'} · ${U.hm(due)}${s ? ` · ${esc(s.name)}` : ''}</span>
+          </span>
+        </button>`;
+    },
+
     onMinute(view) {
-      // Перерисовываем сетку только на границах пар и при смене дня,
-      // в остальное время просто сдвигаем линию «сейчас»
+      // Перерисовываем только на границах пар и при смене дня; в остальное время
+      // обновляем «идёт · осталось…» в карточках и сдвигаем линию «сейчас» в сетке
       const now = new Date();
+      U.$$('.cc .cc-live', view).forEach((el) => {
+        const card = el.closest('.cc');
+        el.innerHTML = this.liveText({ start: card.dataset.start, end: card.dataset.end }, now);
+      });
       const hm = U.hm(now);
       const nowM = now.getHours() * 60 + now.getMinutes();
       const { minM, maxM } = this.range();
       const line = U.$('.now-line', view);
       const boundary = this.classesOn(now).some((c) => c.start === hm || c.end === hm);
-      const lineMissing = !line && this.weekOffset === 0 && nowM >= minM && nowM <= maxM;
+      const lineMissing = this.viewMode() === 'grid' && window.innerWidth > 760 && !line && this.weekOffset === 0 && nowM >= minM && nowM <= maxM;
       if (boundary || lineMissing || U.ymd(now) !== this.renderedDay) {
         App.renderView(false);
         return;
@@ -554,6 +651,13 @@
     },
     slot: (el, e) => Sched.slotClick(el, e),
   });
+
+  App.changes['sched-view'] = (el, e) => {
+    Store.state.settings.schedView = e.target.value;
+    Store.save();
+    Sched.animateBlocks = true;
+    setTimeout(() => App.renderView(false), 180);
+  };
 
   App.Schedule = Sched;
 })(window.App);

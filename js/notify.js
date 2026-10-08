@@ -239,22 +239,11 @@
               : `<button class="btn btn-primary" data-action="rem-new">${ico('plus')} Напоминание</button>`}
           </div>
         </div>
-        ${this.permBanner()}
         <div class="tabs-row rise" style="--i:2">
           ${UI.seg('nt', 'ntab', { feed: 'Лента', reminders: 'Напоминания и дедлайны' }, this.tab)}
           ${isFeed ? '' : UI.seg('rf', 'rfilter', { active: 'Активные', done: 'Выполненные' }, this.remFilter)}
         </div>
         <div id="notif-body" class="rise" style="--i:3">${isFeed ? this.renderFeed() : this.renderReminders()}</div>`;
-    },
-
-    permBanner() {
-      if (!('Notification' in window) || Notification.permission === 'denied') return '';
-      if (Store.state.settings.systemNotify && Notification.permission === 'granted') return '';
-      return `
-        <div class="banner rise" style="--i:1;margin-bottom:18px">${ico('bell')}
-          <div class="banner-text">Включите системные уведомления, чтобы видеть напоминания о парах, даже когда вкладка свёрнута.</div>
-          <div class="banner-actions"><button class="btn btn-sm" data-action="perm-enable">Включить</button></div>
-        </div>`;
     },
 
     renderFeed() {

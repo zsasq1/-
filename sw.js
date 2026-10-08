@@ -1,9 +1,9 @@
 /* Семестр — сервис-воркер: работа без интернета и обновления.
    Файлы приложения сохраняются целиком для каждой версии. Новая версия скачивается в фоне
-   и включается, только когда пользователь нажмёт «Обновить» — так страница никогда не собирается
-   из файлов разных версий. VERSION пересчитывается скриптом tools/sw-version.py. */
+   и сама включается при следующем открытии Семестра — без предложений «Обновить».
+   VERSION пересчитывается скриптом tools/sw-version.py. */
 
-const VERSION = 'semestr-ef334a2793';
+const VERSION = 'semestr-76c19d3e48';
 const RUNTIME = 'semestr-runtime';
 
 const SHELL = [
@@ -40,7 +40,9 @@ const CDN = /^(fonts\.googleapis\.com|fonts\.gstatic\.com|cdnjs\.cloudflare\.com
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(VERSION).then((cache) => cache.addAll(SHELL.map((url) => new Request(url, { cache: 'reload' })))),
+    caches.open(VERSION)
+      .then((cache) => cache.addAll(SHELL.map((url) => new Request(url, { cache: 'reload' }))))
+      .then(() => self.skipWaiting()),
   );
 });
 

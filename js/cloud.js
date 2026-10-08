@@ -464,6 +464,87 @@
     });
   }
 
+  /* ---------- Вход по паролю ---------- */
+
+  // Ключ к хранилищу, зашифрованный паролем, лежит в репозитории самого сайта (vault.json).
+  // Он открыт всем, но без пароля бесполезен: AES-GCM, ключ из пароля через PBKDF2 (600 000 шагов).
+  const VAULT = 'vault.json';
+  const KDF_ITER = 600000;
+
+  // Репозиторий сайта: zsasq1.github.io/-/ → zsasq1/-
+  function siteRepo() {
+    if (window.SEMESTR_SITE_REPO) return window.SEMESTR_SITE_REPO;
+    const m = location.hostname.match(/^([a-z0-9-]+)\.github\.io$/i);
+    if (!m) return null;
+    const first = location.pathname.split('/').filter(Boolean)[0];
+    return { owner: m[1], repo: first || `${m[1]}.github.io` };
+  }
+
+  const bytesToB64 = (arr) => {
+    let bin = '';
+    for (let i = 0; i < arr.length; i += 0x8000) bin += String.fromCharCode.apply(null, arr.subarray(i, i + 0x8000));
+    return btoa(bin);
+  };
+  const b64ToBytes = (b64) => {
+    const bin = atob(b64);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return arr;
+  };
+
+  async function passKey(password, salt, iterations) {
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(password.normalize('NFC')), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+  }
+
+  async function sealVault(cfg, password) {
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const key = await passKey(password, salt, KDF_ITER);
+    const plain = new TextEncoder().encode(JSON.stringify({ o: cfg.owner, r: cfg.repo, t: cfg.token }));
+    const data = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plain));
+    return { v: 1, kdf: 'PBKDF2-SHA256', iter: KDF_ITER, salt: bytesToB64(salt), iv: bytesToB64(iv), data: bytesToB64(data) };
+  }
+
+  // Неверный пароль — расшифровка бросает ошибку
+  async function openVault(vault, password) {
+    const key = await passKey(password, b64ToBytes(vault.salt), vault.iter || KDF_ITER);
+    const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64ToBytes(vault.iv) }, key, b64ToBytes(vault.data));
+    const c = JSON.parse(new TextDecoder().decode(plain));
+    return { owner: c.o, repo: c.r, token: c.t };
+  }
+
+  // Файл с паролем: объект, null — пароля ещё нет, undefined — не удалось узнать (нет сети)
+  async function fetchVault(site) {
+    const api = window.SEMESTR_GH_API || 'https://api.github.com';
+    try {
+      const res = await fetch(`${api}/repos/${encodeURIComponent(site.owner)}/${encodeURIComponent(site.repo)}/contents/${VAULT}`, { cache: 'no-store', headers: { Accept: 'application/vnd.github+json' } });
+      if (res.status === 404) return null;
+      if (res.ok) return JSON.parse(b64ToText((await res.json()).content));
+    } catch (e) { /* попробуем прямую ссылку */ }
+    if (window.SEMESTR_GH_API) return undefined;
+    try {
+      const res = await fetch(`https://raw.githubusercontent.com/${site.owner}/${site.repo}/HEAD/${VAULT}`, { cache: 'no-store' });
+      if (res.status === 404) return null;
+      if (res.ok) return res.json();
+    } catch (e) { /* нет сети */ }
+    return undefined;
+  }
+
+  async function saveVault(cfg, vault) {
+    const site = siteRepo();
+    const call = ghApi(cfg);
+    const path = `/repos/${encodeURIComponent(site.owner)}/${encodeURIComponent(site.repo)}/contents/${VAULT}`;
+    const cur = await call(path);
+    const body = { message: 'Семестр: пароль для входа', content: textToB64(JSON.stringify(vault, null, 1)) };
+    if (cur.ok) body.sha = (await cur.json()).sha;
+    const res = await call(path, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (res.status === 403 || res.status === 404) {
+      throw new Error(`У ключа нет доступа к репозиторию сайта ${site.owner}/${site.repo}. На GitHub откройте настройки ключа, в «Repository access» добавьте этот репозиторий и дайте «Contents: Read and write».`);
+    }
+    if (!res.ok) throw new Error(`GitHub ответил ${res.status}. Попробуйте ещё раз.`);
+  }
+
   /* ---------- Синхронизация ---------- */
 
   const Cloud = {
@@ -757,11 +838,15 @@
       } else if (code === 'auth' || code === 'gone') {
         if (!this.authWarned) {
           this.authWarned = true;
+          // Ключ сменили на другом устройстве (например, после нового пароля) — входим заново паролем
+          const relogin = code === 'auth' && this.kind() === 'github' && siteRepo();
           UI.toast(code === 'auth'
-            ? 'Ключ доступа к хранилищу не подходит или истёк — подключите хранилище заново в настройках'
+            ? 'Ключ доступа к хранилищу не подходит или истёк — войдите заново'
             : 'Хранилище на GitHub не найдено — подключите его заново в настройках', {
             timeout: 10000,
-            action: { label: 'Подключить', fn: () => this.openConnect() },
+            action: relogin
+              ? { label: 'Войти', fn: () => { U.ls.del(GH_KEY); location.reload(); } }
+              : { label: 'Подключить', fn: () => this.openConnect() },
           });
         }
       } else if (this.status === 'error' && !this.warned) {
@@ -872,8 +957,9 @@
 
     /* ---------- Подключение хранилища на GitHub ---------- */
 
-    openConnect() {
-      const owner = (ghConfig() || {}).owner || '';
+    openConnect(opts = {}) {
+      const site = siteRepo();
+      const owner = (ghConfig() || {}).owner || (site ? site.owner : '');
       const repoUrl = 'https://github.com/new?name=semestr-data&visibility=private&description=' + encodeURIComponent('Данные Семестра');
       const tokenUrl = 'https://github.com/settings/personal-access-tokens/new?name=' + encodeURIComponent('Семестр')
         + '&description=' + encodeURIComponent('Доступ сайта Семестр к хранилищу данных')
@@ -886,7 +972,7 @@
             <p class="modal-text">Расписание, дела, заметки и файлы будут храниться в вашем закрытом репозитории на GitHub — их видите только вы. Настроить нужно один раз; другие телефоны и компьютеры потом подключаются по QR-коду.</p>
             <ol class="howto gh-steps">
               <li><b>Создайте закрытое хранилище.</b> <a class="link" href="${U.esc(repoUrl)}" target="_blank" rel="noopener">Открыть GitHub</a> и нажать «Create repository», ничего не меняя. Нет аккаунта на GitHub — там же можно зарегистрироваться.</li>
-              <li><b>Создайте ключ доступа.</b> <a class="link" href="${U.esc(tokenUrl)}" target="_blank" rel="noopener">Открыть GitHub</a>. В «Repository access» выберите «Only select repositories» → <b>semestr-data</b>. В «Permissions» у «Contents» поставьте «Read and write». В «Expiration» — «No expiration» или самый долгий срок. Нажмите «Generate token» и скопируйте ключ.</li>
+              <li><b>Создайте ключ доступа.</b> <a class="link" href="${U.esc(tokenUrl)}" target="_blank" rel="noopener">Открыть GitHub</a>. В «Repository access» выберите «Only select repositories» → <b>semestr-data</b>${site ? ` и <b>${U.esc(site.repo)}</b> (это сам сайт — туда сохранится зашифрованный пароль для входа)` : ''}. В «Permissions» у «Contents» поставьте «Read and write». В «Expiration» — «No expiration» или самый долгий срок. Нажмите «Generate token» и скопируйте ключ.</li>
               <li><b>Вставьте ключ сюда.</b></li>
             </ol>
             <div class="field">
@@ -920,6 +1006,9 @@
               const cfg = await this.checkGithub(token, repo);
               api.close();
               await this.useGithub(cfg);
+              if (opts.onDone) opts.onDone();
+              // Последний шаг — пароль, чтобы на других устройствах входить без ключа
+              if (siteRepo()) setTimeout(() => this.openPassword({ first: true }), 400);
             } catch (e) {
               err.textContent = e.message || String(e);
               err.hidden = false;
@@ -961,7 +1050,7 @@
       }
       UI.toast('Подключаю хранилище…');
       const ok = await this.init();
-      if (ok) {
+      if (ok && App.booted) {
         if (App.route === 'settings') App.renderView(false);
         else App.refresh();
       }
@@ -1039,16 +1128,141 @@
       });
     },
 
+    // Выход: ключ и данные стираются с этого устройства, в хранилище всё остаётся
     async disconnect() {
       const ok = await UI.confirm({
-        title: 'Отключить на этом устройстве?',
-        text: 'Семестр перестанет сохранять изменения в хранилище с этого устройства. Всё, что уже сохранено, останется в хранилище и на других устройствах.',
-        ok: 'Отключить',
+        title: 'Выйти на этом устройстве?',
+        text: 'Ваши данные останутся в хранилище и на других устройствах, а с этого будут стёрты. Чтобы снова открыть Семестр здесь, понадобится пароль.',
+        ok: 'Выйти',
       });
       if (!ok) return;
+      clearTimeout(this.pushTimer);
+      this.pushTimer = null;
       U.ls.del(GH_KEY);
+      if (this.metaKey) U.ls.del(this.metaKey);
+      U.ls.del(Store.KEY);
+      await FileDB.clear();
       location.reload();
     },
+
+    // При запуске сайта: если для него задан пароль, а это устройство ещё не вошло — экран входа
+    async gate() {
+      const site = siteRepo();
+      if (!this.siteMode() || !site || ghConfig() || this.pendingLink || !window.crypto || !crypto.subtle) return;
+      const vault = await Promise.race([fetchVault(site), U.sleep(4000)]);
+      if (!vault) return;
+      await new Promise((resolve) => this.showLogin(vault, resolve));
+    },
+
+    showLogin(vault, done) {
+      const site = siteRepo();
+      const el = document.createElement('div');
+      el.className = 'login';
+      el.id = 'login';
+      el.setAttribute('role', 'dialog');
+      el.setAttribute('aria-modal', 'true');
+      el.setAttribute('aria-labelledby', 'login-title');
+      el.innerHTML = `
+        <form class="login-card" novalidate>
+          ${U.mark('login-mark')}
+          <h1 class="login-title" id="login-title">Семестр</h1>
+          <p class="login-sub">Введите пароль — и откроются ваши расписание, дела, заметки и файлы.</p>
+          <input type="text" name="username" autocomplete="username" value="${U.esc(site.owner)}" hidden>
+          <input type="password" id="login-pass" class="input" autocomplete="current-password" placeholder="Пароль" aria-label="Пароль">
+          <p class="form-error" id="login-err" hidden></p>
+          <button class="btn btn-primary login-go" type="submit">Войти</button>
+          <button class="btn btn-ghost btn-sm login-forgot" type="button">Забыли пароль?</button>
+        </form>`;
+      document.body.appendChild(el);
+      const form = el.querySelector('form');
+      const input = el.querySelector('#login-pass');
+      const err = el.querySelector('#login-err');
+      const go = el.querySelector('.login-go');
+      const finish = () => {
+        el.classList.add('is-out');
+        setTimeout(() => el.remove(), 320);
+        done();
+      };
+      setTimeout(() => input.focus(), 60);
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!input.value) {
+          input.focus();
+          return;
+        }
+        err.hidden = true;
+        go.disabled = true;
+        go.textContent = 'Открываю…';
+        try {
+          const cfg = await openVault(vault, input.value);
+          U.ls.set(GH_KEY, JSON.stringify(cfg));
+          finish();
+        } catch (ex) {
+          err.textContent = 'Неверный пароль. Попробуйте ещё раз.';
+          err.hidden = false;
+          form.classList.remove('shake');
+          void form.offsetWidth;
+          form.classList.add('shake');
+          go.disabled = false;
+          go.textContent = 'Войти';
+          input.select();
+        }
+      });
+      el.querySelector('.login-forgot').addEventListener('click', () => {
+        UI.toast('Пароль нигде не хранится, поэтому восстановить его нельзя. Подключите хранилище заново ключом доступа — и задайте новый пароль', { timeout: 9000 });
+        this.openConnect({ onDone: finish });
+      });
+    },
+
+    openPassword(opts = {}) {
+      const cfg = ghConfig();
+      if (!cfg || !siteRepo()) return;
+      UI.modal({
+        title: opts.first ? 'Последний шаг — пароль' : 'Пароль для входа',
+        size: 'small',
+        focus: 'none',
+        body: `
+          <div class="gh">
+            <p class="modal-text">С этим паролем вы откроете Семестр на любом телефоне и компьютере: зайдите на сайт и введите его. Не короче 8 символов; надёжнее всего — фраза из нескольких слов.</p>
+            <input type="text" name="username" autocomplete="username" value="${U.esc(cfg.owner)}" hidden>
+            <input type="password" id="pw1" class="input" autocomplete="new-password" placeholder="Новый пароль" aria-label="Новый пароль">
+            <input type="password" id="pw2" class="input" autocomplete="new-password" placeholder="Ещё раз" aria-label="Пароль ещё раз">
+            <p class="field-hint">Пароль нигде не хранится — забудете, придётся подключить хранилище заново ключом доступа.</p>
+            <p class="form-error" id="pw-err" hidden></p>
+          </div>`,
+        foot: `
+          <button class="btn btn-ghost" type="button" data-close>${opts.first ? 'Позже' : 'Отмена'}</button>
+          <button class="btn btn-primary" type="button" data-save>Сохранить пароль</button>`,
+        onMount: (el, api) => {
+          const err = el.querySelector('#pw-err');
+          const btn = el.querySelector('[data-save]');
+          const fail = (msg) => {
+            err.textContent = msg;
+            err.hidden = false;
+          };
+          btn.addEventListener('click', async () => {
+            const a = el.querySelector('#pw1').value;
+            const b = el.querySelector('#pw2').value;
+            err.hidden = true;
+            if (a.length < 8) return fail('Пароль должен быть не короче 8 символов.');
+            if (a !== b) return fail('Пароли не совпадают.');
+            btn.disabled = true;
+            btn.textContent = 'Шифрую…';
+            try {
+              await saveVault(cfg, await sealVault(cfg, a));
+              api.close();
+              UI.toast('Пароль сохранён. На любом устройстве откройте сайт Семестра и введите его', { timeout: 8000 });
+            } catch (e) {
+              fail(e.message || 'Не получилось сохранить пароль. Проверьте интернет и попробуйте ещё раз.');
+              btn.disabled = false;
+              btn.textContent = 'Сохранить пароль';
+            }
+            return undefined;
+          });
+        },
+      });
+    },
+
 
     /* ---------- Тексты для настроек и подтверждений ---------- */
 
@@ -1077,8 +1291,9 @@
       else pill = `<span class="pill accent">${U.ico('check')} Сохранено</span>`;
       if (this.kind() === 'disk') pill += `<button class="btn" data-action="disk-reveal">${U.ico('folder')} Открыть в Finder</button>`;
       if (this.kind() === 'github') {
-        pill += `<button class="btn" data-action="sync-pair">${U.ico('phone')} Другое устройство</button>
-          <button class="btn btn-ghost" data-action="sync-disconnect">Отключить</button>`;
+        pill += `${siteRepo() ? `<button class="btn" data-action="sync-password">${U.ico('lock')} Пароль</button>` : ''}
+          <button class="btn" data-action="sync-pair">${U.ico('phone')} Другое устройство</button>
+          <button class="btn btn-ghost" data-action="sync-disconnect">Выйти</button>`;
       }
       return pill;
     },
@@ -1092,7 +1307,7 @@
       if (kind === 'github') {
         const repo = this.store ? `${this.store.cfg.owner}/${this.store.cfg.repo}` : '';
         if (this.status === 'error') return `Последнее изменение не сохранилось в хранилище (${U.esc(this.error)}). Оно ждёт на этом устройстве — попробуем ещё раз.`;
-        return `Всё хранится в вашем закрытом репозитории «${U.esc(repo)}» на GitHub и одинаково на всех устройствах, где вы подключили Семестр. Файлы — до 50 МБ каждый. Другие устройства подключаются по QR-коду.`;
+        return `Всё хранится в вашем закрытом репозитории «${U.esc(repo)}» на GitHub и одинаково на всех устройствах. Чтобы открыть Семестр на другом телефоне или компьютере, зайдите на сайт и введите пароль — или наведите камеру на QR-код. Файлы — до 50 МБ каждый.`;
       }
       if (kind === 'disk') {
         if (this.status === 'error') return 'Семестр на Mac сейчас не запущен — откройте «Семестр.command». До этого изменения хранятся в браузере и попадут на диск, как только он заработает.';
@@ -1117,16 +1332,14 @@
     'sync-connect': () => Cloud.openConnect(),
     'sync-pair': () => Cloud.openPair(),
     'sync-disconnect': () => Cloud.disconnect(),
-    'sync-hide': () => {
-      U.ls.set('semestr.hideSync', '1');
-      App.refresh();
-    },
+    'sync-password': () => Cloud.openPassword(),
   });
 
   // Для проверок
   Cloud._merge3 = merge3;
   Cloud._mergeFirst = mergeFirst;
   Cloud._pairLink = () => { const c = ghConfig(); return c && pairLink(c); };
+  Cloud._vault = { seal: sealVault, open: openVault };
 
   App.Cloud = Cloud;
 })(window.App);

@@ -49,51 +49,10 @@
         </div>`;
     },
 
+    // Никаких напоминающих плашек: только выбор группы, пока расписание не загружено
     banner() {
       const onboard = App.KGMU ? App.KGMU.onboardCard() : '';
-      if (onboard) return `<div class="sample-banner">${onboard}</div>`;
-      // На сайте: данные пока только в этом браузере — предлагаем хранилище для всех устройств
-      if (App.Cloud && App.Cloud.kind() === 'browser' && App.Cloud.siteMode() && !U.ls.get('semestr.hideSync')) {
-        return `
-          <div class="banner sample-banner rise" style="--i:6">${ico('link')}
-            <div class="banner-text"><b>Сохраняйте всё на всех устройствах.</b> Подключите хранилище — и Семестр с вашими делами, заметками и файлами откроется на любом телефоне и компьютере.</div>
-            <div class="banner-actions">
-              <button class="btn btn-sm" data-action="sync-connect">Подключить</button>
-              <button class="icon-btn sm" data-action="sync-hide" aria-label="Скрыть">${ico('x')}</button>
-            </div>
-          </div>`;
-      }
-      const P = App.PWA;
-      if (P && P.mobile() && !Store.state.settings.hideInstall && ['prompt', 'ios'].includes(P.installMode())) {
-        return `
-          <div class="banner sample-banner rise" style="--i:6">${ico('download')}
-            <div class="banner-text"><b>Установите Семестр на телефон.</b> Он будет открываться со значка на главном экране и работать без интернета.</div>
-            <div class="banner-actions">
-              <button class="btn btn-sm" data-action="pwa-install">${P.installMode() === 'prompt' ? 'Установить' : 'Как установить'}</button>
-              <button class="icon-btn sm" data-action="pwa-hide" aria-label="Скрыть">${ico('x')}</button>
-            </div>
-          </div>`;
-      }
-      const last = App.Schedule.semesterOver(new Date());
-      if (last && App.KGMU) {
-        return `
-          <div class="banner sample-banner rise" style="--i:6">${ico('info')}
-            <div class="banner-text"><b>Семестр по расписанию закончился ${U.fmtDate(last)}.</b> Когда на сайте КГМУ появится расписание следующего полугодия, скачайте .xlsx своего потока и загрузите его — темы 6 семестра уже есть.</div>
-            <div class="banner-actions">
-              <a class="btn btn-sm" href="${esc(App.KGMU_DATA.page)}" target="_blank" rel="noopener">Сайт КГМУ</a>
-              <button class="btn btn-sm" data-action="kgmu-upload">${ico('upload')} Загрузить</button>
-            </div>
-          </div>`;
-      }
-      if (!Store.state.sampleBanner || !Store.hasSample()) return '';
-      return `
-        <div class="banner sample-banner rise" style="--i:6">${ico('info')}
-          <div class="banner-text"><b>Дела и файлы ниже — пример.</b> Они показывают, как всё работает. Когда добавите свои, пример можно убрать одной кнопкой.</div>
-          <div class="banner-actions">
-            <button class="btn btn-sm" data-action="sample-clear">Очистить пример</button>
-            <button class="icon-btn sm" data-action="sample-hide" aria-label="Скрыть подсказку">${ico('x')}</button>
-          </div>
-        </div>`;
+      return onboard ? `<div class="sample-banner">${onboard}</div>` : '';
     },
 
     composer() {

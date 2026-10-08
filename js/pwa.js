@@ -10,7 +10,6 @@
     supported: 'serviceWorker' in navigator && secure,
     reg: null,
     deferred: null,      // событие beforeinstallprompt — можно показать системное окно установки
-    updating: false,
     offlineReady: false,
 
     standalone() {
@@ -47,7 +46,7 @@
       });
       window.addEventListener('online', () => this.network(true));
       window.addEventListener('offline', () => this.network(false));
-      this.network(navigator.onLine, true);
+      this.network(navigator.onLine);
 
       if (!this.supported) return;
       try {
@@ -60,18 +59,8 @@
       this.offlineReady = true;
       this.rerender();
 
-      if (this.reg.waiting && navigator.serviceWorker.controller) this.promptUpdate(this.reg.waiting);
-      this.reg.addEventListener('updatefound', () => {
-        const w = this.reg.installing;
-        if (!w) return;
-        w.addEventListener('statechange', () => {
-          if (w.state === 'installed' && navigator.serviceWorker.controller) this.promptUpdate(w);
-        });
-      });
-      // Перезагружаемся только после «Обновить», а не при первой установке воркера
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (this.updating) window.location.reload();
-      });
+      // Новая версия ставится сама и включается при следующем открытии — без всплывающих предложений
+      if (this.reg.waiting) this.reg.waiting.postMessage('skip-waiting');
       navigator.serviceWorker.addEventListener('message', (e) => {
         if (e.data && e.data.type === 'open-notification' && e.data.id) App.Notify.openItem(e.data.id);
       });
@@ -79,16 +68,6 @@
       const check = () => { if (navigator.onLine) this.reg.update().catch(() => {}); };
       document.addEventListener('visibilitychange', () => { if (!document.hidden) check(); });
       setInterval(check, 36e5);
-    },
-
-    promptUpdate(worker) {
-      UI.toast('Доступна новая версия Семестра', {
-        timeout: 30000,
-        action: {
-          label: 'Обновить',
-          fn: () => { this.updating = true; worker.postMessage('skip-waiting'); },
-        },
-      });
     },
 
     async install() {
@@ -121,12 +100,10 @@
       });
     },
 
-    network(online, silent) {
+    // Без интернета просто показываем метку «Офлайн» — всё и так сохраняется на устройстве
+    network(online) {
       const pill = U.$('#net-pill');
       if (pill) pill.hidden = online;
-      if (silent) return;
-      if (online) UI.toast('Интернет снова есть');
-      else UI.toast(this.offlineReady ? 'Нет интернета. Всё сохранено на устройстве — Семестр работает офлайн' : 'Нет интернета');
     },
 
     // Системное уведомление: через воркер, если он есть (на Android обычный способ не работает)
@@ -145,11 +122,6 @@
   };
 
   App.actions['pwa-install'] = () => PWA.install();
-  App.actions['pwa-hide'] = () => {
-    App.Store.state.settings.hideInstall = true;
-    App.Store.save();
-    App.refresh();
-  };
 
   App.PWA = PWA;
 })(window.App);

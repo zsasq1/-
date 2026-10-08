@@ -281,19 +281,6 @@
     'data-import': () => Settings.importData(),
     'data-reset': () => Settings.resetAll(),
     'sample-clear': () => Settings.clearSample(),
-    'sample-hide': () => {
-      Store.state.sampleBanner = false;
-      Store.save();
-      const b = U.$('#home-banner .banner');
-      if (b) {
-        b.style.transition = 'opacity .25s ease, transform .25s ease';
-        b.style.opacity = '0';
-        b.style.transform = 'translateY(-6px)';
-        setTimeout(() => App.refresh(), 250);
-      } else {
-        App.refresh();
-      }
-    },
   });
 
   Object.assign(App.changes, {

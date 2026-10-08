@@ -232,11 +232,8 @@
     if (App.Cloud) App.Cloud.takeConnectLink();
     Store.load();
     // Ошибка при загрузке расписания группы не должна мешать остальному приложению
-    let autoGroup = false;
-    let electiveAdded = false;
     try {
-      autoGroup = App.KGMU ? App.KGMU.autoImport() : false;
-      electiveAdded = !autoGroup && App.KGMU ? App.KGMU.syncElectives() : false;
+      if (App.KGMU && !App.KGMU.autoImport()) App.KGMU.syncElectives();
     } catch (e) {
       console.error(e);
       setTimeout(() => UI.toast(`Не удалось загрузить расписание группы: ${e.message}`, { timeout: 8000 }), 600);
@@ -262,9 +259,13 @@
     window.addEventListener('resize', U.debounce(UI.refreshSegs, 150));
 
     const filesReady = FileDB.open();
-    // Внутри Claude данные лежат в аккаунте: сначала забираем их, чтобы не мелькали чужие примеры
-    if (App.Cloud && App.Cloud.available()) {
+    // Сайт с паролем: на новом устройстве сначала вход
+    if (App.Cloud) {
       $view().innerHTML = '<div class="view-inner"><p class="boot-wait shimmer">Загружаем ваши данные…</p></div>';
+      await App.Cloud.gate();
+    }
+    // Данные лежат в хранилище: сначала забираем их, чтобы не мелькали примеры
+    if (App.Cloud && App.Cloud.available()) {
       await Promise.race([App.Cloud.init(filesReady), U.sleep(2500)]);
     } else if (navigator.storage && navigator.storage.persist) {
       // Просим браузер не удалять данные сайта при нехватке места
@@ -293,20 +294,6 @@
     }
     if (App.Cloud && App.Cloud.on()) App.Cloud.uploadMissing();
     if (App.Cloud && App.Cloud.pendingLink) App.Cloud.confirmLink();
-    // Данные пришли из аккаунта — сообщения о первом запуске уже не о них
-    const fromCloud = App.Cloud && App.Cloud.adoptedOnBoot;
-    if (autoGroup && !fromCloud) {
-      const withElective = (Store.state.settings.electiveCourses || []).length;
-      UI.toast(withElective
-        ? `Загружено расписание группы ${autoGroup} с элективом на кафедре патофизиологии и темами занятий`
-        : `Загружено расписание группы ${autoGroup}. Дисциплины по выбору можно добавить в настройках`, {
-        timeout: 8000,
-        action: { label: 'Сменить', fn: () => App.KGMU.openImport(autoGroup) },
-      });
-    }
-    if (electiveAdded && !fromCloud) {
-      UI.toast('Добавлен электив на кафедре патофизиологии: пятница, 13:00. Темы — в карточке занятия', { timeout: 8000 });
-    }
     if (!Store.storageOk) {
       UI.toast('Браузер не даёт сохранять данные — изменения пропадут после перезагрузки', { timeout: 8000 });
     } else if (!dbOk && !(App.Cloud && App.Cloud.on())) {

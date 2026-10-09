@@ -65,6 +65,7 @@
     matches(c, date) {
       const iso = U.ymd(date);
       if (HOLIDAYS[iso]) return false;
+      if (c.skip && c.skip.includes(iso)) return false; // пару отменили или перенесли в этот день
       if (c.dates && c.dates.length) return c.dates.includes(iso);
       if (Number(c.day) !== U.isoDay(date)) return false;
       if (c.from && iso < c.from) return false;
@@ -365,6 +366,8 @@
             <span class="cc-dur">${this.fmtDur(U.toMin(c.end) - U.toMin(c.start))}</span>
             <span class="cc-badges">
               ${t && t.final ? '<span class="cc-badge is-final">итоговое</span>' : ''}
+              ${t && t.absent ? `<span class="cc-badge ${t.madeUp ? '' : 'is-absent'}">${t.madeUp ? 'отработано' : 'пропуск'}</span>` : ''}
+              ${t && t.grade ? `<span class="cc-badge is-grade">${esc(t.grade)}</span>` : ''}
               ${altWeeks ? `<span class="cc-badge">${esc(this.weekName(c.weeks === 'odd', true))}</span>` : ''}
             </span>
           </span>

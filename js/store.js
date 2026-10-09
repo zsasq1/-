@@ -66,6 +66,7 @@
         sampleBanner: false,
         kgmuCustom: null,
         topicNotes: {},
+        cards: [], // карточки для повторения: { id, subjectId, q, a, box, due, createdAt }
       };
     },
 
@@ -93,7 +94,7 @@
       const st = Object.assign(def, data);
       st.settings = Object.assign(this.defaults().settings, data.settings || {});
       st.profile = Object.assign(this.defaults().profile, data.profile || {});
-      ['subjects', 'classes', 'reminders', 'files', 'notifications'].forEach((k) => {
+      ['subjects', 'classes', 'reminders', 'files', 'notifications', 'cards'].forEach((k) => {
         if (!Array.isArray(st[k])) st[k] = [];
       });
       if (!st.fired || typeof st.fired !== 'object') st.fired = {};
@@ -192,6 +193,7 @@
       const used = new Set();
       st.classes.forEach((c) => used.add(c.subjectId));
       st.reminders.forEach((r) => used.add(r.subjectId));
+      (st.cards || []).forEach((c) => used.add(c.subjectId));
       st.files.forEach((f) => used.add(f.subjectId));
       st.subjects = st.subjects.filter((s) => used.has(s.id));
     },

@@ -89,6 +89,7 @@
         about: fi != null && !note.topic ? entry.plan.list[fi].c || '' : '',
         know: fi != null && !note.topic ? this.knowFor(entry, fi) : [],
         passed: !!note.passed,
+        grade: note.grade || '', absent: !!note.absent, madeUp: !!note.madeUp,
         hasPlan: !!(entry && entry.plan),
         src: entry && entry.plan ? entry.plan.src : '',
         entry,
@@ -135,6 +136,27 @@
       return list;
     },
 
+    // Пропуск: отметка на занятии и дело «Отработка» в дедлайнах (одно на занятие)
+    setAbsent(t, absent, madeUp = false) {
+      const key = this.noteKey(t.subject, t.kind, t.date, t.start);
+      this.saveNote(t, { absent, madeUp: absent && madeUp });
+      const st = Store.state;
+      const rem = st.reminders.find((r) => r.occKey === key);
+      if (absent && !rem) {
+        const s = Store.subjectByName(t.subject);
+        const short = (t.custom || t.label || '').split(' · ')[0];
+        st.reminders.push({
+          id: U.uid(), title: `Отработка: ${t.subject}${short ? ` — ${short.length > 90 ? `${short.slice(0, 88)}…` : short}` : ''}`,
+          kind: 'deadline', subjectId: s.id, due: null, lead: 0, occKey: key,
+          done: madeUp, doneAt: madeUp ? new Date().toISOString() : null, createdAt: new Date().toISOString(),
+        });
+      } else if (rem) {
+        if (!absent) st.reminders = st.reminders.filter((r) => r !== rem);
+        else { rem.done = madeUp; rem.doneAt = madeUp ? new Date().toISOString() : null; }
+      }
+      Store.save();
+    },
+
     setPassed(id, passed) {
       const cur = Object.assign({}, Store.state.topicNotes[id] || {});
       if (passed) cur.passed = true; else delete cur.passed;
@@ -153,8 +175,8 @@
     saveNote(t, patch) {
       const key = this.noteKey(t.subject, t.kind, t.date, t.start);
       const cur = Object.assign({}, Store.state.topicNotes[key] || {}, patch);
-      if (!cur.topic) delete cur.topic;
-      if (!cur.note) delete cur.note;
+      // пустые поля не храним: тема, заметка, оценка, пропуск, отработка, «сдано»
+      Object.keys(cur).forEach((k) => { if (cur[k] === '' || cur[k] == null || cur[k] === false) delete cur[k]; });
       if (Object.keys(cur).length) Store.state.topicNotes[key] = cur;
       else delete Store.state.topicNotes[key];
       Store.save();
@@ -233,6 +255,13 @@
               <div class="occ-label">Что надо знать к итоговому · ${U.count(t.know.length, ['тема', 'темы', 'тем'])}</div>
               <ol class="know-list">${t.know.map((k) => `<li><span>${esc(k.t)}</span>${k.date ? `<time>${k.date.slice(8)}.${k.date.slice(5, 7)}</time>` : ''}</li>`).join('')}</ol>
             </section>` : ''}
+            <div class="occ-marks">
+              <span class="occ-marks-label">Посещение</span>
+              ${UI.seg('om', 'occ-att', { '': 'Был', absent: t.madeUp ? 'Отработал' : 'Пропустил' }, t.absent ? 'absent' : '')}
+              <label class="occ-grade">Оценка
+                <select id="occ-grade" class="input">${['', '5', '4', '3', '2', 'зачёт', 'незачёт'].map((g) => `<option value="${g}" ${g === t.grade ? 'selected' : ''}>${g || '—'}</option>`).join('')}</select>
+              </label>
+            </div>
             <div class="form-grid">
               <div class="field span-2">
                 <label for="occ-topic">Своя тема</label>
@@ -260,6 +289,16 @@
           el.querySelector('#occ-topic').addEventListener('input', save);
           el.querySelector('#occ-note').addEventListener('input', save);
           el.querySelector('[data-edit]').addEventListener('click', () => { api.close(); App.Schedule.openModal(c); });
+          el.querySelector('#occ-grade').addEventListener('change', (e) => {
+            this.saveNote(t, { grade: e.target.value });
+            App.refresh();
+          });
+          U.$$('input[name="occ-att"]', el).forEach((r) => r.addEventListener('change', () => {
+            const absent = r.value === 'absent';
+            this.setAbsent(t, absent);
+            App.refresh();
+            if (absent) UI.toast('Отмечен пропуск — добавили отработку в дедлайны');
+          }));
           const passBtn = el.querySelector('[data-passed]');
           if (passBtn) passBtn.addEventListener('click', () => {
             t.passed = !t.passed;

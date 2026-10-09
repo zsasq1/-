@@ -3,7 +3,7 @@
    и сама включается при следующем открытии Семестра — без предложений «Обновить».
    VERSION пересчитывается скриптом tools/sw-version.py. */
 
-const VERSION = 'semestr-a56c30dbd2';
+const VERSION = 'semestr-bdbb18700e';
 const RUNTIME = 'semestr-runtime';
 
 const SHELL = [

@@ -1730,3 +1730,29 @@ body.ai-on .ai-fab { opacity: 0; pointer-events: none; transform: scale(.9); }
 /* подсказки не закрывают кнопку ассистента */
 body:not(.ai-on) .toasts { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
 @media (max-width: 760px) { body.ai-on .toasts { display: none; } }
+
+/* вложения в чате ассистента */
+.ai-attach { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 12px; color: var(--muted); transition: background .15s ease, color .15s ease; }
+.ai-attach:hover { background: var(--hover); color: var(--text); }
+.ai-attach .ico { width: 20px; height: 20px; }
+.ai-staged { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 14px 0; border-top: 1px solid var(--border); }
+.ai-file {
+  display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
+  padding: 5px 6px 5px 9px; border-radius: 9px; background: var(--surface-2); border: 1px solid var(--border);
+  font-size: 12.5px; color: var(--text-2);
+}
+.ai-file .ico { width: 14px; height: 14px; flex: none; }
+.ai-file > span { overflow-wrap: anywhere; }
+.ai-file button { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 6px; color: var(--muted); }
+.ai-file button:hover { background: var(--hover); color: var(--text); }
+.ai-bubble-files { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; max-width: 88%; }
+.ai-bubble-files .ai-file { padding-right: 9px; }
+
+/* посещение и оценка в окне занятия, отметки на карточке */
+.occ-marks { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.occ-marks-label { font-size: 13px; color: var(--muted); }
+.occ-grade { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-left: auto; }
+.occ-grade .input { width: auto; min-width: 92px; height: 34px; padding: 0 10px; }
+.cc-badge.is-absent { background: color-mix(in srgb, var(--danger) 16%, transparent); color: var(--danger); }
+.cc-badge.is-grade { background: var(--surface); color: var(--text); font-weight: 700; }
+@media (min-width: 761px) { body.ai-on .toasts { right: calc(min(440px, 100vw - 32px) + 32px); } }

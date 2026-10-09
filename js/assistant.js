@@ -15,6 +15,11 @@
     'claude-haiku-5-5': 'Haiku 5.5 — дешевле всего',
   };
   const DEFAULT_MODEL = 'claude-opus-5-5';
+  // DeepSeek: совместимый с OpenAI формат, ключи вида sk-… без «ant»
+  const DS_URL = 'https://api.deepseek.com/chat/completions';
+  const DS_MODELS = { 'deepseek-chat': 'DeepSeek V3' };
+  const DS_DEFAULT = 'deepseek-chat';
+  const providerOf = (key) => (/^sk-ant-/.test(key || '') ? 'anthropic' : 'deepseek');
   const MAX_HISTORY = 12;
 
   const SUGGEST = [
@@ -411,7 +416,8 @@
 
   const Ai = {
     turns: [],      // для экрана: { role, text, actions, state, undo }
-    apiMessages: [],// история для API: только дописывается
+    apiMessages: [],// история для API Anthropic: только дописывается
+    dsMessages: [], // история для DeepSeek
     sample: undefined,
     tools: false,
     busy: false,
@@ -427,7 +433,9 @@
     modeText() {
       return {
         claude: 'через ваш аккаунт Claude',
-        api: (MODELS[cfg().model || DEFAULT_MODEL] || '').split(' — ')[0] + ' · ключ API',
+        api: providerOf(cfg().key) === 'deepseek'
+          ? `${DS_MODELS[cfg().model] || DS_MODELS[DS_DEFAULT]} · ключ DeepSeek`
+          : `${(MODELS[cfg().model] || MODELS[DEFAULT_MODEL]).split(' — ')[0]} · ключ API`,
         none: 'не подключён',
       }[this.mode()];
     },
@@ -514,6 +522,7 @@
       if (this.busy && this.ctl) this.ctl.abort();
       this.turns = [];
       this.apiMessages = [];
+      this.dsMessages = [];
       this.renderLog();
       U.$('#ai-input').focus();
     },
@@ -575,47 +584,66 @@
             ? '<p>В этом окне Claude не разрешил странице обращаться к себе. Откройте Семестр в приложении Claude или на claude.ai.</p>'
             : `<p>Есть два способа:</p>
                <p>• <b>Бесплатно, в рамках подписки Claude</b> — откройте Семестр в версии внутри Claude. Данные те же, если подключено хранилище.</p>
-               <p>• <b>Здесь, на сайте</b> — вставьте свой ключ API Anthropic. Запросы оплачиваются отдельно по тарифу API, обычно это копейки за сообщение. Ключ создаётся на platform.claude.com → API Keys.</p>
+               <p>• <b>Здесь, на сайте</b> — вставьте свой ключ API: Claude (platform.claude.com) или DeepSeek (platform.deepseek.com). Запросы оплачиваются по тарифу выбранного сервиса, обычно это копейки за сообщение.</p>
                <button type="button" class="btn btn-primary" data-action="ai-key">${ico('lock')} Вставить ключ API</button>`}
         </div>`;
     },
 
     openKey() {
       const c = cfg();
+      const opts = (prov, cur) => Object.entries(prov === 'deepseek' ? DS_MODELS : MODELS)
+        .map(([v, l]) => `<option value="${v}" ${v === cur ? 'selected' : ''}>${esc(l)}</option>`).join('');
       UI.modal({
         title: 'Ключ API для ассистента',
         body: `
           <div class="form-grid">
             <div class="field span-2">
-              <label for="ai-key-in">Ключ API Anthropic</label>
-              <input id="ai-key-in" class="input" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…" value="${esc(c.key || '')}">
+              <label for="ai-key-in">Ключ API — Claude или DeepSeek</label>
+              <input id="ai-key-in" class="input" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-… или sk-…" value="${esc(c.key || '')}">
+              <p class="field-hint" id="ai-prov"></p>
             </div>
             <div class="field span-2">
               <label for="ai-model-in">Модель</label>
-              <select id="ai-model-in" class="input">${Object.entries(MODELS).map(([v, l]) => `<option value="${v}" ${v === (c.model || DEFAULT_MODEL) ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
+              <select id="ai-model-in" class="input"></select>
             </div>
           </div>
-          <p class="field-hint">Ключ хранится только в этом браузере и отправляется только в Anthropic. В хранилище, на другие устройства и в резервную копию он не попадает. Создать ключ и пополнить баланс — на platform.claude.com.</p>`,
+          <p class="field-hint">Ключ хранится только в этом браузере и отправляется только в выбранный сервис. В хранилище, на другие устройства и в резервную копию он не попадает. Ключ Claude создаётся на platform.claude.com, DeepSeek — на platform.deepseek.com; там же пополняется баланс.</p>`,
         foot: `
           ${c.key ? '<button class="btn btn-ghost btn-danger" type="button" data-remove>Удалить ключ</button>' : ''}
           <span class="spacer"></span>
           <button class="btn" type="button" data-close>Отмена</button>
           <button class="btn btn-primary" type="button" data-ok>Сохранить</button>`,
         onMount: (el, api) => {
+          const keyIn = el.querySelector('#ai-key-in');
+          const modelIn = el.querySelector('#ai-model-in');
+          let shown = '';
+          const sync = () => {
+            const key = keyIn.value.trim();
+            const prov = providerOf(key);
+            el.querySelector('#ai-prov').textContent = !key ? '' : prov === 'deepseek' ? 'Это ключ DeepSeek' : 'Это ключ Claude (Anthropic)';
+            if (prov !== shown) {
+              const cur = providerOf(c.key) === prov && c.model ? c.model : prov === 'deepseek' ? DS_DEFAULT : DEFAULT_MODEL;
+              modelIn.innerHTML = opts(prov, cur);
+              shown = prov;
+            }
+          };
+          keyIn.addEventListener('input', sync);
+          sync();
           el.querySelector('[data-ok]').addEventListener('click', () => {
-            const key = el.querySelector('#ai-key-in').value.trim();
-            if (key && !/^sk-ant-/.test(key)) { UI.toast('Ключ начинается с sk-ant-'); return; }
-            setCfg({ key, model: el.querySelector('#ai-model-in').value });
+            const key = keyIn.value.trim();
+            if (key && !/^sk-[\w-]{16,}$/.test(key)) { UI.toast('Ключ должен начинаться с sk-'); return; }
+            setCfg({ key, model: modelIn.value });
             api.close();
             this.apiMessages = [];
+            this.dsMessages = [];
             this.renderHead();
             this.renderLog();
             if (App.route === 'settings') App.renderView(false);
-            UI.toast(key ? 'Ассистент подключён' : 'Ключ удалён');
+            UI.toast(key ? `Ассистент подключён: ${providerOf(key) === 'deepseek' ? 'DeepSeek' : 'Claude'}` : 'Ключ удалён');
           });
           const rm = el.querySelector('[data-remove]');
           if (rm) rm.addEventListener('click', () => {
-            setCfg({ key: '' });
+            setCfg({ key: '', model: '' });
             api.close();
             this.renderHead();
             this.renderLog();
@@ -651,6 +679,7 @@
       const msg = `${context()}\n\nСообщение студента: ${text}`;
       try {
         if (this.mode() === 'claude') await this.viaClaude(msg, turn);
+        else if (providerOf(cfg().key) === 'deepseek') await this.viaDeepseek(msg, turn);
         else await this.viaApi(msg, turn);
         turn.state = 'done';
       } catch (e) {
@@ -709,7 +738,8 @@
 
     // На сайте: свой цикл с инструментами через API Anthropic
     async viaApi(msg, turn) {
-      const { key, model = DEFAULT_MODEL } = cfg();
+      const { key } = cfg();
+      const model = MODELS[cfg().model] ? cfg().model : DEFAULT_MODEL;
       const tools = TOOLS.map((t) => ({ name: t.name, description: t.description, input_schema: t.schema }));
       const msgs = this.apiMessages;
       // после ошибки или отмены история может кончаться сообщением студента — дописываем в него
@@ -769,6 +799,63 @@
       }
     },
 
+    // DeepSeek: такой же цикл, но в формате OpenAI (tool_calls → сообщения role: tool)
+    async viaDeepseek(msg, turn) {
+      const { key } = cfg();
+      const model = DS_MODELS[cfg().model] ? cfg().model : DS_DEFAULT;
+      const tools = TOOLS.map((t) => ({ type: 'function', function: { name: t.name, description: t.description, parameters: t.schema } }));
+      const msgs = this.dsMessages;
+      if (!msgs.length) msgs.push({ role: 'system', content: RULES });
+      const last = msgs[msgs.length - 1];
+      const before = last.role === 'user' ? last.content : null;
+      if (before !== null) last.content = `${before}\n\n${msg}`;
+      else msgs.push({ role: 'user', content: msg });
+      for (let round = 0; round < 10; round++) {
+        let res;
+        try {
+          res = await fetch(DS_URL, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
+            body: JSON.stringify({ model, messages: msgs, tools, max_tokens: 4000 }),
+            signal: this.ctl.signal,
+          });
+        } catch (e) {
+          if (e && e.name === 'AbortError') throw { code: 'cancelled' };
+          throw { code: 'network', provider: 'DeepSeek' };
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          if (round === 0) {
+            if (before !== null) msgs[msgs.length - 1].content = before;
+            else msgs.pop();
+          }
+          throw { code: 'api', provider: 'DeepSeek', status: res.status, message: data && data.error && data.error.message };
+        }
+        const m = data.choices && data.choices[0] && data.choices[0].message;
+        if (!m) throw { code: 'api', provider: 'DeepSeek', status: 500, message: 'пустой ответ' };
+        const calls = Array.isArray(m.tool_calls) ? m.tool_calls : [];
+        msgs.push(Object.assign({ role: 'assistant', content: m.content || '' }, calls.length ? { tool_calls: calls } : {}));
+        const said = String(m.content || '').trim();
+        if (said) { turn.text = turn.text ? `${turn.text}\n\n${said}` : said; this.renderTurn(turn); }
+        if (!calls.length) return;
+        for (const call of calls) {
+          let out;
+          if (this.ctl.signal.aborted) out = 'Остановлено пользователем';
+          else {
+            try {
+              const args = JSON.parse((call.function && call.function.arguments) || '{}');
+              const r = await runTool(call.function.name, args);
+              out = typeof r === 'string' ? r : JSON.stringify(r);
+            } catch (e) {
+              out = `Ошибка: ${e.message || e}`;
+            }
+          }
+          msgs.push({ role: 'tool', tool_call_id: call.id, content: out });
+        }
+        if (this.ctl.signal.aborted) throw { code: 'cancelled' };
+      }
+    },
+
     stop() {
       if (this.ctl) this.ctl.abort();
     },
@@ -785,6 +872,7 @@
       UI.toast('Изменения ассистента отменены');
       const note = 'Студент отменил все изменения из твоего прошлого ответа.';
       if (this.apiMessages.length) this.apiMessages.push({ role: 'user', content: note });
+      if (this.dsMessages.length) this.dsMessages.push({ role: 'user', content: note });
     },
   };
 
@@ -795,6 +883,13 @@
 
   function errText(e) {
     const c = e && e.code;
+    if (c === 'api' && e.provider === 'DeepSeek') {
+      if (e.status === 401) return 'Ключ DeepSeek не подошёл. Проверьте его в настройках ассистента.';
+      if (e.status === 402) return 'На балансе DeepSeek закончились деньги — пополните его на platform.deepseek.com.';
+      if (e.status === 429) return 'DeepSeek просит подождать: слишком много запросов. Попробуйте через минуту.';
+      if (e.status >= 500) return 'DeepSeek сейчас перегружен. Попробуйте через минуту.';
+      return `DeepSeek ответил ошибкой: ${e.message || e.status}`;
+    }
     if (c === 'api') {
       if (e.status === 401) return 'Ключ API не подошёл. Проверьте его в настройках ассистента.';
       if (e.status === 429) return 'Слишком много запросов. Подождите минуту и попробуйте снова.';
@@ -802,7 +897,9 @@
       if (e.status === 529 || e.status >= 500) return 'Сервис Claude сейчас перегружен. Попробуйте через минуту.';
       return `Не получилось: ${e.message || `ошибка ${e.status}`}`;
     }
-    if (c === 'network') return 'Нет связи с Claude. Проверьте интернет.';
+    if (c === 'network') return e.provider === 'DeepSeek'
+      ? 'Не получилось связаться с DeepSeek. Проверьте интернет; если интернет есть, значит DeepSeek не пускает запросы прямо из браузера — напишите об этом.'
+      : 'Нет связи с Claude. Проверьте интернет.';
     if (c === 'not_granted' || c === 'sampling_disabled' || c === 'capability_disabled') return 'Claude не разрешил ассистенту работать в этом окне.';
     if (c === 'rate_limited') return 'Лимит Claude на сейчас исчерпан. Попробуйте позже.';
     if (c === 'session_expired') return 'Нужно заново войти в Claude.';

@@ -17,8 +17,11 @@
   const DEFAULT_MODEL = 'claude-opus-5-5';
   // DeepSeek: совместимый с OpenAI формат, ключи вида sk-… без «ant»
   const DS_URL = 'https://api.deepseek.com/chat/completions';
-  const DS_MODELS = { 'deepseek-chat': 'DeepSeek V3' };
-  const DS_DEFAULT = 'deepseek-chat';
+  const DS_MODELS = {
+    'deepseek-flash': 'DeepSeek V4.1 Flash — быстрая и дешёвая',
+    'deepseek-v4-pro': 'DeepSeek V4 Pro — умнее, дороже',
+  };
+  const DS_DEFAULT = 'deepseek-flash';
   const providerOf = (key) => (/^sk-ant-/.test(key || '') ? 'anthropic' : 'deepseek');
   const MAX_HISTORY = 12;
 
@@ -434,7 +437,7 @@
       return {
         claude: 'через ваш аккаунт Claude',
         api: providerOf(cfg().key) === 'deepseek'
-          ? `${DS_MODELS[cfg().model] || DS_MODELS[DS_DEFAULT]} · ключ DeepSeek`
+          ? `${(DS_MODELS[cfg().model] || DS_MODELS[DS_DEFAULT]).split(' — ')[0]} · ключ DeepSeek`
           : `${(MODELS[cfg().model] || MODELS[DEFAULT_MODEL]).split(' — ')[0]} · ключ API`,
         none: 'не подключён',
       }[this.mode()];
@@ -816,7 +819,7 @@
           res = await fetch(DS_URL, {
             method: 'POST',
             headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
-            body: JSON.stringify({ model, messages: msgs, tools, max_tokens: 4000 }),
+            body: JSON.stringify({ model, messages: msgs, tools, max_tokens: 8000, reasoning_effort: 'low' }),
             signal: this.ctl.signal,
           });
         } catch (e) {
@@ -834,7 +837,12 @@
         const m = data.choices && data.choices[0] && data.choices[0].message;
         if (!m) throw { code: 'api', provider: 'DeepSeek', status: 500, message: 'пустой ответ' };
         const calls = Array.isArray(m.tool_calls) ? m.tool_calls : [];
-        msgs.push(Object.assign({ role: 'assistant', content: m.content || '' }, calls.length ? { tool_calls: calls } : {}));
+        // В режиме размышлений с инструментами DeepSeek требует возвращать reasoning_content во всех следующих запросах
+        msgs.push(Object.assign(
+          { role: 'assistant', content: m.content || '' },
+          m.reasoning_content ? { reasoning_content: m.reasoning_content } : {},
+          calls.length ? { tool_calls: calls } : {},
+        ));
         const said = String(m.content || '').trim();
         if (said) { turn.text = turn.text ? `${turn.text}\n\n${said}` : said; this.renderTurn(turn); }
         if (!calls.length) return;

@@ -89,6 +89,7 @@
           </section>
 
           ${this.appSection(row)}
+          ${App.Ai ? this.aiSection(row) : ''}
 
           <section class="set-group rise" style="--i:7">
             <h2>Данные</h2>
@@ -108,6 +109,24 @@
             </div>
           </section>
         </div>`;
+    },
+
+    aiSection(row) {
+      const mode = App.Ai.mode();
+      const desc = mode === 'claude'
+        ? 'Работает через ваш аккаунт Claude: платить отдельно не нужно, расходуются лимиты подписки.'
+        : mode === 'api'
+          ? `Подключён ключ API: ${esc(App.Ai.modeText())}. Ключ хранится только в этом браузере; запросы оплачиваются по тарифу API.`
+          : 'Пишете обычными словами — ассистент сам добавляет дедлайны, заметки к занятиям и пары, находит темы и подсказывает, что учить. Бесплатно — в версии внутри Claude; здесь — со своим ключом API Anthropic.';
+      return `
+          <section class="set-group rise" style="--i:6">
+            <h2>Ассистент</h2>
+            <div class="set-card">
+              ${row('Ассистент', desc,
+                `<button class="btn btn-primary" data-action="ai-open">${ico('sparkle')} Открыть</button>
+                 ${mode !== 'claude' ? `<button class="btn" data-action="ai-key">${ico('lock')} ${mode === 'api' ? 'Ключ и модель' : 'Вставить ключ'}</button>` : ''}`)}
+            </div>
+          </section>`;
     },
 
     appSection(row) {

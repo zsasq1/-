@@ -215,6 +215,7 @@
     if (e.key === 'Escape') {
       if (UI.closePopover()) return;
       if (UI.closeTopModal()) return;
+      if (App.Ai && App.Ai.close()) return;
       closeSidebar();
       return;
     }
@@ -280,6 +281,7 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(UI.refreshSegs);
 
     if (App.PWA) App.PWA.init();
+    if (App.Ai) App.Ai.init();
     const dbOk = await filesReady;
     if (Store.oldSampleFiles) {
       await Promise.all(Store.oldSampleFiles.map((id) => FileDB.del(id)));

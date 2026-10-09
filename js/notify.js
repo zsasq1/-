@@ -136,13 +136,10 @@
           const key = `f:${f.id}:${stage}`;
           if (!stage || st.fired[key]) return;
           st.fired[key] = Date.now();
-          const know = f.know.slice(0, 2).map((k) => k.t).join('; ');
           this.push({
             kind: 'deadline',
             title: `Итоговое ${U.fmtWhen(f.at, now)} — ${f.subject}`,
-            body: f.know.length
-              ? `Повторить ${U.count(f.know.length, ['тему', 'темы', 'тем'])}: ${know}${f.know.length > 2 ? '…' : ''}`
-              : f.title,
+            body: f.know.length ? `Повторить ${U.count(f.know.length, ['тему', 'темы', 'тем'])} — список в дедлайнах` : f.title,
             route: 'reminders',
           });
         });

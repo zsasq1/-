@@ -176,6 +176,7 @@
           <div class="banner-text">Расписание пока пустое. Загрузите официальное расписание своей группы или нажмите на свободное место в сетке, чтобы добавить пару вручную.</div>
           ${App.KGMU && App.KGMU.parsed() ? '<div class="banner-actions"><button class="btn btn-sm" data-action="kgmu-import">Выбрать группу</button></div>' : ''}
         </div>`}
+        ${this.weekOffset === 0 ? this.nowStrip(now) : ''}
         <div class="sched ${grid ? 'is-grid' : ''}">
           ${grid ? this.renderWeek(dates, perDay, now) : ''}
           ${this.renderDays(dates, perDay, dues, now)}
@@ -284,19 +285,66 @@
             const sum = list.length
               ? `${U.count(list.length, ['занятие', 'занятия', 'занятий'])} · ${list[0].start}–${list.reduce((a, c) => (c.end > a ? c.end : a), list[0].end)}`
               : '';
-            return `
-              <section class="day ${isToday ? 'is-today' : ''} ${past ? 'is-past' : ''}" style="--i:${idx++}" aria-label="${esc(U.cap(U.fmtDayLong(d)))}">
-                <header class="day-head">
+            const head = `
                   <h3 class="day-name">${U.cap(U.DAYS[U.isoDay(d)])}</h3>
                   <span class="day-date">${U.fmtDate(d)}</span>
                   ${isToday ? '<span class="pill accent">сегодня</span>' : ''}
-                  ${sum ? `<span class="day-sum">${sum}</span>` : ''}
+                  ${past ? '<span class="day-done">прошёл</span>' : ''}
+                  ${sum ? `<span class="day-sum">${sum}</span>` : ''}`;
+            // Прошедшие дни свёрнуты, чтобы не мешать — раскрываются по нажатию
+            if (past && (list.length || dl.length)) {
+              return `
+              <details class="day is-past" style="--i:${idx++}">
+                <summary class="day-head">${head}${ico('chevron-right', 'day-chev')}</summary>
+                <div class="day-body">
+                  ${list.map((c) => this.classCard(c, d, now)).join('')}
+                  ${dl.map((r) => this.dueCard(r)).join('')}
+                </div>
+              </details>`;
+            }
+            return `
+              <section class="day ${isToday ? 'is-today' : ''} ${past ? 'is-past' : ''}" style="--i:${idx++}" aria-label="${esc(U.cap(U.fmtDayLong(d)))}">
+                <header class="day-head">${head}
                 </header>
                 ${hol ? `<p class="day-off">${ico('sun')}${esc(hol)} — выходной</p>` : ''}
                 ${list.map((c) => this.classCard(c, d, now)).join('')}
                 ${dl.map((r) => this.dueCard(r)).join('')}
                 ${!list.length && !hol && !dl.length ? `<button class="day-empty" data-action="class-new" data-day="${U.isoDay(d)}">Свободный день<span>${ico('plus')} Добавить занятие</span></button>` : ''}
               </section>`;
+          }).join('')}
+        </div>`;
+    },
+
+    // «Сейчас» и «Далее» — самое важное одной строкой над неделей
+    nowStrip(now) {
+      const items = [];
+      const today = this.classesOn(now);
+      const cur = today.find((c) => this.status(c, now, now) === 'now');
+      if (cur) items.push({ label: 'Сейчас', c: cur, d: now, when: `до ${cur.end}` });
+      let next = today.find((c) => this.status(c, now, now) === 'later');
+      let nd = now;
+      if (!next) {
+        const nx = this.nextDayWithClasses(U.addDays(now, 1));
+        if (nx) { next = nx.list[0]; nd = nx.date; }
+      }
+      if (next) {
+        const sameDay = U.sameDay(nd, now);
+        const mins = U.toMin(next.start) - (now.getHours() * 60 + now.getMinutes());
+        const when = sameDay ? `в ${next.start} · через ${U.relIn(mins * 6e4)}` : `${U.dayWord(nd, now)}, ${next.start}`;
+        items.push({ label: 'Далее', c: next, d: nd, when });
+      }
+      if (!items.length) return '';
+      return `
+        <div class="now-strip rise" style="--i:1">
+          ${items.map((it) => {
+            const s = Store.subject(it.c.subjectId);
+            const where = this.roomText(it.c) || this.placeShort(it.c);
+            return `
+              <button class="ns ${Store.subjClass(it.c.subjectId)}" style="${Store.subjStyle(it.c.subjectId)}" data-action="occ-open" data-id="${it.c.id}" data-date="${U.ymd(it.d)}">
+                <span class="ns-label">${it.label}${App.Topics && (App.Topics.line(it.c, it.d) || {}).final ? ' <b class="cc-badge is-final">итоговое</b>' : ''}</span>
+                <span class="ns-name">${esc(s ? s.name : 'Занятие')}</span>
+                <span class="ns-meta">${esc([Store.CLASS_TYPES[it.c.type], it.when, where].filter(Boolean).join(' · '))}</span>
+              </button>`;
           }).join('')}
         </div>`;
     },

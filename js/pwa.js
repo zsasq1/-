@@ -59,7 +59,18 @@
       this.offlineReady = true;
       this.rerender();
 
-      // Новая версия ставится сама и включается при следующем открытии — без всплывающих предложений
+      // Новая версия ставится сама, без всплывающих предложений. Если страницу только что открыли,
+      // сразу перезагружаемся в новую; иначе — незаметно, когда вкладку свернут
+      const hadController = !!navigator.serviceWorker.controller;
+      const opened = Date.now();
+      let pending = false;
+      const reload = () => { if (!this.reloading) { this.reloading = true; window.location.reload(); } };
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!hadController) return;
+        if (document.hidden || Date.now() - opened < 15000) reload();
+        else pending = true;
+      });
+      document.addEventListener('visibilitychange', () => { if (document.hidden && pending) reload(); });
       if (this.reg.waiting) this.reg.waiting.postMessage('skip-waiting');
       navigator.serviceWorker.addEventListener('message', (e) => {
         if (e.data && e.data.type === 'open-notification' && e.data.id) App.Notify.openItem(e.data.id);

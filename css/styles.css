@@ -1414,6 +1414,35 @@ details.more[open] .more-body { animation: rise .35s var(--ease-out) both; }
 .day-date { font-size: 14px; color: var(--muted); }
 .day-head .pill { align-self: center; }
 .day-sum { flex: 1 0 100%; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.day-done { align-self: center; padding: 1px 8px; border-radius: 99px; background: var(--hover); color: var(--muted); font-size: 12px; }
+
+/* Прошедший день: свёрнут в строку, раскрывается по нажатию */
+details.day { gap: 0; padding: 0; background: transparent; box-shadow: none; border-style: dashed; }
+details.day > summary { list-style: none; cursor: pointer; position: relative; padding: 12px 40px 12px 16px; border-radius: var(--r-lg); }
+details.day > summary::-webkit-details-marker { display: none; }
+details.day > summary:hover { background: var(--hover); }
+details.day[open] { background: var(--surface); border-style: solid; }
+details.day[open] .day-head { opacity: 1; }
+.day-chev { position: absolute; right: 14px; top: 16px; width: 16px; height: 16px; color: var(--muted); transition: transform .2s var(--ease-out); }
+details.day[open] .day-chev { transform: rotate(90deg); }
+.day-body { display: flex; flex-direction: column; gap: 10px; padding: 0 14px 14px; }
+
+/* «Сейчас» и «Далее» */
+.now-strip { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); margin-bottom: 18px; }
+.ns {
+  position: relative; display: flex; flex-direction: column; gap: 4px; min-width: 0;
+  padding: 14px 16px 15px 20px; border-radius: var(--r-lg); text-align: left;
+  background: hsl(var(--h, 40) var(--sub-s) var(--sub-l));
+  color: hsl(var(--h, 40) var(--sub-text-s) var(--sub-text-l));
+  border: 1px solid hsl(var(--h, 40) var(--sub-dot-s) var(--sub-dot-l) / .35);
+  transition: transform .25s var(--ease-out), box-shadow .25s ease;
+}
+.ns::before { content: ""; position: absolute; left: 0; top: 14px; bottom: 14px; width: 4px; border-radius: 0 4px 4px 0; background: hsl(var(--h, 40) var(--sub-dot-s) var(--sub-dot-l)); }
+.ns:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.ns-label { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .75; }
+.ns-label .cc-badge { letter-spacing: .04em; opacity: 1; }
+.ns-name { font-family: var(--font-serif); font-size: 20px; font-weight: 500; line-height: 1.25; overflow-wrap: anywhere; color: hsl(var(--h, 40) var(--sub-text-s) calc(var(--sub-text-l) - 6%)); }
+.ns-meta { font-size: 13.5px; line-height: 1.4; overflow-wrap: anywhere; }
 
 .cc {
   position: relative;

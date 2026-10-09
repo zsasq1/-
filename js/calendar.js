@@ -66,6 +66,7 @@
       if (t && t.n > 0) lines.push(`${t.kind === 'lecture' ? 'Лекция' : 'Занятие'} ${t.n} из ${t.total}`);
       if (c.teacher) lines.push(`Преподаватель: ${c.teacher}`);
       if (t && t.note) lines.push(`Заметка: ${t.note}`);
+      if (t && t.final && t.know.length) lines.push('', 'Что надо знать:', ...t.know.map((k, i) => `${i + 1}. ${k.t}`));
       return {
         uid: `${iso.replace(/-/g, '')}T${c.start.replace(':', '')}-${hash(`${name}|${c.type}`)}@semestr`,
         start: utcOf(iso, c.start),

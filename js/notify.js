@@ -128,6 +128,26 @@
         }
       });
 
+      // Итоговые: за три дня и накануне — с тем, что повторить
+      if (App.Topics) {
+        App.Topics.finals().forEach((f) => {
+          const left = f.at - now;
+          const stage = f.passed || left <= 0 ? 0 : left <= 864e5 ? 1 : left <= 3 * 864e5 ? 3 : 0;
+          const key = `f:${f.id}:${stage}`;
+          if (!stage || st.fired[key]) return;
+          st.fired[key] = Date.now();
+          const know = f.know.slice(0, 2).map((k) => k.t).join('; ');
+          this.push({
+            kind: 'deadline',
+            title: `Итоговое ${U.fmtWhen(f.at, now)} — ${f.subject}`,
+            body: f.know.length
+              ? `Повторить ${U.count(f.know.length, ['тему', 'темы', 'тем'])}: ${know}${f.know.length > 2 ? '…' : ''}`
+              : f.title,
+            route: 'reminders',
+          });
+        });
+      }
+
       // Чистим старые отметки, чтобы не копились
       const weekAgo = Date.now() - 14 * 864e5;
       Object.keys(st.fired).forEach((k) => { if (st.fired[k] < weekAgo) delete st.fired[k]; });
@@ -207,6 +227,48 @@
         </li>`;
     },
 
+    // Итоговое занятие в списке дел: предмет, когда и что повторить
+    finalItem(f, now = new Date(), short = false) {
+      const s = Store.subject(f.subjectId);
+      let dueCls = '';
+      if (!f.passed && f.at > now && f.at - now < 3 * 864e5) dueCls = 'is-soon';
+      const left = f.at > now && !f.passed ? ` · через ${U.relIn(f.at - now)}` : '';
+      const know = short ? f.know.slice(0, 3) : f.know;
+      return `
+        <li class="rem is-final ${f.passed ? 'is-done' : ''}" style="--h:${s ? s.hue : 40}">
+          <button class="check" data-action="final-toggle" data-key="${esc(f.id)}" role="checkbox" aria-checked="${f.passed ? 'true' : 'false'}" aria-label="${f.passed ? 'Вернуть в работу' : 'Отметить сданным'}">${ico('check')}</button>
+          <div class="rem-main" data-action="occ-open" data-id="${esc(f.classId)}" data-date="${f.date}" role="button" tabindex="0">
+            <span class="rem-title">${esc(f.subject)}</span>
+            <span class="rem-sub">${esc(f.title)}</span>
+            <div class="rem-meta">
+              <span class="kind-final">${ico('flag')}Итоговое</span>
+              <span class="due ${dueCls}">${ico('clock')}${esc(U.cap(U.fmtWhen(f.at, now)))}${left}</span>
+              ${f.where ? `<span>${ico('pin')}${esc(f.where)}</span>` : ''}
+            </div>
+            ${f.know.length ? `
+            <div class="rem-know">
+              <span class="rem-know-head">Что надо знать · ${U.count(f.know.length, ['тема', 'темы', 'тем'])}</span>
+              <ol>${know.map((k) => `<li>${esc(k.t)}</li>`).join('')}</ol>
+              ${know.length < f.know.length ? `<span class="rem-know-more">и ещё ${U.count(f.know.length - know.length, ['тема', 'темы', 'тем'])} — нажмите, чтобы открыть</span>` : ''}
+            </div>` : f.about ? `<p class="rem-about">${esc(f.about)}</p>` : ''}
+          </div>
+        </li>`;
+    },
+
+    // Дела, дедлайны и итоговые занятия одним списком по сроку
+    agenda(done, now = new Date()) {
+      const rems = this.sortedReminders(done).map((r) => ({ r, t: r.due ? new Date(r.due).getTime() : Infinity }));
+      const fin = (App.Topics ? App.Topics.finals() : [])
+        .filter((f) => (done ? f.passed : !f.passed && f.endAt > now))
+        .map((f) => ({ f, t: f.at.getTime() }));
+      if (done) return rems.concat(fin);
+      return rems.concat(fin).sort((a, b) => a.t - b.t);
+    },
+
+    agendaItem(x, now, short) {
+      return x.f ? this.finalItem(x.f, now, short) : this.remItem(x.r, now);
+    },
+
     sortedReminders(done) {
       return Store.state.reminders
         .filter((r) => !!r.done === done)
@@ -224,7 +286,7 @@
     render() {
       const unread = this.unread();
       const isFeed = this.tab === 'feed';
-      const active = Store.state.reminders.filter((r) => !r.done).length;
+      const active = this.agenda(false).length;
       return `
         <div class="page-head rise" style="--i:0">
           <div>
@@ -268,15 +330,15 @@
 
     renderReminders() {
       const done = this.remFilter === 'done';
-      const list = this.sortedReminders(done);
+      const now = new Date();
+      const list = this.agenda(done, now);
       if (!list.length) {
         return done
           ? `<div class="empty"><div class="empty-title">Пока ничего не выполнено</div><p>Отмеченные дела будут собираться здесь.</p></div>`
           : `<div class="empty"><div class="empty-title">Все дела сделаны</div><p>Добавьте дедлайн или напоминание — мы напомним вовремя.</p>
               <button class="btn btn-primary" data-action="rem-new">${ico('plus')} Напоминание</button></div>`;
       }
-      const now = new Date();
-      return `<div class="rem-card"><ul class="rem-list">${list.map((r) => this.remItem(r, now)).join('')}</ul></div>`;
+      return `<div class="rem-card"><ul class="rem-list">${list.map((x) => this.agendaItem(x, now)).join('')}</ul></div>`;
     },
 
     /* ---------- Поповер колокольчика ---------- */

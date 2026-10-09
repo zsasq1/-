@@ -159,15 +159,16 @@
     },
 
     remCard(now) {
-      const list = App.Notify.sortedReminders(false).slice(0, 5);
-      const total = Store.state.reminders.filter((r) => !r.done).length;
+      const all = App.Notify.agenda(false, now);
+      const list = all.slice(0, 5);
+      const total = all.length;
       return `
         <div class="card-head">
           <h2 class="card-title">Дела и дедлайны${total ? `<span class="count">${total}</span>` : ''}</h2>
           <a class="card-link" href="#notifications" data-action="open-reminders">Все${ico('chevron-right')}</a>
         </div>
         ${list.length
-          ? `<ul class="rem-list">${list.map((r) => App.Notify.remItem(r, now)).join('')}</ul>`
+          ? `<ul class="rem-list">${list.map((x) => App.Notify.agendaItem(x, now, true)).join('')}</ul>`
           : `<div class="empty"><div class="empty-title">Всё сделано</div><p>Напишите задачу в поле выше — срок распознается сам.</p></div>`}`;
     },
 

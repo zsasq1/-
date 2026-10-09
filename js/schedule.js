@@ -373,6 +373,7 @@
           ${where ? `<span class="cc-line">${ico('pin')}<span>${esc(where)}</span></span>` : ''}
           ${c.teacher ? `<span class="cc-line">${ico('user')}<span>${esc(c.teacher)}</span></span>` : ''}
           ${label ? `<span class="cc-topic"><span class="cc-label">${t.continued && !t.custom ? 'Продолжение темы' : 'Тема'}</span>${esc(label)}</span>` : ''}
+          ${t && t.final && t.know.length ? `<span class="cc-line cc-know">${ico('book')}<span>Что надо знать: ${U.count(t.know.length, ['тема', 'темы', 'тем'])} — нажмите, чтобы открыть</span></span>` : ''}
           ${t && t.note ? `<span class="cc-line cc-note">${ico('pencil')}<span>${esc(t.note)}</span></span>` : ''}
           ${isToday && status !== 'past' ? `<span class="cc-live">${this.liveText(c, now)}</span>` : ''}
         </button>`;

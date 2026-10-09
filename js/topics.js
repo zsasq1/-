@@ -8,6 +8,7 @@
   const FINAL_RE = /(итогов|контрольн|зачетн|зачётн|тестов\S* контрол)/i;
 
   let cache = { rev: -1, day: '', map: null };
+  let finalsCache = { rev: -1, list: [] };
 
   const Topics = {
     kindOf(type) {
@@ -77,16 +78,69 @@
       const occ = idx >= 0 ? entry.occ[idx] : null;
       const items = occ && occ.topics ? occ.topics.map((i) => entry.plan.list[i]) : [];
       const label = note.topic || (items.length ? items.map((t) => t.d || t.t).join(' · ') : '');
+      const fi = occ && occ.topics && entry.plan ? occ.topics.find((i) => FINAL_RE.test(entry.plan.list[i].t)) : undefined;
       return {
         subject: s.name, kind, date: iso,
         n: idx + 1, total: entry ? entry.occ.length : 0,
         items, continued: !!(occ && occ.continued),
         custom: note.topic || '', note: note.note || '',
         label, final: FINAL_RE.test(label),
+        // К итоговому: что на нём будет и какие темы раздела повторить
+        about: fi != null && !note.topic ? entry.plan.list[fi].c || '' : '',
+        know: fi != null && !note.topic ? this.knowFor(entry, fi) : [],
+        passed: !!note.passed,
         hasPlan: !!(entry && entry.plan),
         src: entry && entry.plan ? entry.plan.src : '',
         entry,
       };
+    },
+
+    // Темы раздела, которые проверяют на итоговом: от прошлого итогового до этого
+    knowFor(entry, fi) {
+      const list = entry.plan.list;
+      let p = fi - 1;
+      while (p >= 0 && !FINAL_RE.test(list[p].t)) p--;
+      const out = [];
+      for (let i = p + 1; i < fi; i++) {
+        const o = entry.occ.find((x) => x.topics && x.topics.includes(i));
+        out.push({ t: list[i].t, date: o ? o.date : '' });
+      }
+      return out;
+    },
+
+    // Все итоговые и зачётные занятия семестра по датам — они же дедлайны
+    finals() {
+      const key = `${Store.rev}|${Store.state.classes.length}`;
+      if (finalsCache.rev === key) return finalsCache.list;
+      const list = [];
+      this.build().forEach((e) => {
+        e.occ.forEach((o) => {
+          const c = Store.state.classes.find((x) => x.id === o.classId);
+          const t = c && this.lookup(c, o.date);
+          // Итоговое на два занятия подряд — один дедлайн, по первому
+          if (!t || !t.final || (t.continued && !t.custom)) return;
+          const at = U.atTime(U.parseYmd(o.date), o.start);
+          list.push({
+            id: this.noteKey(t.subject, t.kind, o.date, o.start),
+            subject: t.subject, subjectId: c.subjectId, classId: c.id,
+            date: o.date, start: o.start, end: o.end, at, endAt: U.atTime(U.parseYmd(o.date), o.end),
+            title: t.custom || (t.items.find((it) => FINAL_RE.test(it.t)) || {}).t || t.label,
+            about: t.about, know: t.know, note: t.note, passed: t.passed,
+            where: App.Schedule.roomText(c) || App.Schedule.placeShort(c),
+          });
+        });
+      });
+      list.sort((a, b) => a.at - b.at);
+      finalsCache = { rev: key, list };
+      return list;
+    },
+
+    setPassed(id, passed) {
+      const cur = Object.assign({}, Store.state.topicNotes[id] || {});
+      if (passed) cur.passed = true; else delete cur.passed;
+      if (Object.keys(cur).length) Store.state.topicNotes[id] = cur;
+      else delete Store.state.topicNotes[id];
+      Store.save();
     },
 
     // Короткая строка для сетки и списков
@@ -174,6 +228,11 @@
               <div class="occ-label">Тема по рабочей программе</div>
               ${topicBlock()}
             </section>
+            ${t.final && t.know.length ? `
+            <section class="occ-know">
+              <div class="occ-label">Что надо знать к итоговому · ${U.count(t.know.length, ['тема', 'темы', 'тем'])}</div>
+              <ol class="know-list">${t.know.map((k) => `<li><span>${esc(k.t)}</span>${k.date ? `<time>${k.date.slice(8)}.${k.date.slice(5, 7)}</time>` : ''}</li>`).join('')}</ol>
+            </section>` : ''}
             <div class="form-grid">
               <div class="field span-2">
                 <label for="occ-topic">Своя тема</label>
@@ -191,6 +250,7 @@
           <button class="btn btn-ghost occ-edit" type="button" data-edit aria-label="Изменить расписание" title="Изменить расписание">${ico('pencil')}<span class="occ-edit-text">Изменить</span></button>
           <button class="btn btn-ghost" type="button" data-action="cal-menu" data-id="${esc(c.id)}" data-date="${esc(iso)}" aria-haspopup="menu">${ico('calendar-plus')} В календарь</button>
           <span class="spacer"></span>
+          ${t.final ? `<button class="btn ${t.passed ? 'is-on' : ''}" type="button" data-passed aria-pressed="${t.passed}" title="Отметить итоговое сданным">${ico('check')}Сдано</button>` : ''}
           <button class="btn btn-primary" type="button" data-close>Готово</button>`,
         onMount: (el, api) => {
           const save = U.debounce(() => {
@@ -200,6 +260,14 @@
           el.querySelector('#occ-topic').addEventListener('input', save);
           el.querySelector('#occ-note').addEventListener('input', save);
           el.querySelector('[data-edit]').addEventListener('click', () => { api.close(); App.Schedule.openModal(c); });
+          const passBtn = el.querySelector('[data-passed]');
+          if (passBtn) passBtn.addEventListener('click', () => {
+            t.passed = !t.passed;
+            this.setPassed(this.noteKey(t.subject, t.kind, iso, c.start), t.passed);
+            passBtn.classList.toggle('is-on', t.passed);
+            passBtn.setAttribute('aria-pressed', t.passed);
+            App.refresh();
+          });
           U.$$('[data-pick]', el).forEach((b) => b.addEventListener('click', () => {
             this.renameSubject(t.subject, b.dataset.pick);
             api.close();
@@ -274,6 +342,13 @@
 
   Object.assign(App.actions, {
     'occ-open': (el) => Topics.open(el.dataset.id, el.dataset.date),
+    'final-toggle': (el) => {
+      const f = Topics.finals().find((x) => x.id === el.dataset.key);
+      if (!f) return;
+      Topics.setPassed(f.id, !f.passed);
+      App.refresh();
+      if (!f.passed) UI.toast(`Итоговое по предмету «${f.subject}» сдано`);
+    },
   });
 
   App.Topics = Topics;

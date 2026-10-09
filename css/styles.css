@@ -791,6 +791,25 @@ select.input-sm { padding-right: 30px; background-position: right 8px center; }
 .due.is-over { color: var(--danger); }
 .kind-deadline { color: var(--accent-text); }
 
+/* итоговое занятие в списке дел */
+.rem.is-final { position: relative; }
+.rem.is-final .rem-title { font-weight: 650; color: hsl(var(--h, 40) var(--sub-text-s) var(--sub-text-l)); }
+.rem.is-final.is-done .rem-title { color: var(--muted); }
+.rem-sub { display: block; margin-top: 1px; font-size: 13.5px; line-height: 1.4; color: var(--text-2); overflow-wrap: anywhere; }
+.kind-final { color: var(--accent-text); font-weight: 600; }
+.rem-know {
+  margin-top: 8px; padding: 9px 12px 10px; border-radius: 10px;
+  background: hsl(var(--h, 40) var(--sub-s) var(--sub-l));
+  color: hsl(var(--h, 40) var(--sub-text-s) var(--sub-text-l));
+  font-size: 13.5px; line-height: 1.4;
+}
+.rem-know-head { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .8; margin-bottom: 4px; }
+.rem-know ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 3px; }
+.rem-know li { overflow-wrap: anywhere; }
+.rem-know-more { display: block; margin-top: 5px; font-size: 12.5px; opacity: .8; }
+.rem-about { margin: 6px 0 0; font-size: 13px; line-height: 1.4; color: var(--muted); }
+.rem.is-done .rem-know { opacity: .55; }
+
 /* мини-список файлов */
 .mini-files { display: flex; flex-direction: column; padding: 2px 8px 10px; }
 .mini-file {
@@ -1345,6 +1364,13 @@ details.more[open] .more-body { animation: rise .35s var(--ease-out) both; }
 .occ-choose-btns { display: flex; flex-direction: column; gap: 8px; }
 .occ-choose-btns .btn { height: auto; min-height: 38px; padding: 8px 12px; white-space: normal; text-align: left; justify-content: flex-start; }
 .occ-note { height: auto; min-height: 76px; padding: 10px 12px; resize: vertical; line-height: 1.45; }
+/* «Что надо знать» в окне итогового */
+.occ-know { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface-2, var(--hover)); }
+.know-list { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 5px; font-size: 14px; line-height: 1.45; }
+.know-list li { padding-left: 2px; }
+.know-list li span { overflow-wrap: anywhere; }
+.know-list time { margin-left: 8px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.btn.is-on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-text); }
 .occ-list { margin: 0; padding: 4px 12px 12px 12px; list-style: none; max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
 .occ-list li { display: grid; grid-template-columns: 46px 1fr; gap: 10px; padding: 6px 8px; border-radius: 8px; font-size: 13px; line-height: 1.4; }
 .occ-list li time { color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -1474,6 +1500,7 @@ details.day[open] .day-chev { transform: rotate(90deg); }
 .cc-line { display: flex; align-items: flex-start; gap: 6px; font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; }
 .cc-line .ico { width: 14px; height: 14px; margin-top: 2px; opacity: .8; }
 .cc-note { font-style: italic; }
+.cc-know { font-weight: 600; }
 .cc-topic {
   margin-top: 4px; padding: 9px 11px; border-radius: 10px;
   background: rgba(255, 255, 255, .58); color: var(--text);

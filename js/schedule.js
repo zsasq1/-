@@ -295,7 +295,7 @@
             // Прошедшие дни свёрнуты, чтобы не мешать — раскрываются по нажатию
             if (past && (list.length || dl.length)) {
               return `
-              <details class="day is-past" style="--i:${idx++}">
+              <details class="day is-past" data-day="${iso}" ${this.openDays.has(iso) ? 'open' : ''} style="--i:${idx++}">
                 <summary class="day-head">${head}${ico('chevron-right', 'day-chev')}</summary>
                 <div class="day-body">
                   ${list.map((c) => this.classCard(c, d, now)).join('')}
@@ -317,6 +317,9 @@
     },
 
     // «Сейчас» и «Далее» — самое важное одной строкой над неделей
+    // раскрытые прошедшие дни остаются раскрытыми после перерисовки
+    openDays: new Set(),
+
     nowStrip(now) {
       const items = [];
       const today = this.classesOn(now);
@@ -342,7 +345,7 @@
             const where = this.roomText(it.c) || this.placeShort(it.c);
             return `
               <button class="ns ${Store.subjClass(it.c.subjectId)}" style="${Store.subjStyle(it.c.subjectId)}" data-action="occ-open" data-id="${it.c.id}" data-date="${U.ymd(it.d)}">
-                <span class="ns-label">${it.label}${App.Topics && (App.Topics.line(it.c, it.d) || {}).final ? ' <b class="cc-badge is-final">итоговое</b>' : ''}</span>
+                <span class="ns-label">${it.label === 'Сейчас' ? '<i class="live-dot"></i>' : ''}${it.label}${App.Topics && (App.Topics.line(it.c, it.d) || {}).final ? ' <b class="cc-badge is-final">итоговое</b>' : ''}</span>
                 <span class="ns-name">${esc(s ? s.name : 'Занятие')}</span>
                 <span class="ns-meta">${esc([Store.CLASS_TYPES[it.c.type], it.when, where].filter(Boolean).join(' · '))}</span>
               </button>`;
@@ -389,7 +392,7 @@
       const e = U.toMin(c.end);
       if (m >= s) {
         const pct = Math.round(((m - s) / Math.max(1, e - s)) * 100);
-        return `<span class="cc-state">Идёт · осталось ${U.relIn((e - m) * 6e4)}</span><span class="cc-bar"><i style="width:${pct}%"></i></span>`;
+        return `<span class="cc-state"><i class="live-dot"></i>Идёт · осталось ${U.relIn((e - m) * 6e4)}</span><span class="cc-bar"><i style="width:${pct}%"></i></span>`;
       }
       return `<span class="cc-state is-soon">Через ${U.relIn((s - m) * 6e4)}</span>`;
     },
@@ -703,6 +706,12 @@
     },
     slot: (el, e) => Sched.slotClick(el, e),
   });
+
+  document.addEventListener('toggle', (e) => {
+    const d = e.target;
+    if (!d.matches || !d.matches('details.day[data-day]')) return;
+    if (d.open) Sched.openDays.add(d.dataset.day); else Sched.openDays.delete(d.dataset.day);
+  }, true);
 
   App.changes['sched-view'] = (el, e) => {
     Store.state.settings.schedView = e.target.value;

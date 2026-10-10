@@ -218,8 +218,12 @@
     if (!thumb) return;
     if (!label || !label.offsetWidth) { thumb.style.opacity = label ? '' : '0'; return; }
     thumb.style.opacity = '1';
-    thumb.style.width = `${label.offsetWidth}px`;
-    thumb.style.transform = `translateX(${label.offsetLeft}px)`;
+    // пружина с растяжением и смазом, как у Velocity Tabs (Skecher UI)
+    if (App.Motion) App.Motion.slideThumb(seg, thumb, label.offsetLeft, label.offsetWidth, seg.classList.contains('no-anim'));
+    else {
+      thumb.style.width = `${label.offsetWidth}px`;
+      thumb.style.transform = `translateX(${label.offsetLeft}px)`;
+    }
   }
 
   function mountToast(root, el, timeout, bind) {

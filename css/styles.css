@@ -1756,3 +1756,190 @@ body:not(.ai-on) .toasts { bottom: calc(80px + env(safe-area-inset-bottom, 0px))
 .cc-badge.is-absent { background: color-mix(in srgb, var(--danger) 16%, transparent); color: var(--danger); }
 .cc-badge.is-grade { background: var(--surface); color: var(--text); font-weight: 700; }
 @media (min-width: 761px) { body.ai-on .toasts { right: calc(min(440px, 100vw - 32px) + 32px); } }
+
+/* ==========================================================================
+   Движение и форма: элементы, перенесённые из Space UI, Skecher UI,
+   Componentry, Arc и Planes; круглее и спокойнее
+   ========================================================================== */
+
+/* ---------- Форма: больше воздуха и закруглений ---------- */
+
+:root { --r-sm: 10px; --r: 14px; --r-lg: 22px; --r-xl: 28px; --glare: rgba(201, 100, 66, .07); --glare-sub: rgba(255, 255, 255, .5); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --glare: rgba(255, 240, 225, .06); --glare-sub: rgba(255, 255, 255, .08); } }
+:root[data-theme="dark"] { --glare: rgba(255, 240, 225, .06); --glare-sub: rgba(255, 255, 255, .08); }
+
+.btn { height: 38px; padding: 0 16px; border-radius: 999px; }
+.btn-sm { height: 32px; padding: 0 13px; border-radius: 999px; }
+.icon-btn { border-radius: 12px; }
+.input { border-radius: 12px; }
+.seg { border-radius: 999px; padding: 4px; }
+.seg label { border-radius: 999px; padding: 6px 14px; }
+.seg-thumb { top: 4px; bottom: 4px; border-radius: 999px; }
+.tag { border-radius: 999px; padding: 0 9px; }
+.suggest button { height: 36px; padding: 0 15px; border-radius: 999px; }
+.card, .set-card, .rem-card, .fcard, .day, .ns { border-radius: var(--r-xl); }
+.cc { border-radius: 20px; }
+.dc { border-radius: 16px; }
+.popover { border-radius: 18px; }
+.menu-item { border-radius: 12px; }
+.sb-item { border-radius: 12px; }
+.modal { border-radius: 30px; }
+.toast { border-radius: 18px; }
+.rem { border-radius: 16px; }
+.occ-box, .occ-know { border-radius: 18px; }
+
+/* сквиркл там, где браузер умеет: углы плавнее, как у иконок iOS (Squircle из Space UI) */
+@supports (corner-shape: squircle) {
+  .card, .set-card, .rem-card, .fcard, .day, .ns, .cc, .modal, .composer, .ai-panel, .tabbar, .occ-box, .occ-know, .toast {
+    corner-shape: squircle;
+  }
+  .card, .set-card, .rem-card, .fcard, .day, .ns, .composer { border-radius: 40px; }
+  .cc, .occ-box, .occ-know, .toast { border-radius: 28px; }
+  .modal, .ai-panel { border-radius: 44px; }
+}
+@media (max-width: 760px) { .ai-panel { border-radius: 0; } }
+
+/* карточки чуть приподнимаются под курсором */
+.card, .day, .fcard, .set-card { transition: background-color .3s ease, border-color .3s ease, box-shadow .35s var(--ease-out), transform .35s var(--ease-out); }
+@media (hover: hover) and (pointer: fine) {
+  .fcard:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+}
+
+/* ---------- Hover Transition (Componentry): мягкий блик за курсором ---------- */
+
+.card.is-glare, .day.is-glare, .set-card.is-glare, .fcard.is-glare, .rem.is-glare, .mini-file.is-glare, .ai-chip.is-glare, .dc.is-glare {
+  background-image: radial-gradient(circle 180px at var(--gx, 50%) var(--gy, 50%), var(--glare), transparent 78%);
+}
+.cc.is-glare, .ns.is-glare {
+  background-image: radial-gradient(circle 160px at var(--gx, 50%) var(--gy, 50%), var(--glare-sub), transparent 78%);
+}
+
+/* ---------- Velocity Tabs (Skecher UI): бегунок двигает JS-пружина ---------- */
+
+.seg-thumb { transition: opacity .2s ease; transform-origin: center; will-change: transform; }
+
+/* ---------- Blur Reveal Text (Space UI): заголовки проявляются из размытия ---------- */
+
+.br-word { display: inline-block; animation: br-in .55s cubic-bezier(.25, .1, .25, 1) both; }
+@keyframes br-in { from { opacity: 0; filter: blur(12px); transform: translateY(8px); } }
+
+/* ---------- Theme Toggle (Space UI): тема раскрывается кругом ---------- */
+
+html.vt-theme::view-transition-old(root),
+html.vt-theme::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html.vt-theme::view-transition-old(root) { z-index: 1; }
+html.vt-theme::view-transition-new(root) { z-index: 2; }
+
+/* ---------- Status Badge (Space UI): пульсирующая точка «идёт сейчас» ---------- */
+
+.live-dot {
+  position: relative; display: inline-block; flex: none;
+  width: 7px; height: 7px; margin-right: 7px; border-radius: 50%;
+  background: currentColor; vertical-align: .1em;
+}
+.live-dot::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%; background: currentColor;
+  animation: live-ping 2.25s cubic-bezier(0, 0, .2, 1) infinite;
+}
+@keyframes live-ping { 75%, 100% { transform: scale(2.6); opacity: 0; } }
+.ns-label .live-dot { margin-right: 1px; }
+
+/* ---------- Liquid Switch (Space UI): бегунок растягивается при нажатии ---------- */
+
+.switch span { border-radius: 999px; }
+.switch span::after { transition: transform .5s var(--spring), width .28s var(--ease-out), left .28s var(--ease-out); }
+.switch input:active + span::after { width: 24px; }
+.switch input:checked:active + span::after { transform: translateX(12px); }
+
+/* ---------- Toast stack (Arc): подсказки складываются стопкой ---------- */
+
+.toasts.is-stack { display: block; width: min(400px, calc(100vw - 32px)); height: 0; transition: height .35s var(--ease-out); }
+.toasts.is-stack .toast {
+  position: absolute; right: 0; bottom: 0;
+  transform-origin: 50% 100%;
+  transition: transform .45s var(--ease-out), opacity .3s ease, height .3s var(--ease-out);
+}
+.toasts.is-stack .toast.is-behind { overflow: hidden; }
+.toasts.is-stack .toast.is-behind > * { opacity: 0; transition: opacity .2s ease; }
+
+/* ---------- Thinking Loader (Planes) и Text Shimmer (Arc) в ассистенте ---------- */
+
+.ai-thinking {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 9px;
+  padding: 7px 14px 7px 9px; border-radius: 999px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  font-size: 13.5px;
+}
+.ai-orb {
+  width: 16px; height: 16px; border-radius: 50%; flex: none;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, .75), transparent 42%),
+    conic-gradient(from 0deg, var(--accent), #E9A47F, #F3C9A8, var(--accent));
+  animation: orb-spin 2.4s linear infinite, orb-breathe 1.8s ease-in-out infinite;
+}
+@keyframes orb-spin { to { rotate: 360deg; } }
+@keyframes orb-breathe { 50% { transform: scale(.82); } }
+.shimmer {
+  display: inline-block;
+  background: linear-gradient(90deg, var(--muted) 0%, var(--muted) 38%, var(--text) 50%, var(--muted) 62%, var(--muted) 100%);
+  background-size: 260% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: shimmer 2.2s linear infinite;
+}
+.shimmer.is-swap { animation: shimmer 2.2s linear infinite, swap-in .4s var(--ease-out); }
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -60% 0; } }
+@keyframes swap-in { from { opacity: 0; transform: translateY(5px); filter: blur(4px); } }
+
+/* ---------- Нижняя панель на телефоне (Dock / Expandable Mobile Nav из Skecher UI) ---------- */
+
+.tabbar { display: none; }
+@media (max-width: 760px) {
+  .tabbar {
+    position: fixed; z-index: 50; display: block;
+    left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    height: 64px; padding: 6px;
+    border-radius: 26px; border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface) 80%, transparent);
+    -webkit-backdrop-filter: blur(22px) saturate(1.6); backdrop-filter: blur(22px) saturate(1.6);
+    box-shadow: var(--shadow-lg);
+    animation: tabbar-in .6s var(--ease-out) both;
+  }
+  @keyframes tabbar-in { from { transform: translateY(120%); } }
+  .tabbar-items { display: flex; height: 100%; }
+  .tab-thumb {
+    position: absolute; top: 6px; bottom: 6px; left: 0;
+    border-radius: 20px; background: var(--active);
+    transform-origin: center; will-change: transform; transition: opacity .2s ease;
+  }
+  .tab {
+    position: relative; z-index: 1; flex: 1 1 0; min-width: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    border-radius: 20px; color: var(--muted); font-size: 11px; font-weight: 500;
+    -webkit-tap-highlight-color: transparent; transition: color .2s ease, transform .2s var(--spring);
+  }
+  .tab:active { transform: scale(.92); }
+  .tab.is-active { color: var(--text); }
+  .tab-ico { position: relative; display: grid; place-items: center; height: 30px; min-width: 30px; }
+  .tab .ico { width: 22px; height: 22px; }
+  .tab.is-active .ico { stroke-width: 2.1; }
+  .tab-badge {
+    position: absolute; top: -5px; right: -9px; min-width: 17px; height: 17px; padding: 0 4px;
+    display: grid; place-items: center; border-radius: 999px;
+    background: var(--accent); color: var(--on-accent); font-size: 10px; font-weight: 700;
+    box-shadow: 0 0 0 2px var(--surface);
+  }
+  .tab-ai .tab-ico {
+    width: 42px; height: 30px; border-radius: 12px;
+    background: var(--accent); color: var(--on-accent);
+    box-shadow: 0 6px 16px -6px var(--accent);
+  }
+  .tab-ai .ico { width: 19px; height: 19px; }
+  .tab-ai .tab-label { color: var(--accent-text); }
+  body.ai-on .tabbar { transform: translateY(140%); transition: transform .3s ease; }
+
+  .ai-fab { display: none; }
+  .view-inner { padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
+  body:not(.ai-on) .toasts { bottom: calc(90px + env(safe-area-inset-bottom, 0px)); }
+  .toasts.is-stack { width: auto; }
+  .toasts.is-stack .toast { left: 0; right: 0; }
+}

@@ -58,6 +58,7 @@
     view.scrollTop = scroll;
     if (mod.mount) mod.mount(view);
     UI.initSeg(view);
+    if (animate && App.Motion) U.$$('.page-title', view).forEach((el) => App.Motion.blurReveal(el));
     App.Files.hydrate(view);
     U.$('#topbar-title').textContent = TITLES[App.route];
   };
@@ -82,6 +83,7 @@
   /* ---------- Боковая панель ---------- */
 
   App.renderSidebar = () => {
+    App.renderTabbar();
     const st = Store.state;
     const unread = App.Notify.unread();
     const name = (st.profile.name || '').trim();
@@ -122,6 +124,34 @@
           <span class="profile-text sb-label"><span class="profile-name">${esc(name || 'Студент')}</span><span class="profile-sub">${esc(Store.profileLine() || 'Настройки')}</span></span>
         </button>
       </div>`;
+  };
+
+  // Нижняя панель на телефоне: док с бегунком-пружиной (Dock и Expandable Mobile Nav из Skecher UI)
+  App.renderTabbar = () => {
+    const box = U.$('#tabbar-items');
+    if (!box) return;
+    const unread = App.Notify.unread();
+    const tab = (route, icon, label, extra = '') => `
+      <a class="tab ${App.route === route ? 'is-active' : ''}" href="#${route}" data-action="go" data-route="${route}" ${App.route === route ? 'aria-current="page"' : ''}>
+        <span class="tab-ico">${ico(icon)}${extra}</span><span class="tab-label">${label}</span>
+      </a>`;
+    box.innerHTML = `
+      ${tab('home', 'home', 'Главная')}
+      ${tab('schedule', 'calendar', 'Неделя')}
+      <button class="tab tab-ai" type="button" data-action="ai-open" aria-label="Ассистент"><span class="tab-ico">${ico('sparkle')}</span><span class="tab-label">Ассистент</span></button>
+      ${tab('files', 'folder', 'Файлы')}
+      ${tab('notifications', 'bell', 'Дела', unread ? `<span class="tab-badge">${unread > 9 ? '9+' : unread}</span>` : '')}`;
+    App.placeTabThumb();
+  };
+
+  App.placeTabThumb = (instant) => {
+    const nav = U.$('#tabbar');
+    const thumb = nav && nav.querySelector('.tab-thumb');
+    const active = nav && nav.querySelector('.tab.is-active');
+    if (!thumb) return;
+    if (!active || !active.offsetWidth) { thumb.style.opacity = '0'; return; }
+    thumb.style.opacity = '1';
+    if (App.Motion) App.Motion.slideThumb(nav, thumb, active.offsetLeft, active.offsetWidth, instant);
   };
 
   function setCollapsed(collapsed) {
@@ -172,11 +202,15 @@
     'toggle-sidebar': () => setCollapsed(!$app().classList.contains('is-collapsed')),
     'open-sidebar': () => openSidebar(),
     'close-sidebar': () => closeSidebar(),
-    'theme-toggle': () => {
+    'theme-toggle': (el) => {
       Store.state.settings.theme = App.effectiveTheme() === 'dark' ? 'light' : 'dark';
       Store.save();
-      App.applyTheme();
-      if (App.route === 'settings') App.renderView(false);
+      // новая тема раскрывается кругом от кнопки (Theme Toggle из Space UI)
+      const apply = () => {
+        App.applyTheme();
+        if (App.route === 'settings') App.renderView(false);
+      };
+      if (App.Motion) App.Motion.themeReveal(apply, el); else apply();
     },
     'new-menu': (el) => {
       UI.popover(el, `
@@ -257,7 +291,7 @@
     const scheme = window.matchMedia('(prefers-color-scheme: dark)');
     if (scheme.addEventListener) scheme.addEventListener('change', App.applyTheme);
     else if (scheme.addListener) scheme.addListener(App.applyTheme); // Safari до 14
-    window.addEventListener('resize', U.debounce(UI.refreshSegs, 150));
+    window.addEventListener('resize', U.debounce(() => { UI.refreshSegs(); App.placeTabThumb(true); }, 150));
 
     const filesReady = FileDB.open();
     // Сайт с паролем: на новом устройстве сначала вход
@@ -281,6 +315,7 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(UI.refreshSegs);
 
     if (App.PWA) App.PWA.init();
+    if (App.Motion) App.Motion.init();
     if (App.Ai) App.Ai.init();
     const dbOk = await filesReady;
     if (Store.oldSampleFiles) {

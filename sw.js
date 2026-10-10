@@ -3,7 +3,7 @@
    и сама включается при следующем открытии Семестра — без предложений «Обновить».
    VERSION пересчитывается скриптом tools/sw-version.py. */
 
-const VERSION = 'semestr-bdbb18700e';
+const VERSION = 'semestr-89e77ddaec';
 const RUNTIME = 'semestr-runtime';
 
 const SHELL = [
@@ -12,6 +12,7 @@ const SHELL = [
   'manifest.webmanifest',
   'css/styles.css',
   'js/utils.js',
+  'js/motion.js',
   'js/data/kgmu-3-lech-2026.js',
   'js/data/kgmu-topics.js',
   'js/kgmu.js',

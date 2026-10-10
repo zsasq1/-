@@ -102,7 +102,7 @@
           const s = U.atTime(now, c.start);
           const e = U.atTime(now, c.end);
           const pct = U.clamp(((now - s) / (e - s)) * 100, 0, 100);
-          extra = `<div class="tl-status">Идёт · ещё ${U.relIn(e - now)}</div><div class="progress"><i style="width:${pct.toFixed(1)}%"></i></div>`;
+          extra = `<div class="tl-status"><i class="live-dot"></i>Идёт · ещё ${U.relIn(e - now)}</div><div class="progress"><i style="width:${pct.toFixed(1)}%"></i></div>`;
         } else if (status === 'later' && firstLater) {
           firstLater = false;
           extra = `<div class="tl-status">Через ${U.relIn(U.atTime(now, c.start) - now)}</div>`;

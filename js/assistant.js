@@ -25,6 +25,19 @@
   const providerOf = (key) => (/^sk-ant-/.test(key || '') ? 'anthropic' : 'deepseek');
   const MAX_HISTORY = 12;
 
+  // Что делает ассистент прямо сейчас — подпись «думающей» плашки (Thinking Loader из Planes)
+  const PHASES = {
+    get_schedule: 'Смотрю расписание', get_topics: 'Ищу темы в программе', list_reminders: 'Смотрю дела',
+    add_reminder: 'Добавляю дело', add_reminders: 'Составляю план', update_reminder: 'Обновляю дело', delete_reminder: 'Удаляю дело',
+    set_class_note: 'Пишу заметку', add_class: 'Добавляю занятие', set_final_passed: 'Отмечаю итоговое', open_page: 'Открываю раздел',
+    set_class_mark: 'Отмечаю на занятии', get_marks: 'Считаю оценки', cancel_class: 'Отменяю пару', move_class: 'Переношу пару',
+    list_files: 'Смотрю файлы', read_file: 'Читаю файл', read_attachment: 'Читаю вложение', save_attachment: 'Сохраняю файл',
+    save_text_file: 'Сохраняю конспект', update_file: 'Обновляю файл', save_flashcards: 'Сохраняю карточки',
+    get_flashcards: 'Беру карточки', grade_flashcard: 'Отмечаю ответ', export_flashcards: 'Готовлю файл для Anki',
+    change_settings: 'Меняю настройки', open_calendar_export: 'Открываю календарь',
+  };
+  const IDLE_PHASES = ['Думаю', 'Смотрю ваши данные', 'Собираю ответ'];
+
   const SUGGEST = [
     'Что у меня завтра?',
     'Что учить к ближайшему итоговому?',
@@ -911,6 +924,7 @@
   async function runTool(name, input, ctx = {}) {
     const t = TOOLS.find((x) => x.name === name);
     if (!t) throw new Error(`нет инструмента ${name}`);
+    Ai.setPhase(PHASES[name]);
     const out = await t.run(input && typeof input === 'object' ? input : {}, ctx);
     // блоки (PDF, картинки) понимает только API Claude
     if (out && out.__blocks && ctx.provider !== 'anthropic') return out.__blocks.filter((b) => b.type === 'text').map((b) => b.text).join('\n');
@@ -1097,7 +1111,8 @@
       return `
         <div class="ai-msg is-bot ${t.state === 'error' ? 'is-error' : ''}" data-turn="${i}">
           ${t.actions.length ? `<ul class="ai-actions">${t.actions.map((a) => `<li>${ico(a.icon)}<span>${esc(a.text)}</span></li>`).join('')}</ul>` : ''}
-          ${t.text ? `<div class="ai-text">${fmt(t.text)}</div>` : t.state === 'busy' ? `<div class="ai-thinking"><i></i><i></i><i></i><span>${t.actions.length ? 'Делаю…' : 'Думаю…'}</span></div>` : ''}
+          ${t.text ? `<div class="ai-text">${fmt(t.text)}</div>` : ''}
+          ${t.state === 'busy' && (!t.text || this.phase) ? `<div class="ai-thinking"><span class="ai-orb"></span><span class="shimmer" id="ai-phase">${esc(this.phase || IDLE_PHASES[0])}…</span></div>` : ''}
           ${t.state === 'busy' ? `<button type="button" class="btn btn-sm btn-ghost ai-stop" data-action="ai-stop">Остановить</button>` : ''}
           ${t.undo && last && t.state !== 'busy' && !t.undone ? `<button type="button" class="btn btn-sm btn-ghost ai-undo" data-action="ai-undo">Отменить изменения</button>` : ''}
           ${t.undone ? '<p class="ai-fine">Изменения отменены</p>' : ''}
@@ -1110,7 +1125,25 @@
       if (!el) { this.renderLog(); return; }
       const log = U.$('#ai-log');
       const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 80;
-      el.outerHTML = this.turnHtml(t, i);
+      // обновляем на месте: уже показанные строки и текст не появляются заново (Streaming Text из Skecher UI)
+      const tmp = document.createElement('div');
+      tmp.innerHTML = this.turnHtml(t, i);
+      const next = tmp.firstElementChild;
+      el.className = next.className;
+      const kids = Array.from(next.children);
+      kids.forEach((n, j) => {
+        const o = el.children[j];
+        if (!o) { el.appendChild(n); return; }
+        if (o.className !== n.className) { el.replaceChild(n, o); return; }
+        if (n.classList.contains('ai-actions')) {
+          for (let k = o.children.length; k < n.children.length; k++) o.appendChild(n.children[k].cloneNode(true));
+        } else if (n.classList.contains('ai-text')) {
+          if (o.innerHTML !== n.innerHTML) o.innerHTML = n.innerHTML;
+        } else if (!n.classList.contains('ai-thinking') && o.outerHTML !== n.outerHTML) {
+          el.replaceChild(n, o);
+        }
+      });
+      while (el.children.length > kids.length) el.lastElementChild.remove();
       if (atBottom) log.scrollTop = log.scrollHeight;
     },
 
@@ -1218,6 +1251,14 @@
       this.busy = true;
       this.ctl = new AbortController();
       current = turn;
+      this.phase = '';
+      let idle = 0;
+      const ticker = setInterval(() => {
+        if (this.phase) return;
+        idle = Math.min(idle + 1, IDLE_PHASES.length - 1);
+        const el = U.$('#ai-phase');
+        if (el) { el.textContent = `${IDLE_PHASES[idle]}…`; el.classList.remove('is-swap'); void el.offsetWidth; el.classList.add('is-swap'); }
+      }, 2600);
       U.$('#ai-send').disabled = true;
       let msg = `${context()}\n\nСообщение студента: ${text}`;
       if (files.length) {
@@ -1233,6 +1274,8 @@
         if (e && e.code !== 'cancelled') turn.text = (turn.text ? `${turn.text}\n\n` : '') + errText(e);
         else if (!turn.text && !turn.actions.length) turn.text = 'Остановлено.';
       } finally {
+        clearInterval(ticker);
+        this.phase = '';
         current = null;
         this.busy = false;
         this.ctl = null;
@@ -1432,6 +1475,18 @@
 
     stop() {
       if (this.ctl) this.ctl.abort();
+    },
+
+    // Подпись меняется на месте, без перерисовки чата
+    setPhase(text) {
+      this.phase = text || '';
+      const el = U.$('#ai-phase');
+      if (el && text) {
+        el.textContent = `${text}…`;
+        el.classList.remove('is-swap');
+        void el.offsetWidth;
+        el.classList.add('is-swap');
+      } else if (current) this.renderTurn(current);
     },
 
     undo() {

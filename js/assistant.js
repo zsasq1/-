@@ -1098,7 +1098,19 @@
         return;
       }
       log.innerHTML = this.turns.map((t, i) => this.turnHtml(t, i)).join('');
+      U.$$('.ai-text.is-cascade', log).forEach((el) => this.fillCascade(el));
       log.scrollTop = log.scrollHeight;
+    },
+
+    // Буквы ответа: новые встают в очередь, по окончании ответа анимация доигрывает и снимается
+    fillCascade(el) {
+      const t = this.turns[Number(el.closest('[data-turn]').dataset.turn)];
+      if (!t || !App.Motion) return;
+      const st = App.Motion.cascade(el, t.text);
+      if (t.state === 'busy' || st.done) return;
+      App.Motion.cascadeFinish(el);
+      clearTimeout(t.settle);
+      t.settle = setTimeout(() => { t.animate = false; }, Math.max(0, st.endsAt - performance.now()) + 100);
     },
 
     turnHtml(t, i) {
@@ -1111,7 +1123,7 @@
       return `
         <div class="ai-msg is-bot ${t.state === 'error' ? 'is-error' : ''}" data-turn="${i}">
           ${t.actions.length ? `<ul class="ai-actions">${t.actions.map((a) => `<li>${ico(a.icon)}<span>${esc(a.text)}</span></li>`).join('')}</ul>` : ''}
-          ${t.text ? `<div class="ai-text">${fmt(t.text)}</div>` : ''}
+          ${t.text ? (t.animate ? '<div class="ai-text is-cascade"></div>' : `<div class="ai-text">${fmt(t.text)}</div>`) : ''}
           ${t.state === 'busy' && (!t.text || this.phase) ? `<div class="ai-thinking"><span class="ai-orb"></span><span class="shimmer" id="ai-phase">${esc(this.phase || IDLE_PHASES[0])}…</span></div>` : ''}
           ${t.state === 'busy' ? `<button type="button" class="btn btn-sm btn-ghost ai-stop" data-action="ai-stop">Остановить</button>` : ''}
           ${t.undo && last && t.state !== 'busy' && !t.undone ? `<button type="button" class="btn btn-sm btn-ghost ai-undo" data-action="ai-undo">Отменить изменения</button>` : ''}
@@ -1137,6 +1149,8 @@
         if (o.className !== n.className) { el.replaceChild(n, o); return; }
         if (n.classList.contains('ai-actions')) {
           for (let k = o.children.length; k < n.children.length; k++) o.appendChild(n.children[k].cloneNode(true));
+        } else if (n.classList.contains('is-cascade')) {
+          this.fillCascade(o);
         } else if (n.classList.contains('ai-text')) {
           if (o.innerHTML !== n.innerHTML) o.innerHTML = n.innerHTML;
         } else if (!n.classList.contains('ai-thinking') && o.outerHTML !== n.outerHTML) {
@@ -1144,6 +1158,8 @@
         }
       });
       while (el.children.length > kids.length) el.lastElementChild.remove();
+      // только что вставленный блок текста заполняем буквами
+      U.$$('.ai-text.is-cascade', el).forEach((x) => { if (!x._lc) this.fillCascade(x); });
       if (atBottom) log.scrollTop = log.scrollHeight;
     },
 
@@ -1240,7 +1256,8 @@
       this.renderStaged();
       if (files.length) this.attached = files.map((file) => ({ file }));
       this.turns.push({ role: 'user', text, files: files.map((f) => f.name) });
-      const turn = { role: 'assistant', text: '', actions: [], state: 'busy' };
+      // ответ проявляется буквами (Letter Cascade из Componentry), если не просили уменьшить движение
+      const turn = { role: 'assistant', text: '', actions: [], state: 'busy', animate: !!(App.Motion && !App.Motion.reduced()) };
       this.turns.push(turn);
       this.renderLog();
 
@@ -1282,7 +1299,7 @@
         U.$('#ai-send').disabled = false;
         if (turn.actions.length) turn.undo = snap;
         if (!turn.text && turn.actions.length) turn.text = 'Готово.';
-        this.renderLog();
+        this.renderTurn(turn);
       }
     },
 

@@ -200,5 +200,110 @@
     window.addEventListener('resize', U.debounce(relayout, 150));
   }
 
-  App.Motion = { spring, slideThumb, blurReveal, themeReveal, stackToasts, reduced, init() { initGlare(); initDetails(); initToasts(); } };
+  /* ---------- Letter Cascade (Componentry): буквы переворачиваются снизу на пружине ----------
+     Исходник — React + Motion; здесь те же параметры: пружина stiffness 220 / damping 16,
+     шаг 40 мс, каждая буква: rotateX -90° → 0, y 6 → 0, scale .8 → 1, blur 4px → 0.
+     Текст дописывается по мере ответа: новые буквы встают в очередь за уже идущими. */
+
+  // Пружину переводим в CSS-кривую linear(): браузер играет её сам, без JS на каждую букву
+  const springEase = (() => {
+    const k = 220, c = 16, m = 1;
+    let x = 0, v = 0;
+    const pts = [];
+    const dt = 1 / 600;
+    let t = 0;
+    for (; t < 2; t += dt) {
+      const a = (-k * (x - 1) - c * v) / m;
+      v += a * dt; x += v * dt;
+      pts.push(x);
+      if (t > 0.2 && Math.abs(x - 1) < 0.002 && Math.abs(v) < 0.02) break;
+    }
+    const dur = Math.round(t * 1000);
+    const step = Math.max(1, Math.floor(pts.length / 48));
+    const out = [0];
+    for (let i = step; i < pts.length; i += step) out.push(+pts[i].toFixed(4));
+    out.push(1);
+    const css = `linear(${out.join(', ')})`;
+    const ok = window.CSS && CSS.supports && CSS.supports('animation-timing-function', css);
+    return { css: ok ? css : 'cubic-bezier(.34, 1.56, .64, 1)', dur: ok ? dur : 650 };
+  })();
+  document.documentElement.style.setProperty('--lc-ease', springEase.css);
+  document.documentElement.style.setProperty('--lc-dur', `${springEase.dur}ms`);
+
+  function cascade(el, text) {
+    let st = el._lc;
+    if (!st || !String(text).startsWith(st.src)) {
+      el.textContent = '';
+      st = el._lc = { src: '', hold: '', bold: false, head: false, lineStart: true, word: null, wordLen: 0, nextAt: 0, endsAt: 0, done: false };
+    }
+    const delta = String(text).slice(st.src.length);
+    st.src = String(text);
+    feed(el, st, delta, false);
+    return st;
+  }
+
+  function cascadeFinish(el) {
+    const st = el && el._lc;
+    if (!st || st.done) return st;
+    st.done = true;
+    feed(el, st, '', true);
+    return st;
+  }
+
+  function feed(el, st, delta, final) {
+    let s = st.hold + delta;
+    st.hold = '';
+    if (!final) {
+      // «**», «- » и «#» в начале строки могут прийти по частям — ждём следующий кусок
+      const tail = s.match(/\*+$/) || (st.lineStart || /\n[#\-*]*$/.test(s) ? s.match(/(^|\n)([#\-*]+)$/) : null);
+      if (tail) { const t = tail[0].replace(/^\n/, ''); st.hold = t; s = s.slice(0, s.length - t.length); }
+    }
+    const now = performance.now();
+    const letters = [];
+    const frag = document.createDocumentFragment();
+    const closeWord = () => { st.word = null; st.wordLen = 0; };
+    const put = (node) => frag.appendChild(node);
+    for (let i = 0; i < s.length; i++) {
+      const ch = s[i];
+      if (ch === '*' && s[i + 1] === '*') { st.bold = !st.bold; i++; continue; }
+      if (st.lineStart) {
+        if (ch === '#') { while (s[i + 1] === '#') i++; if (s[i + 1] === ' ') i++; st.head = true; continue; }
+        if ((ch === '-' || ch === '*') && s[i + 1] === ' ') { i++; closeWord(); const b = document.createElement('span'); b.className = 'lc-l'; b.textContent = '•'; letters.push(b); put(b); put(document.createTextNode(' ')); st.lineStart = false; continue; }
+      }
+      if (ch === '\n') { closeWord(); put(document.createElement('br')); st.lineStart = true; st.head = false; continue; }
+      st.lineStart = false;
+      if (ch === ' ' || ch === '\t') { closeWord(); put(document.createTextNode(' ')); continue; }
+      // буквы одного слова держим вместе, чтобы строка переносилась только между словами
+      if (!st.word || (!st.word.isConnected && !frag.contains(st.word))) {
+        st.word = document.createElement('span');
+        st.word.className = 'lc-w';
+        put(st.word);
+        st.wordLen = 0;
+      }
+      if (st.wordLen > 28) st.word.classList.add('is-long');
+      const l = document.createElement('span');
+      l.className = (st.bold || st.head) ? 'lc-l is-b' : 'lc-l';
+      l.textContent = ch;
+      st.word.appendChild(l);
+      st.wordLen++;
+      letters.push(l);
+    }
+    if (frag.childNodes.length) el.appendChild(frag);
+    if (!letters.length) return;
+    // шаг 40 мс, но длинный ответ не тянем дольше ~1,6 с; при отставании от потока ускоряемся
+    let start = Math.max(now, st.nextAt);
+    const backlog = start - now;
+    const stepMs = backlog > 600 ? 8 : Math.max(5, Math.min(40, 1600 / letters.length));
+    if (reduced()) { letters.forEach((l) => l.classList.add('is-in')); return; }
+    letters.forEach((l, i) => {
+      l.style.animationDelay = `${Math.round(start - now + i * stepMs)}ms`;
+    });
+    st.nextAt = start + letters.length * stepMs;
+    st.endsAt = st.nextAt + springEase.dur;
+  }
+
+  App.Motion = {
+    spring, slideThumb, blurReveal, themeReveal, stackToasts, reduced, cascade, cascadeFinish,
+    init() { initGlare(); initDetails(); initToasts(); },
+  };
 })(window.App);

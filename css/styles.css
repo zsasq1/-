@@ -1943,3 +1943,19 @@ html.vt-theme::view-transition-new(root) { z-index: 2; }
   .toasts.is-stack { width: auto; }
   .toasts.is-stack .toast { left: 0; right: 0; }
 }
+
+/* ---------- Letter Cascade (Componentry): ответ ассистента проявляется буквами ---------- */
+
+.lc-w { display: inline-block; white-space: nowrap; }
+.lc-w.is-long { display: inline; white-space: normal; }
+.lc-l {
+  display: inline-block; white-space: pre;
+  transform-origin: 50% 0;
+  animation: lc-in var(--lc-dur, 650ms) var(--lc-ease, cubic-bezier(.34, 1.56, .64, 1)) both;
+}
+.lc-l.is-b { font-weight: 700; }
+.lc-l.is-in { animation: none; }
+@keyframes lc-in {
+  from { opacity: 0; transform: perspective(500px) translateY(6px) scale(.8) rotateX(-90deg); filter: blur(4px); }
+  to { opacity: 1; transform: perspective(500px); filter: blur(0); }
+}

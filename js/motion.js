@@ -302,8 +302,51 @@
     st.endsAt = st.nextAt + springEase.dur;
   }
 
+  /* ---------- Interactive Checklist (Space UI): галочка на пружине, искры, строка схлопывается ---------- */
+
+  // Пружина галочки как в Interactive Checklist: stiffness 500, damping 28
+  const popEase = (() => {
+    const k = 500, c = 28;
+    let x = 0, v = 0, t = 0;
+    const pts = [];
+    const dt = 1 / 600;
+    for (; t < 1.5; t += dt) {
+      v += (-k * (x - 1) - c * v) * dt; x += v * dt; pts.push(x);
+      if (t > 0.1 && Math.abs(x - 1) < 0.002 && Math.abs(v) < 0.02) break;
+    }
+    const step = Math.max(1, Math.floor(pts.length / 40));
+    const out = [0];
+    for (let i = step; i < pts.length; i += step) out.push(+pts[i].toFixed(4));
+    out.push(1);
+    const css = `linear(${out.join(', ')})`;
+    const ok = window.CSS && CSS.supports && CSS.supports('animation-timing-function', css);
+    return { css: ok ? css : 'cubic-bezier(.34, 1.56, .64, 1)', dur: ok ? Math.round(t * 1000) : 450 };
+  })();
+  document.documentElement.style.setProperty('--pop-ease', popEase.css);
+  document.documentElement.style.setProperty('--pop-dur', `${popEase.dur}ms`);
+
+  // Отметили дело: галочка выскакивает, текст зачёркивается, строка уезжает и схлопывается, потом done()
+  function checkOff(row, btn, done) {
+    if (reduced() || !row) { done(); return; }
+    if (btn) {
+      btn.classList.remove('is-pop');
+      void btn.offsetWidth;
+      btn.classList.add('is-pop');
+    }
+    row.classList.add('is-checking');
+    setTimeout(() => {
+      if (!row.isConnected) { done(); return; }
+      const cs = getComputedStyle(row);
+      const from = { height: `${row.offsetHeight}px`, opacity: 1, transform: 'none', paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, marginTop: cs.marginTop, marginBottom: cs.marginBottom };
+      const to = { height: '0px', opacity: 0, transform: 'translateX(14px) scale(.98)', paddingTop: '0px', paddingBottom: '0px', marginTop: '0px', marginBottom: '0px' };
+      row.style.overflow = 'hidden';
+      const a = row.animate([from, to], { duration: 420, easing: 'cubic-bezier(.4, 0, .2, 1)', fill: 'forwards' });
+      a.onfinish = a.oncancel = () => done();
+    }, 750);
+  }
+
   App.Motion = {
-    spring, slideThumb, blurReveal, themeReveal, stackToasts, reduced, cascade, cascadeFinish,
+    spring, slideThumb, blurReveal, themeReveal, stackToasts, reduced, cascade, cascadeFinish, checkOff,
     init() { initGlare(); initDetails(); initToasts(); },
   };
 })(window.App);

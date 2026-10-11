@@ -384,9 +384,15 @@
     'final-toggle': (el) => {
       const f = Topics.finals().find((x) => x.id === el.dataset.key);
       if (!f) return;
-      Topics.setPassed(f.id, !f.passed);
-      App.refresh();
-      if (!f.passed) UI.toast(`Итоговое по предмету «${f.subject}» сдано`);
+      const passed = !f.passed;
+      Topics.setPassed(f.id, passed);
+      const li = el.closest('.rem');
+      if (li) {
+        li.classList.toggle('is-done', passed);
+        el.setAttribute('aria-checked', String(passed));
+        App.Notify.leaveRow(li, el);
+      } else App.refresh();
+      if (passed) UI.toast(`Итоговое по предмету «${f.subject}» сдано`);
     },
   });
 

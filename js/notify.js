@@ -364,11 +364,7 @@
       if (li) {
         li.classList.toggle('is-done', r.done);
         btn.setAttribute('aria-checked', String(r.done));
-        // Даём дорисоваться галочке и зачёркиванию, затем убираем строку из списка
-        setTimeout(() => {
-          li.classList.add('is-leaving');
-          setTimeout(() => App.refresh(), 380);
-        }, 650);
+        this.leaveRow(li, btn);
       } else {
         App.refresh();
       }
@@ -377,6 +373,14 @@
           action: { label: 'Отменить', fn: () => { r.done = false; r.doneAt = null; Store.save(); App.refresh(); } },
         });
       }
+    },
+
+    // Анимация отметки, затем перерисовка — одна на несколько быстрых нажатий подряд
+    leaveRow(li, btn) {
+      this.leaving = (this.leaving || 0) + 1;
+      const done = () => { this.leaving = Math.max(0, this.leaving - 1); if (!this.leaving) App.refresh(); };
+      if (App.Motion) App.Motion.checkOff(li, btn, done);
+      else setTimeout(done, 600);
     },
 
     remove(id) {

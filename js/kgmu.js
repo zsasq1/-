@@ -265,7 +265,7 @@
     const colGroup = {};
     for (let r = 0; r < rows && headRow < 0; r++) {
       (grid[r] || []).forEach((v, c) => {
-        const g = String(v || '').match(/групп\S*\s*(\d{3})/i);
+        const g = near(String(v || ''), /групп/gi, /^групп\S*\s*(\d{3})/i, 40);
         if (g) { colGroup[c] = g[1]; headRow = r; }
       });
     }

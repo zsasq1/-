@@ -563,42 +563,30 @@
 
     /* ---------- Обновление из свежего файла ---------- */
 
-    loadSheetJS() {
-      if (window.XLSX) return Promise.resolve(window.XLSX);
-      return new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-        s.onload = () => (window.XLSX ? resolve(window.XLSX) : reject(new Error('no XLSX')));
-        s.onerror = () => reject(new Error('load failed'));
-        document.head.appendChild(s);
-      });
-    },
-
     upload() {
       const { Store, UI } = App;
       App.Files.pick(async (files) => {
         const file = files[0];
-        let XLSX;
-        try { XLSX = await this.loadSheetJS(); } catch (e) {
-          UI.toast('Не удалось загрузить модуль чтения Excel — проверьте интернет и попробуйте ещё раз');
+        if (!App.Xlsx.supported()) {
+          UI.toast('Этот браузер не умеет читать .xlsx — обновите его и попробуйте ещё раз', { timeout: 7000 });
+          return;
+        }
+        if (file.size > App.Xlsx.MAX_FILE) {
+          UI.toast('Файл слишком большой для таблицы расписания. Нужен .xlsx со страницы «Расписание. Лечебный факультет»', { timeout: 7000 });
           return;
         }
         let stream;
         try {
-          const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
-          const ws = wb.Sheets[wb.SheetNames[0]];
-          const range = XLSX.utils.decode_range(ws['!ref']);
-          const grid = [];
-          for (let r = 0; r <= range.e.r; r++) {
-            const row = [];
-            for (let c = 0; c <= range.e.c; c++) {
-              const cell = ws[XLSX.utils.encode_cell({ r, c })];
-              row.push(cell ? String(cell.w != null ? cell.w : cell.v).replace(/\s+/g, ' ').trim() : '');
-            }
-            grid.push(row);
-          }
-          const merges = (ws['!merges'] || []).map((m) => [m.s.r, m.s.c, m.e.r, m.e.c]);
-          stream = { file: file.name, grid, merges };
+          // Читаем сами (js/xlsx.js): первый лист — текст ячеек и объединения
+          const sheet = await App.Xlsx.read(await file.arrayBuffer());
+          // Как во встроенных таблицах: без пустых ячеек в конце строк и пустых строк в конце
+          const grid = sheet.grid.map((row) => {
+            const out = row.map((v) => v.replace(/\s+/g, ' ').trim());
+            while (out.length && !out[out.length - 1]) out.pop();
+            return out;
+          });
+          while (grid.length && !grid[grid.length - 1].length) grid.pop();
+          stream = { file: file.name, grid, merges: sheet.merges };
           const test = parseSheet(stream);
           if (!test.entries.length) throw new Error('empty');
         } catch (e) {

@@ -18,6 +18,10 @@ html = (root / 'index.html').read_text(encoding='utf-8')
 # Значки и описание приложения для установки из отдельного файла не загрузятся
 html = re.sub(r'\s*<link rel="(manifest|apple-touch-icon)"[^>]*>', '', html)
 html = re.sub(r'\s*<meta name="(mobile-web-app-capable|apple-mobile-web-app-[a-z-]+)"[^>]*>', '', html)
+# Политика безопасности рассчитана на скрипты отдельными файлами, а здесь они встроены в страницу
+html = re.sub(r'\s*(?:<!--(?:(?!-->)[\s\S])*-->\s*)?<meta http-equiv="Content-Security-Policy"[^>]*>', '', html)
+if 'Content-Security-Policy' in html:
+    raise SystemExit('не получилось убрать политику безопасности — встроенные скрипты не запустятся')
 
 css = (root / 'css' / 'styles.css').read_text(encoding='utf-8')
 html = html.replace('<link rel="stylesheet" href="css/styles.css">', f'<style>\n{css}</style>')

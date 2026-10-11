@@ -3,18 +3,20 @@
    и сама включается при следующем открытии Семестра — без предложений «Обновить».
    VERSION пересчитывается скриптом tools/sw-version.py. */
 
-const VERSION = 'semestr-b864fc80b7';
+const VERSION = 'semestr-f024837dad';
 const RUNTIME = 'semestr-runtime';
 
 const SHELL = [
   './',
   'index.html',
+  'js/boot.js',
   'manifest.webmanifest',
   'css/styles.css',
   'js/utils.js',
   'js/motion.js',
   'js/data/kgmu-3-lech-2026.js',
   'js/data/kgmu-topics.js',
+  'js/xlsx.js',
   'js/kgmu.js',
   'js/store.js',
   'js/ui.js',
@@ -37,8 +39,8 @@ const SHELL = [
   'icons/favicon-32.png',
 ];
 
-// Шрифты и библиотека чтения Excel — с чужих сайтов, их храним отдельно
-const CDN = /^(fonts\.googleapis\.com|fonts\.gstatic\.com|cdnjs\.cloudflare\.com)$/;
+// Шрифты — с чужого сайта, их храним отдельно
+const CDN = /^(fonts\.googleapis\.com|fonts\.gstatic\.com)$/;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

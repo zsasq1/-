@@ -12,6 +12,7 @@
 Другая папка для данных: SEMESTR_DATA=/путь/к/папке python3 server.py
 """
 import datetime
+import html
 import io
 import json
 import mimetypes
@@ -358,6 +359,9 @@ class Handler(BaseHTTPRequestHandler):
         return (path, entry.get('type')) if os.path.isfile(path) else (None, None)
 
     def get_file(self, file_id, download):
+        # Ваш файл — только для просмотра и скачивания, не как скрипт или стиль самой страницы
+        if self.headers.get('Sec-Fetch-Dest', '') in ('script', 'style', 'worker', 'sharedworker', 'serviceworker', 'audioworklet', 'paintworklet', 'xslt'):
+            return self.reply_json({'error': 'forbidden'}, 403)
         path, ctype = self.file_path(file_id)
         if not path:
             return self.reply_json({'error': 'not found'}, 404)
@@ -387,6 +391,11 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Accept-Ranges', 'bytes')
         self.send_header('Content-Disposition', f"{disp}; filename*=UTF-8''{name}")
         self.send_header('Cache-Control', 'no-store')
+        # Ваш файл, открытый по прямой ссылке, не должен выполнять скрипты от имени Семестра.
+        # Кроме PDF: Chrome не показывает PDF на странице с sandbox
+        self.send_header('X-Content-Type-Options', 'nosniff')
+        if not ctype.lower().startswith('application/pdf'):
+            self.send_header('Content-Security-Policy', 'sandbox')
         if status == 206:
             self.send_header('Content-Range', f'bytes {start}-{end}/{size}')
         self.end_headers()
@@ -431,14 +440,17 @@ class Handler(BaseHTTPRequestHandler):
     def static(self, path):
         rel = path.lstrip('/') or 'index.html'
         full = os.path.realpath(os.path.join(APP, rel))
-        if not full.startswith(APP + os.sep) or not os.path.isfile(full):
+        # Папка «Данные» может лежать внутри папки приложения (запуск из репозитория):
+        # ваши файлы отдаются только через /api/files, с защитными заголовками
+        if not full.startswith(APP + os.sep) or full.startswith(os.path.realpath(DATA) + os.sep) or not os.path.isfile(full):
             return self.reply(404, 'Не найдено'.encode('utf-8'), 'text/plain; charset=utf-8')
         with open(full, 'rb') as f:
             body = f.read()
         if rel == 'index.html':
-            # Страница узнаёт, что данные надо хранить на диске
-            info = json.dumps({'dir': DATA}).replace('</', '<\\/')
-            body = body.replace(b'</head>', f'<script>window.SEMESTR_DISK = {info};</script>\n</head>'.encode('utf-8'), 1)
+            # Страница узнаёт, что данные надо хранить на диске. Тегом <meta>, а не скриптом:
+            # политика безопасности страницы запрещает встроенные скрипты
+            info = html.escape(json.dumps({'dir': DATA}), quote=True)
+            body = body.replace(b'</head>', f'<meta name="semestr-disk" content="{info}">\n</head>'.encode('utf-8'), 1)
         ctype = mimetypes.guess_type(full)[0] or 'application/octet-stream'
         if ctype.startswith('text/') or ctype in ('application/json', 'application/manifest+json'):
             ctype += '; charset=utf-8'
@@ -446,6 +458,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Content-Type', ctype)
         self.send_header('Content-Length', str(len(body)))
         self.send_header('Cache-Control', 'no-cache')
+        self.send_header('X-Content-Type-Options', 'nosniff')
+        self.send_header('Content-Security-Policy', "frame-ancestors 'none'")  # чужой сайт не встроит Семестр в рамку
         self.end_headers()
         if self.command != 'HEAD':
             self.wfile.write(body)

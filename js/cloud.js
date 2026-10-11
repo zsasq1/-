@@ -8,6 +8,12 @@
 
   const { U, Store, UI, FileDB } = App;
 
+  // «Семестр для Mac» сообщает папку с данными тегом <meta name="semestr-disk"> (см. mac/server.py)
+  const diskMeta = document.querySelector('meta[name="semestr-disk"]');
+  if (diskMeta && !window.SEMESTR_DISK) {
+    try { window.SEMESTR_DISK = JSON.parse(diskMeta.content); } catch (e) { /* испорченный тег — работаем как сайт */ }
+  }
+
   const META_KEY = 'semestr.sync';
   const WRAP = 'SEMESTR-FILE-1';
   // Эти форматы хранилище файлов принимает как есть. Остальные (Word, PowerPoint, Excel…)

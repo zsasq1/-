@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "css/styles.css",
+    "baseColor": "neutral",
+    "cssVariables": true
+  },
+  "aliases": {
+    "components": "@/components",
+    "ui": "@/components/ui",
+    "utils": "@/lib/utils",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  },
+  "registries": {
+    "@componentry": "https://componentry.dev/r/{name}.json",
+    "@spaceui": "https://www.spaceui.one/r/{name}.json",
+    "@uiarc": "https://uiarc.dev/r/{name}.json",
+    "@useplanes": "https://useplanes.com/api/registry/{name}"
+  }
+}

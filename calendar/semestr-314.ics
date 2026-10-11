@@ -1,0 +1,3439 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Semestr//Study dashboard//RU
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Учёба · группа 314
+X-WR-TIMEZONE:Europe/Kirov
+BEGIN:VEVENT
+UID:20260928T1040-29ske2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20260928T074000Z
+DTEND:20260928T100500Z
+SUMMARY:Гигиена · практика
+LOCATION:каф. гигиены (3 корпус\, ул. Владимирс
+ кая\, 112)
+DESCRIPTION:Тема: Радиационная гигиена. Значен
+ ие отдельных видов радиоактивных излуче
+ ний\nЗанятие 4 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20260929T0800-mowwv@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20260929T050000Z
+DTEND:20260929T072500Z
+SUMMARY:Микробиология\, вирусология · практи
+ ка
+LOCATION:каф. микробиологии и вирусологии (3 к
+ орпус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Возбудители холеры. Синегной
+ ная палочка. Протей\nЗанятие 5 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · прак
+ тика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20260929T1045-1bd9fg3@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20260929T074500Z
+DTEND:20260929T091500Z
+SUMMARY:Гигиена · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Гигиена труда\nЛекция 3 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20260929T1225-d3bysa@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20260929T092500Z
+DTEND:20260929T105500Z
+SUMMARY:Патологическая анатомия · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Нарушения обмена веществ в к
+ летках и тканях: смешанные дистрофии\nЛе
+ кция 5 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20260930T1300-1erpb2h@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20260930T100000Z
+DTEND:20260930T122500Z
+SUMMARY:Патологическая анатомия · практика
+LOCATION:каф. патологической анатомии (3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Нарушения обмена веществ в к
+ летках и тканях: смешанные дистрофии\nЗа
+ нятие 5 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · практик
+ а
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261001T0830-uxtbtq@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261001T053000Z
+DTEND:20261001T070000Z
+SUMMARY:Патофизиология · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Лихорадка и гипертермии\nЛек
+ ция 5 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261001T1140-1mx6aox@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261001T084000Z
+DTEND:20261001T115000Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ практика
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / БСМП\, Октябрьский пр.\, 47
+DESCRIPTION:Тема: Синдром поражения плевры. Си
+ ндром дыхательной недостаточности\nЗаня
+ тие 5 из 17
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261001T1530-n169lr@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261001T123000Z
+DTEND:20261001T145500Z
+SUMMARY:Фармакология · практика
+LOCATION:каф. фармакологии (3 корпус\, ул. Влад
+ имирская\, 112)
+DESCRIPTION:Тема: Жидкие лекарственные формы\n
+ Занятие 5 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261002T0800-13onynu@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261002T050000Z
+DTEND:20261002T072500Z
+SUMMARY:Топографическая анатомия и оператив
+ ная хирургия · практика
+LOCATION:каф. топографической анатомии (2 кор
+ пус\, ул. Пролетарская\, 38)
+DESCRIPTION:Тема: Топографическая анатомия и о
+ перативная хирургия брюшной стенки и ди
+ афрагмы\nЗанятие 5 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Топографическая анатомия и операт
+ ивная хирургия · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261002T1045-1rx9c2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261002T074500Z
+DTEND:20261002T091500Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Синдром дыхательной недоста
+ точности\nЛекция 5 из 17
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261002T1300-j7tisz@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261002T100000Z
+DTEND:20261002T113000Z
+SUMMARY:Электив на кафедре патофизиологии · 
+ лекция
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Лекция 5 из 6
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Электив на кафедре патофизиологии
+  · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261003T0800-1z11n71@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261003T050000Z
+DTEND:20261003T072500Z
+SUMMARY:Патофизиология · практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Тема: Типовые нарушения органно-тк
+ аневого кровообращения и микроциркуляц
+ ии\nЗанятие 5 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261003T1035-1hc5bko@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261003T073500Z
+DTEND:20261003T090500Z
+SUMMARY:Микробиология\, вирусология · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Общая характеристика анаэро
+ бных бактерий. Возбудители раневой инфе
+ кции\, столбняка\, ботулизма\nЛекция 3 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · лекц
+ ия
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261003T1255-2k5kt4@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261003T095500Z
+DTEND:20261003T112500Z
+SUMMARY:Физическая культура · практика
+LOCATION:каф. физической культуры (ФОК\, 3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Занятие 5 из 16
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Физическая культура · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261005T0830-vf6w6r@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261005T053000Z
+DTEND:20261005T070000Z
+SUMMARY:Топографическая анатомия и оператив
+ ная хирургия · лекция
+LOCATION:ауд. 1-411\, 1 корпус\, ул. Владимирская\, 
+ 137
+DESCRIPTION:Тема: Топографо-клиническая анато
+ мия и оперативная хирургия слепой кишки 
+ и червеобразног о отростка\nЛекция 3 из 6
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Топографическая анатомия и операт
+ ивная хирургия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261005T1040-29ske2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261005T074000Z
+DTEND:20261005T100500Z
+SUMMARY:Гигиена · практика
+LOCATION:каф. гигиены (3 корпус\, ул. Владимирс
+ кая\, 112)
+DESCRIPTION:Тема: Обеспечение радиационной бе
+ зопасности. Неионизирующие излучения\, и
+ х гигиеническое значение\nЗанятие 5 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261006T0800-mowwv@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261006T050000Z
+DTEND:20261006T072500Z
+SUMMARY:Микробиология\, вирусология · итогов
+ ое
+LOCATION:каф. микробиологии и вирусологии (3 к
+ орпус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Итоговое занятие № 5 по теме 
+ «Возбудители бактериальных инфекций»\nЗ
+ анятие 6 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · итог
+ овое
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261006T1045-1ehgbiw@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261006T074500Z
+DTEND:20261006T091500Z
+SUMMARY:Фармакология · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Местные и общие анестетики\nЛ
+ екция 3 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261006T1225-d3bysa@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261006T092500Z
+DTEND:20261006T105500Z
+SUMMARY:Патологическая анатомия · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Расстройства крово- и лимфоо
+ бращения\nЛекция 6 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261007T0800-hi1dxb@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261007T050000Z
+DTEND:20261007T081000Z
+SUMMARY:Общая хирургия · практика
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / КБ «РЖД-Медицина»
+DESCRIPTION:Тема: Дренирование в хирургии\nЗан
+ ятие 3 из 9
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Общая хирургия · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261007T1300-1erpb2h@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261007T100000Z
+DTEND:20261007T122500Z
+SUMMARY:Патологическая анатомия · практика
+LOCATION:каф. патологической анатомии (3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Расстройства крово- и лимфоо
+ бращения: малокровие\nЗанятие 6 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · практик
+ а
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261008T0830-uxtbtq@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261008T053000Z
+DTEND:20261008T070000Z
+SUMMARY:Патофизиология · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Патофизиология иммунной нед
+ остаточности\nЛекция 6 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261008T1140-1mx6aox@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261008T084000Z
+DTEND:20261008T115000Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ итоговое
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / БСМП\, Октябрьский пр.\, 47
+DESCRIPTION:Тема: Итоговое контрольное заняти
+ е по пульмонологии\nЗанятие 6 из 17
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · итоговое
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261008T1530-n169lr@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261008T123000Z
+DTEND:20261008T145500Z
+SUMMARY:Фармакология · итоговое
+LOCATION:каф. фармакологии (3 корпус\, ул. Влад
+ имирская\, 112)
+DESCRIPTION:Тема: Итоговое занятие по разделу 
+ «Общая рецептура. Общая фармакология»\nЗ
+ анятие 6 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · итоговое
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261009T0800-13onynu@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261009T050000Z
+DTEND:20261009T072500Z
+SUMMARY:Топографическая анатомия и оператив
+ ная хирургия · практика
+LOCATION:каф. топографической анатомии (2 кор
+ пус\, ул. Пролетарская\, 38)
+DESCRIPTION:Тема: Топографическая анатомия ор
+ ганов верхнего и нижнего этажей брюшной 
+ полости\nЗанятие 6 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Топографическая анатомия и операт
+ ивная хирургия · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261009T1045-1rx9c2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261009T074500Z
+DTEND:20261009T091500Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Расспрос\, осмотр больных с з
+ аболеваниями органов кровообращения. Па
+ льпация и перкуссия сердца\nЛекция 6 из 17
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261009T1300-j7tisz@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261009T100000Z
+DTEND:20261009T113000Z
+SUMMARY:Электив на кафедре патофизиологии · 
+ лекция
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Лекция 6 из 6
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Электив на кафедре патофизиологии
+  · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261009T1440-maqxq2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261009T114000Z
+DTEND:20261009T140500Z
+SUMMARY:Электив на кафедре патофизиологии · 
+ практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Занятие 1 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Электив на кафедре патофизиологии
+  · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261010T0800-1z11n71@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261010T050000Z
+DTEND:20261010T072500Z
+SUMMARY:Патофизиология · практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Тема: Факторы неспецифической рез
+ истентности. Патофизиология воспаления\
+ nЗанятие 6 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261010T1035-188jd6g@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261010T073500Z
+DTEND:20261010T090500Z
+SUMMARY:Общая хирургия · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Антисептика в хирургии\nЛекц
+ ия 3 из 6
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Общая хирургия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261010T1255-2k5kt4@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261010T095500Z
+DTEND:20261010T112500Z
+SUMMARY:Физическая культура · практика
+LOCATION:каф. физической культуры (ФОК\, 3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Занятие 6 из 16
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Физическая культура · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261012T1040-29ske2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261012T074000Z
+DTEND:20261012T100500Z
+SUMMARY:Гигиена · практика
+LOCATION:каф. гигиены (3 корпус\, ул. Владимирс
+ кая\, 112)
+DESCRIPTION:Тема: Тяжесть и напряжённость труд
+ а. Комплексная оценка условий труда\nЗан
+ ятие 6 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261013T0800-mowwv@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261013T050000Z
+DTEND:20261013T072500Z
+SUMMARY:Микробиология\, вирусология · практи
+ ка
+LOCATION:каф. микробиологии и вирусологии (3 к
+ орпус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Возбудители анаэробных инфе
+ кций. Пищевые отравления микробной прир
+ оды\nЗанятие 7 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · прак
+ тика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261013T1045-1bd9fg3@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261013T074500Z
+DTEND:20261013T091500Z
+SUMMARY:Гигиена · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Гигиенические требования к г
+ радостроительству\nЛекция 4 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261013T1225-d3bysa@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261013T092500Z
+DTEND:20261013T105500Z
+SUMMARY:Патологическая анатомия · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Воспаление: стадии\nЛекция 7 и
+ з 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261014T1300-1erpb2h@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261014T100000Z
+DTEND:20261014T122500Z
+SUMMARY:Патологическая анатомия · практика
+LOCATION:каф. патологической анатомии (3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Расстройства крово- и лимфоо
+ бращения: кровотечения\nЗанятие 7 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · практик
+ а
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261015T0830-uxtbtq@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261015T053000Z
+DTEND:20261015T070000Z
+SUMMARY:Патофизиология · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Аллергия. Типы и патогенез им
+ мунного повреждения\nЛекция 7 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261015T1140-1mx6aox@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261015T084000Z
+DTEND:20261015T115000Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ практика
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / БСМП\, Октябрьский пр.\, 47
+DESCRIPTION:Тема: Расспрос\, осмотр пальпация и
+  перкуссия в кардиологии\nЗанятие 7 из 17
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261015T1530-n169lr@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261015T123000Z
+DTEND:20261015T145500Z
+SUMMARY:Фармакология · практика
+LOCATION:каф. фармакологии (3 корпус\, ул. Влад
+ имирская\, 112)
+DESCRIPTION:Тема: Средства\, влияющие на перифе
+ рическую афферентную иннервацию (анесте
+ зирующие\, вяжущие\, обволакивающие\, адс
+ орбирующие\, раздражающие средства)\nЗан
+ ятие 7 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261016T0800-13onynu@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261016T050000Z
+DTEND:20261016T072500Z
+SUMMARY:Топографическая анатомия и оператив
+ ная хирургия · практика
+LOCATION:каф. топографической анатомии (2 кор
+ пус\, ул. Пролетарская\, 38)
+DESCRIPTION:Тема: продолжение — Топографическ
+ ая анатомия органов верхнего и нижнего э
+ тажей брюшной полости\nЗанятие 7 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Топографическая анатомия и операт
+ ивная хирургия · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261016T1045-1rx9c2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261016T074500Z
+DTEND:20261016T091500Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Аускультация сердца\nЛекция 7
+  из 17
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261016T1300-maqxq2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261016T100000Z
+DTEND:20261016T122500Z
+SUMMARY:Электив на кафедре патофизиологии · 
+ практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Занятие 2 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Электив на кафедре патофизиологии
+  · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261017T0800-1z11n71@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261017T050000Z
+DTEND:20261017T072500Z
+SUMMARY:Патофизиология · практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Тема: Патофизиология воспаления. О
+ твет острой фазы. Хроническое воспалени
+ е\nЗанятие 7 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261017T1035-1hc5bko@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261017T073500Z
+DTEND:20261017T090500Z
+SUMMARY:Микробиология\, вирусология · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Возбудители дифтерии\, коклю
+ ша\, туберкулеза\nЛекция 4 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · лекц
+ ия
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261017T1255-2k5kt4@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261017T095500Z
+DTEND:20261017T112500Z
+SUMMARY:Физическая культура · практика
+LOCATION:каф. физической культуры (ФОК\, 3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Занятие 7 из 16
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Физическая культура · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261019T0830-vf6w6r@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261019T053000Z
+DTEND:20261019T070000Z
+SUMMARY:Топографическая анатомия и оператив
+ ная хирургия · лекция
+LOCATION:ауд. 1-411\, 1 корпус\, ул. Владимирская\, 
+ 137
+DESCRIPTION:Тема: Фасции и клетчаточные образо
+ вания забрюшинного пространства. Операц
+ ии на почках и мочеточниках\nЛекция 4 из 6
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Топографическая анатомия и операт
+ ивная хирургия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261019T1040-29ske2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261019T074000Z
+DTEND:20261019T100500Z
+SUMMARY:Гигиена · итоговое
+LOCATION:каф. гигиены (3 корпус\, ул. Владимирс
+ кая\, 112)
+DESCRIPTION:Тема: Контрольное занятие по разде
+ лу: «Вредные и опасные факторы окружающе
+ й среды. Гигиена труда»\nЗанятие 7 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · итоговое
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261020T0800-mowwv@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261020T050000Z
+DTEND:20261020T072500Z
+SUMMARY:Микробиология\, вирусология · практи
+ ка
+LOCATION:каф. микробиологии и вирусологии (3 к
+ орпус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Дифтерийная палочка. Бордете
+ ллы\nЗанятие 8 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · прак
+ тика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261020T1045-1ehgbiw@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261020T074500Z
+DTEND:20261020T091500Z
+SUMMARY:Фармакология · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Средства\, действующие в обла
+ сти холинэргических синапсов\nЛекция 4 и
+ з 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261020T1225-d3bysa@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261020T092500Z
+DTEND:20261020T105500Z
+SUMMARY:Патологическая анатомия · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Иммунопатологические процес
+ сы\nЛекция 8 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261021T0800-hi1dxb@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261021T050000Z
+DTEND:20261021T081000Z
+SUMMARY:Общая хирургия · практика
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / КБ «РЖД-Медицина»
+DESCRIPTION:Тема: Основы изосерологии и гемотр
+ ансфузиология\nЗанятие 4 из 9
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Общая хирургия · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261021T1300-1erpb2h@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261021T100000Z
+DTEND:20261021T122500Z
+SUMMARY:Патологическая анатомия · итоговое
+LOCATION:каф. патологической анатомии (3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Итоговое занятие № 1\nЗанятие
+  8 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · итогово
+ е
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261022T0830-uxtbtq@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261022T053000Z
+DTEND:20261022T070000Z
+SUMMARY:Патофизиология · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Типовые нарушения тканевого 
+ роста. Опухоли\nЛекция 8 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261022T1140-1mx6aox@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261022T084000Z
+DTEND:20261022T115000Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ практика
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / БСМП\, Октябрьский пр.\, 47
+DESCRIPTION:Тема: Аускультация сердца. Освоени
+ е методики и техники аускультации сердц
+ а в симуляционном центре\nЗанятие 8 из 17
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261022T1530-n169lr@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261022T123000Z
+DTEND:20261022T145500Z
+SUMMARY:Фармакология · практика
+LOCATION:каф. фармакологии (3 корпус\, ул. Влад
+ имирская\, 112)
+DESCRIPTION:Тема: Средства\, влияющие на холинэ
+ ргические синапсы. М-холиномиметики и М-
+ холиноблокаторы\nЗанятие 8 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261023T0800-13onynu@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261023T050000Z
+DTEND:20261023T072500Z
+SUMMARY:Топографическая анатомия и оператив
+ ная хирургия · практика
+LOCATION:каф. топографической анатомии (2 кор
+ пус\, ул. Пролетарская\, 38)
+DESCRIPTION:Тема: Оперативная хирургия органо
+ в брюшной полости\nЗанятие 8 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Топографическая анатомия и операт
+ ивная хирургия · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261023T1045-1rx9c2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261023T074500Z
+DTEND:20261023T091500Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Электрокардиография\nЛекция 
+ 8 из 17
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261023T1300-maqxq2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261023T100000Z
+DTEND:20261023T122500Z
+SUMMARY:Электив на кафедре патофизиологии · 
+ практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Занятие 3 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Электив на кафедре патофизиологии
+  · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261024T0800-1z11n71@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261024T050000Z
+DTEND:20261024T072500Z
+SUMMARY:Патофизиология · практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Тема: Типовые нарушения теплового 
+ обмена: лихорадка как часть ответа остро
+ й фазы\nЗанятие 8 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261024T1035-188jd6g@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261024T073500Z
+DTEND:20261024T090500Z
+SUMMARY:Общая хирургия · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Кровотечение и гемостаз\nЛек
+ ция 4 из 6
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Общая хирургия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261024T1255-2k5kt4@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261024T095500Z
+DTEND:20261024T112500Z
+SUMMARY:Физическая культура · практика
+LOCATION:каф. физической культуры (ФОК\, 3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Занятие 8 из 16
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Физическая культура · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261026T1040-29ske2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261026T074000Z
+DTEND:20261026T100500Z
+SUMMARY:Гигиена · практика
+LOCATION:каф. гигиены (3 корпус\, ул. Владимирс
+ кая\, 112)
+DESCRIPTION:Тема: Гигиенические требования к г
+ радостроительству\nЗанятие 8 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261027T0800-mowwv@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261027T050000Z
+DTEND:20261027T072500Z
+SUMMARY:Микробиология\, вирусология · практи
+ ка
+LOCATION:каф. микробиологии и вирусологии (3 к
+ орпус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Возбудители туберкулеза\, ле
+ пры\, микобактериозов\, сибирской язвы\nЗ
+ анятие 9 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · прак
+ тика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261027T1045-1bd9fg3@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261027T074500Z
+DTEND:20261027T091500Z
+SUMMARY:Гигиена · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Водоснабжение населенных ме
+ ст\nЛекция 5 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261027T1225-d3bysa@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261027T092500Z
+DTEND:20261027T105500Z
+SUMMARY:Патологическая анатомия · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Процессы регенерации и адапт
+ ации\nЛекция 9 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261028T1300-1erpb2h@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261028T100000Z
+DTEND:20261028T122500Z
+SUMMARY:Патологическая анатомия · практика
+LOCATION:каф. патологической анатомии (3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Воспаление: стадии\nЗанятие 9 
+ из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · практик
+ а
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261029T0830-uxtbtq@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261029T053000Z
+DTEND:20261029T070000Z
+SUMMARY:Патофизиология · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Типовые формы нарушения обме
+ на веществ\nЛекция 9 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261029T1140-1mx6aox@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261029T084000Z
+DTEND:20261029T115000Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ практика
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / БСМП\, Октябрьский пр.\, 47
+DESCRIPTION:Тема: Электрокардиография\nЗаняти
+ е 9 из 17
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261029T1530-n169lr@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261029T123000Z
+DTEND:20261029T145500Z
+SUMMARY:Фармакология · практика
+LOCATION:каф. фармакологии (3 корпус\, ул. Влад
+ имирская\, 112)
+DESCRIPTION:Тема: Средства\, влияющие на никоти
+ н-чувствительные холинорецепторы\nЗанят
+ ие 9 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261030T0800-13onynu@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261030T050000Z
+DTEND:20261030T072500Z
+SUMMARY:Топографическая анатомия и оператив
+ ная хирургия · практика
+LOCATION:каф. топографической анатомии (2 кор
+ пус\, ул. Пролетарская\, 38)
+DESCRIPTION:Тема: Топографическая анатомия по
+ ясничной области и забрюшинного простра
+ нства\nЗанятие 9 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Топографическая анатомия и операт
+ ивная хирургия · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261030T1045-1rx9c2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261030T074500Z
+DTEND:20261030T091500Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Синдром поражения миокарда\n
+ Лекция 9 из 17
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261030T1300-maqxq2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261030T100000Z
+DTEND:20261030T122500Z
+SUMMARY:Электив на кафедре патофизиологии · 
+ практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Занятие 4 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Электив на кафедре патофизиологии
+  · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261031T0800-1z11n71@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261031T050000Z
+DTEND:20261031T072500Z
+SUMMARY:Патофизиология · практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Тема: Типовые нарушения теплового 
+ обмена: гипер- и гипотермии\nЗанятие 9 из 1
+ 9
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261031T1035-1hc5bko@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261031T073500Z
+DTEND:20261031T090500Z
+SUMMARY:Микробиология\, вирусология · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Возбудители зоонозов: сибирс
+ кой язвы\, чумы\, псевдотуберкулеза\, бруц
+ еллеза\, туляремии\nЛекция 5 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · лекц
+ ия
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261031T1255-2k5kt4@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261031T095500Z
+DTEND:20261031T112500Z
+SUMMARY:Физическая культура · практика
+LOCATION:каф. физической культуры (ФОК\, 3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Занятие 9 из 16
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Физическая культура · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261102T0830-vf6w6r@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261102T053000Z
+DTEND:20261102T070000Z
+SUMMARY:Топографическая анатомия и оператив
+ ная хирургия · лекция
+LOCATION:ауд. 1-411\, 1 корпус\, ул. Владимирская\, 
+ 137
+DESCRIPTION:Тема: Топографическая анатомия ма
+ лого таза и промежности\nЛекция 5 из 6
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Топографическая анатомия и операт
+ ивная хирургия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261102T1040-29ske2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261102T074000Z
+DTEND:20261102T100500Z
+SUMMARY:Гигиена · практика
+LOCATION:каф. гигиены (3 корпус\, ул. Владимирс
+ кая\, 112)
+DESCRIPTION:Тема: Гигиенические требования к ж
+ илым зданиям и помещениям\nЗанятие 9 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261103T0800-mowwv@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261103T050000Z
+DTEND:20261103T072500Z
+SUMMARY:Микробиология\, вирусология · практи
+ ка
+LOCATION:каф. микробиологии и вирусологии (3 к
+ орпус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Возбудители зоонозных инфек
+ ций: чумы\, псевдотуберкулеза\, туляремии
+ \, бруцеллеза\nЗанятие 10 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · прак
+ тика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261103T1045-1ehgbiw@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261103T074500Z
+DTEND:20261103T091500Z
+SUMMARY:Фармакология · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Средства\, влияющие на адрене
+ ргические синапсы\nЛекция 5 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261103T1225-d3bysa@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261103T092500Z
+DTEND:20261103T105500Z
+SUMMARY:Патологическая анатомия · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Опухоли: введение в онкоморф
+ ологию\nЛекция 10 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261105T0830-uxtbtq@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261105T053000Z
+DTEND:20261105T070000Z
+SUMMARY:Патофизиология · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Типовые формы патологии эндо
+ кринной системы\nЛекция 10 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261105T1140-1mx6aox@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261105T084000Z
+DTEND:20261105T115000Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ практика
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / БСМП\, Октябрьский пр.\, 47
+DESCRIPTION:Тема: Синдром поражения миокарда\n
+ Занятие 10 из 17
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261105T1530-n169lr@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261105T123000Z
+DTEND:20261105T145500Z
+SUMMARY:Фармакология · практика
+LOCATION:каф. фармакологии (3 корпус\, ул. Влад
+ имирская\, 112)
+DESCRIPTION:Тема: Средства\, влияющие на переда
+ чу возбуждения в адренергических синапс
+ ах\nЗанятие 10 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261106T0800-13onynu@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261106T050000Z
+DTEND:20261106T072500Z
+SUMMARY:Топографическая анатомия и оператив
+ ная хирургия · практика
+LOCATION:каф. топографической анатомии (2 кор
+ пус\, ул. Пролетарская\, 38)
+DESCRIPTION:Тема: Топографическая анатомия та
+ за и промежности\nЗанятие 10 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Топографическая анатомия и операт
+ ивная хирургия · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261106T1045-1rx9c2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261106T074500Z
+DTEND:20261106T091500Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: продолжение — Синдром пораж
+ ения миокарда\nЛекция 10 из 17
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261106T1300-maqxq2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261106T100000Z
+DTEND:20261106T122500Z
+SUMMARY:Электив на кафедре патофизиологии · 
+ практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Занятие 5 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Электив на кафедре патофизиологии
+  · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261107T0800-1z11n71@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261107T050000Z
+DTEND:20261107T072500Z
+SUMMARY:Патофизиология · практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Тема: Типовые нарушения иммунной р
+ еактивности организма: иммунодефицитны
+ е состояния\nЗанятие 10 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261107T1035-188jd6g@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261107T073500Z
+DTEND:20261107T090500Z
+SUMMARY:Общая хирургия · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Обезболивание в хирургии\nЛе
+ кция 5 из 6
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Общая хирургия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261107T1255-2k5kt4@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261107T095500Z
+DTEND:20261107T112500Z
+SUMMARY:Физическая культура · практика
+LOCATION:каф. физической культуры (ФОК\, 3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Занятие 10 из 16
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Физическая культура · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261109T1040-29ske2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261109T074000Z
+DTEND:20261109T100500Z
+SUMMARY:Гигиена · практика
+LOCATION:каф. гигиены (3 корпус\, ул. Владимирс
+ кая\, 112)
+DESCRIPTION:Тема: Гигиенические требования к в
+ одоснабжению населённых мест\nЗанятие 10 
+ из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261110T0800-mowwv@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261110T050000Z
+DTEND:20261110T072500Z
+SUMMARY:Микробиология\, вирусология · практи
+ ка
+LOCATION:каф. микробиологии и вирусологии (3 к
+ орпус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Риккетсии. Коксиеллы. Ориенц
+ ии. Анаплазмы. Хламидии. Микоплазмы\nЗаня
+ тие 11 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · прак
+ тика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261110T1045-1bd9fg3@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261110T074500Z
+DTEND:20261110T091500Z
+SUMMARY:Гигиена · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Гигиена медицинских организ
+ аций. Гигиена труда медицинских работни
+ ков. Бережливые технологии в здравоохра
+ нении\nЛекция 6 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261110T1225-d3bysa@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261110T092500Z
+DTEND:20261110T105500Z
+SUMMARY:Патологическая анатомия · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Опухоли: мезенхимальные опух
+ оли\nЛекция 11 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261111T1300-1erpb2h@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261111T100000Z
+DTEND:20261111T122500Z
+SUMMARY:Патологическая анатомия · практика
+LOCATION:каф. патологической анатомии (3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Воспаление: пролиферативное 
+ воспаление\nЗанятие 10 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · практик
+ а
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261112T0830-uxtbtq@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261112T053000Z
+DTEND:20261112T070000Z
+SUMMARY:Патофизиология · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Типовые формы патологии сист
+ емы пищеварения\nЛекция 11 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261112T1140-1mx6aox@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261112T084000Z
+DTEND:20261112T115000Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ практика
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / БСМП\, Октябрьский пр.\, 47
+DESCRIPTION:Тема: Синдром коронарной недостат
+ очности\nЗанятие 11 из 17
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261112T1530-n169lr@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261112T123000Z
+DTEND:20261112T145500Z
+SUMMARY:Фармакология · итоговое
+LOCATION:каф. фармакологии (3 корпус\, ул. Влад
+ имирская\, 112)
+DESCRIPTION:Тема: Итоговое занятие по подразде
+ лу «Средства\, влияющие на периферическу
+ ю нервную систему»\nЗанятие 11 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · итоговое
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261113T0800-13onynu@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261113T050000Z
+DTEND:20261113T072500Z
+SUMMARY:Топографическая анатомия и оператив
+ ная хирургия · практика
+LOCATION:каф. топографической анатомии (2 кор
+ пус\, ул. Пролетарская\, 38)
+DESCRIPTION:Тема: продолжение — Топографическ
+ ая анатомия таза и промежности\nЗанятие 1
+ 1 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Топографическая анатомия и операт
+ ивная хирургия · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261113T1045-1rx9c2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261113T074500Z
+DTEND:20261113T091500Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Синдром коронарной недостат
+ очности\nЛекция 11 из 17
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261113T1300-maqxq2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261113T100000Z
+DTEND:20261113T122500Z
+SUMMARY:Электив на кафедре патофизиологии · 
+ практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Занятие 6 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Электив на кафедре патофизиологии
+  · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261114T0800-1z11n71@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261114T050000Z
+DTEND:20261114T072500Z
+SUMMARY:Патофизиология · практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Тема: Типовые нарушения иммунной р
+ еактивности организма: аллергия\, состоя
+ ния и болезни иммунной аутоагрессии\nЗан
+ ятие 11 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261114T1035-1hc5bko@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261114T073500Z
+DTEND:20261114T090500Z
+SUMMARY:Микробиология\, вирусология · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Патогенные спирохеты. Риккет
+ сии. Хламидии. Микоплазмы\nЛекция 6 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · лекц
+ ия
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261114T1255-2k5kt4@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261114T095500Z
+DTEND:20261114T112500Z
+SUMMARY:Физическая культура · практика
+LOCATION:каф. физической культуры (ФОК\, 3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Занятие 11 из 16
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Физическая культура · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261116T0830-vf6w6r@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261116T053000Z
+DTEND:20261116T070000Z
+SUMMARY:Топографическая анатомия и оператив
+ ная хирургия · лекция
+LOCATION:ауд. 1-411\, 1 корпус\, ул. Владимирская\, 
+ 137
+DESCRIPTION:Тема: Топографо-клиническая анато
+ мия фасций и клетчаточных пространств т
+ аза. Клиническая анатомия прямой кишки\n
+ Лекция 6 из 6
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Топографическая анатомия и операт
+ ивная хирургия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261116T1040-29ske2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261116T074000Z
+DTEND:20261116T100500Z
+SUMMARY:Гигиена · практика
+LOCATION:каф. гигиены (3 корпус\, ул. Владимирс
+ кая\, 112)
+DESCRIPTION:Тема: Общая и специальная водоподг
+ отовка\nЗанятие 11 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261117T0800-mowwv@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261117T050000Z
+DTEND:20261117T072500Z
+SUMMARY:Микробиология\, вирусология · практи
+ ка
+LOCATION:каф. микробиологии и вирусологии (3 к
+ орпус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Патогенные спирохеты - возбу
+ дители сифилиса\, лептоспирозов\, возвра
+ тного тифа\, клещевого боррелиоза\nЗанят
+ ие 12 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · прак
+ тика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261117T1045-1ehgbiw@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261117T074500Z
+DTEND:20261117T091500Z
+SUMMARY:Фармакология · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Опиоидные и неопиоидные анал
+ ьгетики\nЛекция 6 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261117T1225-d3bysa@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261117T092500Z
+DTEND:20261117T105500Z
+SUMMARY:Патологическая анатомия · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Опухоли: эпителиальные опухо
+ ли\nЛекция 12 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261118T0800-hi1dxb@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261118T050000Z
+DTEND:20261118T081000Z
+SUMMARY:Общая хирургия · практика
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / КБ «РЖД-Медицина»
+DESCRIPTION:Тема: Кровотечение и кровопотеря. 
+ Гемостаз\nЗанятие 5 из 9
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Общая хирургия · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261118T1300-1erpb2h@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261118T100000Z
+DTEND:20261118T122500Z
+SUMMARY:Патологическая анатомия · практика
+LOCATION:каф. патологической анатомии (3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Иммунопатологические процес
+ сы\nЗанятие 11 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · практик
+ а
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261119T0830-uxtbtq@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261119T053000Z
+DTEND:20261119T070000Z
+SUMMARY:Патофизиология · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Патофизиология системы кров
+ и. Анемии\nЛекция 12 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261119T1140-1mx6aox@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261119T084000Z
+DTEND:20261119T115000Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ практика
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / БСМП\, Октябрьский пр.\, 47
+DESCRIPTION:Тема: Синдром артериальной гиперт
+ ензии\nЗанятие 12 из 17
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261119T1530-n169lr@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261119T123000Z
+DTEND:20261119T145500Z
+SUMMARY:Фармакология · практика
+LOCATION:каф. фармакологии (3 корпус\, ул. Влад
+ имирская\, 112)
+DESCRIPTION:Тема: Средства для наркоза. Спирт э
+ тиловый\nЗанятие 12 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261120T0800-13onynu@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261120T050000Z
+DTEND:20261120T072500Z
+SUMMARY:Топографическая анатомия и оператив
+ ная хирургия · практика
+LOCATION:каф. топографической анатомии (2 кор
+ пус\, ул. Пролетарская\, 38)
+DESCRIPTION:Тема: Оперативная хирургия органо
+ в забрюшинного пространства и таза\nЗаня
+ тие 12 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Топографическая анатомия и операт
+ ивная хирургия · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261120T1045-1rx9c2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261120T074500Z
+DTEND:20261120T091500Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: продолжение — Синдром корон
+ арной недостаточности\nЛекция 12 из 17
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261120T1300-maqxq2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261120T100000Z
+DTEND:20261120T122500Z
+SUMMARY:Электив на кафедре патофизиологии · 
+ практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Занятие 7 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Электив на кафедре патофизиологии
+  · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261121T0800-1z11n71@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261121T050000Z
+DTEND:20261121T072500Z
+SUMMARY:Патофизиология · практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Тема: Типовые нарушения тканевого 
+ роста. Опухоли\nЗанятие 12 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261121T1035-188jd6g@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261121T073500Z
+DTEND:20261121T090500Z
+SUMMARY:Общая хирургия · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Раны и раневой процесс\nЛекци
+ я 6 из 6
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Общая хирургия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261121T1255-2k5kt4@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261121T095500Z
+DTEND:20261121T112500Z
+SUMMARY:Физическая культура · практика
+LOCATION:каф. физической культуры (ФОК\, 3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Занятие 12 из 16
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Физическая культура · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261123T1040-29ske2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261123T074000Z
+DTEND:20261123T100500Z
+SUMMARY:Гигиена · практика
+LOCATION:каф. гигиены (3 корпус\, ул. Владимирс
+ кая\, 112)
+DESCRIPTION:Тема: Гигиена медицинских организ
+ аций. Требования к зданиям и помещениям 
+ медицинских организаций. Гигиена труда 
+ персонала медицинских организаций\nЗаня
+ тие 12 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261124T0800-mowwv@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261124T050000Z
+DTEND:20261124T072500Z
+SUMMARY:Микробиология\, вирусология · итогов
+ ое
+LOCATION:каф. микробиологии и вирусологии (3 к
+ орпус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Итоговое занятие № 6 по теме 
+ «Возбудители бактериальных инфекций»\nЗ
+ анятие 13 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · итог
+ овое
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261124T1045-1bd9fg3@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261124T074500Z
+DTEND:20261124T091500Z
+SUMMARY:Гигиена · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Гигиенические требования к о
+ рганизации размещения\, питания и водосн
+ абжения войск в полевых условиях\nЛекция
+  7 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261124T1225-d3bysa@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261124T092500Z
+DTEND:20261124T105500Z
+SUMMARY:Патологическая анатомия · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Опухоли: нервной и меланиноб
+ разующей ткани\nЛекция 13 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261125T1300-1erpb2h@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261125T100000Z
+DTEND:20261125T122500Z
+SUMMARY:Патологическая анатомия · практика
+LOCATION:каф. патологической анатомии (3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Процессы регенерации и адапт
+ ации\nЗанятие 12 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · практик
+ а
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261126T0830-uxtbtq@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261126T053000Z
+DTEND:20261126T070000Z
+SUMMARY:Патофизиология · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Патофизиология белой крови. 
+ Лейкоцитозы\, лейкопении. Лейкозы\nЛекци
+ я 13 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261126T1140-1mx6aox@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261126T084000Z
+DTEND:20261126T115000Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ практика
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / БСМП\, Октябрьский пр.\, 47
+DESCRIPTION:Тема: Синдром поражения перикарда.
+  Легочное сердце\nЗанятие 13 из 17
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261126T1530-n169lr@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261126T123000Z
+DTEND:20261126T145500Z
+SUMMARY:Фармакология · практика
+LOCATION:каф. фармакологии (3 корпус\, ул. Влад
+ имирская\, 112)
+DESCRIPTION:Тема: Болеутоляющие средства (нарк
+ отические и ненаркотические аналгетики)
+ \nЗанятие 13 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261127T0800-n169lr@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261127T050000Z
+DTEND:20261127T072500Z
+SUMMARY:Фармакология · практика
+LOCATION:каф. фармакологии (3 корпус\, ул. Влад
+ имирская\, 112)
+DESCRIPTION:Тема: Психотропные средства угнет
+ ающего действия\nЗанятие 14 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261127T1045-1rx9c2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261127T074500Z
+DTEND:20261127T091500Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Синдром артериальной гиперт
+ ензии\nЛекция 13 из 17
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261127T1300-maqxq2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261127T100000Z
+DTEND:20261127T122500Z
+SUMMARY:Электив на кафедре патофизиологии · 
+ практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Занятие 8 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Электив на кафедре патофизиологии
+  · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261128T0800-1z11n71@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261128T050000Z
+DTEND:20261128T072500Z
+SUMMARY:Патофизиология · итоговое
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Тема: Итоговое занятие №1\nЗанятие 
+ 13 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · итоговое
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261128T1035-1hc5bko@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261128T073500Z
+DTEND:20261128T090500Z
+SUMMARY:Микробиология\, вирусология · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Возбудители ОРВИ. Характерис
+ тика пикорнавирусов\, вирусов гепатитов 
+ В\, С\, Д\, Е\, F\, G\, TTV\, SEN\nЛекция 7 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · лекц
+ ия
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261128T1255-2k5kt4@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261128T095500Z
+DTEND:20261128T112500Z
+SUMMARY:Физическая культура · практика
+LOCATION:каф. физической культуры (ФОК\, 3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Занятие 13 из 16
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Физическая культура · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261130T1040-29ske2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261130T074000Z
+DTEND:20261130T100500Z
+SUMMARY:Гигиена · практика
+LOCATION:каф. гигиены (3 корпус\, ул. Владимирс
+ кая\, 112)
+DESCRIPTION:Тема: Санитарно-эпидемиологически
+ е требования к медицинским организациям
+ . Профилактика внутрибольничных инфекци
+ й\nЗанятие 13 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261201T0800-mowwv@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261201T050000Z
+DTEND:20261201T072500Z
+SUMMARY:Микробиология\, вирусология · практи
+ ка
+LOCATION:каф. микробиологии и вирусологии (3 к
+ орпус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Возбудители гриппа\, парагри
+ ппа\, коронавирусной инфекции\, ОРВИ\, кор
+ и\, эпидемического паротита\nЗанятие 14 из
+  18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · прак
+ тика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261201T1045-1ehgbiw@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261201T074500Z
+DTEND:20261201T091500Z
+SUMMARY:Фармакология · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Средства\, влияющие на функци
+ ю центральной нервной системы (психотро
+ пные средства)\nЛекция 7 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261201T1225-d3bysa@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261201T092500Z
+DTEND:20261201T105500Z
+SUMMARY:Патологическая анатомия · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Ревматические болезни. Васку
+ литы. Пороки сердца\nЛекция 14 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261202T0800-hi1dxb@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261202T050000Z
+DTEND:20261202T081000Z
+SUMMARY:Общая хирургия · практика
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / КБ «РЖД-Медицина»
+DESCRIPTION:Тема: Основы обезболивания в хирур
+ гии\nЗанятие 6 из 9
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Общая хирургия · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261202T1300-1erpb2h@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261202T100000Z
+DTEND:20261202T122500Z
+SUMMARY:Патологическая анатомия · практика
+LOCATION:каф. патологической анатомии (3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Опухоли: введение в онкоморф
+ ологию\nЗанятие 13 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · практик
+ а
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261203T0830-uxtbtq@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261203T053000Z
+DTEND:20261203T070000Z
+SUMMARY:Патофизиология · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Типовые формы патологии сист
+ емы гемостаза\nЛекция 14 из 14
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261203T1140-1mx6aox@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261203T084000Z
+DTEND:20261203T115000Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ практика
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / БСМП\, Октябрьский пр.\, 47
+DESCRIPTION:Тема: Синдром поражения эндокарда.
+  Ревматизм\nЗанятие 14 из 17
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261203T1530-n169lr@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261203T123000Z
+DTEND:20261203T145500Z
+SUMMARY:Фармакология · практика
+LOCATION:каф. фармакологии (3 корпус\, ул. Влад
+ имирская\, 112)
+DESCRIPTION:Тема: Снотворные\, противосудорожн
+ ые и противопаркинсонические средства\n
+ Занятие 15 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261204T1045-1rx9c2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261204T074500Z
+DTEND:20261204T091500Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Синдром поражения перикарда.
+  Легочное сердце\nЛекция 14 из 17
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261204T1300-maqxq2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261204T100000Z
+DTEND:20261204T122500Z
+SUMMARY:Электив на кафедре патофизиологии · 
+ практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Занятие 9 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Электив на кафедре патофизиологии
+  · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261205T0800-1z11n71@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261205T050000Z
+DTEND:20261205T072500Z
+SUMMARY:Патофизиология · практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Тема: Типовые формы нарушений энер
+ гетического и углеводного обмена\nЗанят
+ ие 14 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261205T1035-1hc5bko@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261205T073500Z
+DTEND:20261205T090500Z
+SUMMARY:Микробиология\, вирусология · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Вирусы – возбудители бешенс
+ тва\, клещевого энцефалита. Онкогенные в
+ ирусы\nЛекция 8 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · лекц
+ ия
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261205T1255-2k5kt4@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261205T095500Z
+DTEND:20261205T112500Z
+SUMMARY:Физическая культура · практика
+LOCATION:каф. физической культуры (ФОК\, 3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Занятие 14 из 16
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Физическая культура · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261207T1040-29ske2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261207T074000Z
+DTEND:20261207T100500Z
+SUMMARY:Гигиена · итоговое
+LOCATION:каф. гигиены (3 корпус\, ул. Владимирс
+ кая\, 112)
+DESCRIPTION:Тема: Контрольное занятие по разде
+ лам: «Коммунальная гигиена»\, «Гигиена м
+ едицинских организаций»\nЗанятие 14 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · итоговое
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261208T0800-mowwv@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261208T050000Z
+DTEND:20261208T072500Z
+SUMMARY:Микробиология\, вирусология · практи
+ ка
+LOCATION:каф. микробиологии и вирусологии (3 к
+ орпус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Пикорнавирусы. Возбудители в
+ ирусных гепатитов\nЗанятие 15 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · прак
+ тика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261208T1045-1bd9fg3@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261208T074500Z
+DTEND:20261208T091500Z
+SUMMARY:Гигиена · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Санитарно-гигиеническое обе
+ спечение при чрезвычайных ситуациях\nЛе
+ кция 8 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261209T1030-1z11n71@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261209T073000Z
+DTEND:20261209T095500Z
+SUMMARY:Патофизиология · практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Тема: Типовые формы нарушения белк
+ ового\, липидного обмена\, обмена нуклеин
+ овых оснований\nЗанятие 15 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261209T1300-1erpb2h@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261209T100000Z
+DTEND:20261209T122500Z
+SUMMARY:Патологическая анатомия · практика
+LOCATION:каф. патологической анатомии (3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Опухоли: мезенхимальные опух
+ оли\nЗанятие 14 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · практик
+ а
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261210T0800-hi1dxb@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261210T050000Z
+DTEND:20261210T072500Z
+SUMMARY:Общая хирургия · практика
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / КБ «РЖД-Медицина»
+DESCRIPTION:Тема: Основы травматологии\nЗаняти
+ е 7 из 9
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Общая хирургия · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261210T1140-1mx6aox@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261210T084000Z
+DTEND:20261210T115000Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ практика
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / БСМП\, Октябрьский пр.\, 47
+DESCRIPTION:Тема: Симптоматология аортальных 
+ пороков сердца. Инфекционный эндокардит
+ \nЗанятие 15 из 17
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261210T1530-n169lr@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261210T123000Z
+DTEND:20261210T145500Z
+SUMMARY:Фармакология · практика
+LOCATION:каф. фармакологии (3 корпус\, ул. Влад
+ имирская\, 112)
+DESCRIPTION:Тема: Психотропные препараты стим
+ улирующего действия\nЗанятие 16 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261211T1045-1rx9c2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261211T074500Z
+DTEND:20261211T091500Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Синдром поражения эндокарда.
+  Ревматизм\nЛекция 15 из 17
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261211T1300-maqxq2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261211T100000Z
+DTEND:20261211T122500Z
+SUMMARY:Электив на кафедре патофизиологии · 
+ практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Занятие 10 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Электив на кафедре патофизиологии
+  · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261212T0800-1z11n71@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261212T050000Z
+DTEND:20261212T072500Z
+SUMMARY:Патофизиология · практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Тема: Типовые формы патологии эндо
+ кринной системы\nЗанятие 16 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261212T1035-1hc5bko@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261212T073500Z
+DTEND:20261212T090500Z
+SUMMARY:Микробиология\, вирусология · лекция
+LOCATION:ауд. 3-803\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Герпесвирусы. Возбудители ме
+ дленных инфекций. Вирус иммунодефицита 
+ человека\nЛекция 9 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · лекц
+ ия
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261212T1255-2k5kt4@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261212T095500Z
+DTEND:20261212T112500Z
+SUMMARY:Физическая культура · практика
+LOCATION:каф. физической культуры (ФОК\, 3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Занятие 15 из 16
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Физическая культура · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261214T1040-29ske2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261214T074000Z
+DTEND:20261214T100500Z
+SUMMARY:Гигиена · практика
+LOCATION:каф. гигиены (3 корпус\, ул. Владимирс
+ кая\, 112)
+DESCRIPTION:Тема: Санитарно-гигиеническое обе
+ спечение чрезвычайных ситуаций и стихий
+ ных бедствий\nЗанятие 15 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261215T0800-mowwv@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261215T050000Z
+DTEND:20261215T072500Z
+SUMMARY:Микробиология\, вирусология · практи
+ ка
+LOCATION:каф. микробиологии и вирусологии (3 к
+ орпус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Вирусы-возбудители клещевог
+ о энцефалита\, краснухи\, бешенства. Онко
+ генные вирусы\nЗанятие 16 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · прак
+ тика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261215T1045-1ehgbiw@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261215T074500Z
+DTEND:20261215T091500Z
+SUMMARY:Фармакология · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Средства\, применяемые при за
+ болеваниях органов пищеварения\nЛекция 8
+  из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261216T0800-hi1dxb@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261216T050000Z
+DTEND:20261216T081000Z
+SUMMARY:Общая хирургия · практика
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / КБ «РЖД-Медицина»
+DESCRIPTION:Тема: Сочетанная травма\nЗанятие 8 
+ из 9
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Общая хирургия · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261216T0930-1z11n71@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261216T063000Z
+DTEND:20261216T080000Z
+SUMMARY:Патофизиология · практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Тема: Типовые формы нарушений пище
+ варения в желудке и кишечнике. Язвенная 
+ болезнь\nЗанятие 17 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261216T1300-1erpb2h@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261216T100000Z
+DTEND:20261216T122500Z
+SUMMARY:Патологическая анатомия · практика
+LOCATION:каф. патологической анатомии (3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Опухоли: эпителиальные опухо
+ ли\nЗанятие 15 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · практик
+ а
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261217T0800-1erpb2h@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261217T050000Z
+DTEND:20261217T072500Z
+SUMMARY:Патологическая анатомия · практика
+LOCATION:каф. патологической анатомии (3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Опухоли: нервной и меланиноб
+ разующей ткани\nЗанятие 16 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · практик
+ а
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261217T1140-1mx6aox@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261217T084000Z
+DTEND:20261217T115000Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ итоговое
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / БСМП\, Октябрьский пр.\, 47
+DESCRIPTION:Тема: Итоговое контрольное заняти
+ е по кардиологии\nЗанятие 16 из 17
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · итоговое
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261217T1530-n169lr@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261217T123000Z
+DTEND:20261217T145500Z
+SUMMARY:Фармакология · итоговое
+LOCATION:каф. фармакологии (3 корпус\, ул. Влад
+ имирская\, 112)
+DESCRIPTION:Тема: Итоговое занятие по подразде
+ лу «Средства\, влияющие на центральную н
+ ервную систему»\nЗанятие 17 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · итоговое
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261218T0800-29ske2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261218T050000Z
+DTEND:20261218T072500Z
+SUMMARY:Гигиена · практика
+LOCATION:каф. гигиены (3 корпус\, ул. Владимирс
+ кая\, 112)
+DESCRIPTION:Тема: Гигиена труда военнослужащи
+ х различных родов войск. Гигиенические т
+ ребования к размещению военнослужащих\n
+ Занятие 16 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261218T1045-1rx9c2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261218T074500Z
+DTEND:20261218T091500Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Синдром поражения эндокарда.
+  Инфекционный эндокардит\nЛекция 16 из 17
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261218T1300-maqxq2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261218T100000Z
+DTEND:20261218T122500Z
+SUMMARY:Электив на кафедре патофизиологии · 
+ практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Занятие 11 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Электив на кафедре патофизиологии
+  · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261219T0800-1z11n71@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261219T050000Z
+DTEND:20261219T072500Z
+SUMMARY:Патофизиология · практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Тема: Типовые формы нарушений пигм
+ ентного обмена\nЗанятие 18 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261219T1255-2k5kt4@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261219T095500Z
+DTEND:20261219T112500Z
+SUMMARY:Физическая культура · практика
+LOCATION:каф. физической культуры (ФОК\, 3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Занятие 16 из 16
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Физическая культура · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261221T1040-29ske2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261221T074000Z
+DTEND:20261221T100500Z
+SUMMARY:Гигиена · практика
+LOCATION:каф. гигиены (3 корпус\, ул. Владимирс
+ кая\, 112)
+DESCRIPTION:Тема: Личная гигиена как основа зд
+ орового образа жизни. Организация гигие
+ нического воспитания и обучения\nЗаняти
+ е 17 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261222T0800-mowwv@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261222T050000Z
+DTEND:20261222T072500Z
+SUMMARY:Микробиология\, вирусология · практи
+ ка
+LOCATION:каф. микробиологии и вирусологии (3 к
+ орпус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Семейство герпесвирусов и ре
+ тровирусов. Возбудители медленных инфек
+ ций\nЗанятие 17 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · прак
+ тика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261222T1045-1bd9fg3@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261222T074500Z
+DTEND:20261222T091500Z
+SUMMARY:Гигиена · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Личная гигиена. Гигиеническо
+ е воспитание. Формирование здорового об
+ раза жизни\nЛекция 9 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261223T1300-1erpb2h@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261223T100000Z
+DTEND:20261223T122500Z
+SUMMARY:Патологическая анатомия · практика
+LOCATION:каф. патологической анатомии (3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Патология клетки\nЗанятие 17 и
+ з 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · практик
+ а
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261224T0800-1erpb2h@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261224T050000Z
+DTEND:20261224T072500Z
+SUMMARY:Патологическая анатомия · итоговое
+LOCATION:каф. патологической анатомии (3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Контрольное занятие № 1\nЗаня
+ тие 18 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · итогово
+ е
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261224T1140-1mx6aox@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261224T084000Z
+DTEND:20261224T115000Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ итоговое
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / БСМП\, Октябрьский пр.\, 47
+DESCRIPTION:Тема: продолжение — Итоговое конт
+ рольное занятие по кардиологии\nЗанятие 
+ 17 из 17
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · итоговое
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261224T1530-n169lr@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261224T123000Z
+DTEND:20261224T145500Z
+SUMMARY:Фармакология · практика
+LOCATION:каф. фармакологии (3 корпус\, ул. Влад
+ имирская\, 112)
+DESCRIPTION:Тема: Средства\, влияющие на функци
+ и органов пищеварения\nЗанятие 18 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261225T1045-1rx9c2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261225T074500Z
+DTEND:20261225T091500Z
+SUMMARY:Пропедевтика внутренних болезней · 
+ лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Синдромы при заболеваниях пи
+ щевода\, желудка и ДПК\nЛекция 17 из 17
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Пропедевтика внутренних болезней 
+ · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261225T1300-maqxq2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261225T100000Z
+DTEND:20261225T122500Z
+SUMMARY:Электив на кафедре патофизиологии · 
+ практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Занятие 12 из 12
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Электив на кафедре патофизиологии
+  · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261226T0800-1z11n71@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261226T050000Z
+DTEND:20261226T072500Z
+SUMMARY:Патофизиология · практика
+LOCATION:каф. патофизиологии (3 корпус\, ул. Вл
+ адимирская\, 112)
+DESCRIPTION:Тема: Печеночная недостаточность\n
+ Занятие 19 из 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патофизиология · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261228T1040-29ske2@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261228T074000Z
+DTEND:20261228T100500Z
+SUMMARY:Гигиена · итоговое
+LOCATION:каф. гигиены (3 корпус\, ул. Владимирс
+ кая\, 112)
+DESCRIPTION:Тема: Контрольное занятие по разде
+ лам: «Организация гигиенических меропри
+ ятий при чрезвычайных ситуациях. Основы 
+ военной гигиены»\, «Личная гигиена. Гиги
+ еническое воспитание. Формирование здор
+ ового образа жизни»\nЗанятие 18 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Гигиена · итоговое
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261229T0800-mowwv@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261229T050000Z
+DTEND:20261229T072500Z
+SUMMARY:Микробиология\, вирусология · итогов
+ ое
+LOCATION:каф. микробиологии и вирусологии (3 к
+ орпус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Итоговое занятие № 7 по теме 
+ «Возбудители вирусных инфекций»\nЗаняти
+ е 18 из 18
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Микробиология\, вирусология · итог
+ овое
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261229T1045-1ehgbiw@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261229T074500Z
+DTEND:20261229T091500Z
+SUMMARY:Фармакология · лекция
+LOCATION:ауд. 3-819\, 3 корпус\, ул. Владимирская\, 
+ 112
+DESCRIPTION:Тема: Лекарственные препараты\, вл
+ ияющие на функции органов дыхания\nЛекци
+ я 9 из 9
+CATEGORIES:Лекция
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Фармакология · лекция
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261230T0800-hi1dxb@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261230T050000Z
+DTEND:20261230T081000Z
+SUMMARY:Общая хирургия · практика
+LOCATION:Клиника Кировского ГМУ\, ул. Щорса\, 64
+  / КБ «РЖД-Медицина»
+DESCRIPTION:Тема: Термотравма: классификация т
+ ермотравм мирного времени и прогноза пр
+ и ней · Курация хирургического больного\
+ nЗанятие 9 из 9
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Общая хирургия · практика
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:20261230T1300-1erpb2h@semestr
+DTSTAMP:20260927T044125Z
+DTSTART:20261230T100000Z
+DTEND:20261230T122500Z
+SUMMARY:Патологическая анатомия · практика
+LOCATION:каф. патологической анатомии (3 корп
+ ус\, ул. Владимирская\, 112)
+DESCRIPTION:Тема: Системные заболевания соеди
+ нительной ткани. Васкулиты\nЗанятие 19 из 
+ 19
+CATEGORIES:Практическое занятие
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Патологическая анатомия · практик
+ а
+TRIGGER:-PT15M
+END:VALARM
+END:VEVENT
+END:VCALENDAR

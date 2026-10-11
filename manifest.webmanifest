@@ -1,0 +1,25 @@
+{
+  "id": "./",
+  "name": "Семестр — учебный дашборд",
+  "short_name": "Семестр",
+  "description": "Расписание группы, темы занятий, файлы, отработки и дедлайны студента Кировского ГМУ.",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F5F3EC",
+  "theme_color": "#F5F3EC",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Расписание", "short_name": "Расписание", "url": "./#schedule", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Уведомления и дела", "short_name": "Дела", "url": "./#notifications", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Файлы", "short_name": "Файлы", "url": "./#files", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

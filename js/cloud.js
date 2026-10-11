@@ -523,7 +523,7 @@
 
   // Файл с паролем: объект, null — пароля ещё нет, undefined — не удалось узнать (нет сети)
   async function fetchVault(site) {
-    const api = window.SEMESTR_GH_API || 'https://api.github.com';
+    const api = window.SEMESTR_GH_API || 'https://api.github.com'; // другой адрес — добавить в connect-src (index.html)
     try {
       const res = await fetch(`${api}/repos/${encodeURIComponent(site.owner)}/${encodeURIComponent(site.repo)}/contents/${VAULT}`, { cache: 'no-store', headers: { Accept: 'application/vnd.github+json' } });
       if (res.status === 404) return null;

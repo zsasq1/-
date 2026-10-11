@@ -42,11 +42,19 @@
   // потому что просмотр назад не работает в Safari до 16.4 — там сайт не запускался бы вовсе
   const NOT_AFTER_NUM = '(^|[^\\d.])';
 
+  // Убрать с конца пробелы и знаки препинания. Циклом: регулярка /[…]+$/ на длинной строке, которая
+  // кончается другим символом, работает квадратично
+  function trimTail(s) {
+    let i = s.length;
+    while (i > 0 && /[\s.,;:-]/.test(s[i - 1])) i--;
+    return s.slice(0, i);
+  }
+
   function canon(text) {
     const low = text.toLowerCase().replace(/^\s*(лекция|пр\.\s*занятие)\s*/i, '').trim();
     const hit = SUBJECTS.find((s) => s.re.test(low));
     if (hit) return hit;
-    let name = text.replace(/\(.*$/, '').replace(/[\d№].*$/, '').replace(/[\s.,;:-]+$/, '').trim();
+    let name = trimTail(text.replace(/\(.*$/, '').replace(/[\d№].*$/, '')).trim();
     if (name === name.toUpperCase()) name = U.cap(name.toLowerCase());
     return { name, hue: null, elective: /по выбору/i.test(text) };
   }
@@ -133,7 +141,7 @@
       const room = after.match(/(?:^|[\s)(-])(\d)-(\d{3})(?=[\s),;]|$)/);
       // Кафедра: «Диетология (каф. гигиены)» или «каф. биохимии (Биохимические основы…)»
       const depAfter = after.match(/^[^;(]*\(\s*(каф\.[^)]*?)\s*\)/i);
-      const depBefore = before.match(/(каф\.[^;()]*?)\s*\(\s*$/i);
+      const depBefore = before.match(/(каф\.[^;()]{0,100}?)\s*\(\s*$/i);
       const dep = (depAfter && depAfter[1]) || (depBefore && depBefore[1]) || '';
       base.forEach((e) => {
         const own = from && until && until >= from;
@@ -167,7 +175,7 @@
     } else {
       const r = rest.match(/(?:^|\s)(\d)-(\d{3})(?=[\s),;]|$)/);
       if (r && !/ссылка\s*$/i.test(rest.slice(0, r.index + 1))) room = `${r[1]}-${r[2]}`;
-      const dep = rest.match(/(?:на\s+)?(каф\.\s*[а-яё.\s]+?)(?=[),;]|\s\d|$)/i);
+      const dep = rest.match(/(?:на\s+)?(каф\.\s*[а-яё.\s]{1,100}?)(?=[),;]|\s\d|$)/i); // длина ограничена: без неё перебор квадратичный
       if (dep) place = dep[1].replace(/\s+/g, ' ').trim();
     }
     rest = rest.replace(/\(\s*ссылка[^)]*\)/gi, ' ');
@@ -229,8 +237,8 @@
 
   /* ---------- Разбор листа ---------- */
 
-  // Совпадение pattern в окне длиной span после каждого вхождения anchor. Регулярка с «[^.]*?» или «\S*»
-  // по всему тексту листа на нарочно испорченном файле работала бы секунды — окно держит её в узде
+  // Совпадение pattern в окне длиной span после каждого вхождения anchor (регулярка с флагом g, не пустая).
+  // Регулярка с «[^.]*?» или «\S*» по всему тексту листа на нарочно испорченном файле работала бы секунды
   function near(text, anchor, pattern, span) {
     anchor.lastIndex = 0;
     for (let a = anchor.exec(text); a; a = anchor.exec(text)) {
@@ -609,13 +617,16 @@
           return;
         }
         const prev = Store.state.kgmuCustom;
+        const wasSaving = Store.storageOk;
         const base = prev || { title: App.KGMU_DATA.title, page: App.KGMU_DATA.page, streams: App.KGMU_DATA.streams };
         const groups = new Set(parsedNew.groups);
         const streams = base.streams.filter((s) => !parseSheet(s).groups.some((g) => groups.has(g)));
         streams.push(stream);
         Store.state.kgmuCustom = { title: base.title, page: base.page, updated: U.ymd(new Date()), streams };
-        if (!Store.save()) {
-          // Не поместилось в память браузера — оставляем прежнее расписание, иначе после перезагрузки пропадёт всё
+        // Память браузера переполнило именно это расписание — оставляем прежнее, иначе после перезагрузки
+        // пропадёт всё. Если сохранять нельзя было и раньше или данные хранятся в GitHub, на Mac или в Claude,
+        // откатывать незачем: о первом при запуске уже предупредили, во втором случае данные не пропадут
+        if (!Store.save() && wasSaving && !(App.Cloud && App.Cloud.status === 'on')) {
           Store.state.kgmuCustom = prev;
           Store.save();
           UI.toast('Не хватило места в памяти браузера, расписание из файла не сохранено', { timeout: 7000 });

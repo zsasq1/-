@@ -12,8 +12,8 @@
   const MAX_PART = 4 * 1024 * 1024;   // одна распакованная часть
   const MAX_TOTAL = 12 * 1024 * 1024; // все распакованные части вместе
   const MAX_TAGS = 200000;            // тегов в одной части: DOMParser на миллионах тегов занимает гигабайты
-  const MAX_ROWS = 2000;              // ячейки дальше просто не читаем
-  const MAX_COLS = 200;
+  const MAX_ROWS = 1000;              // ячейки дальше просто не читаем
+  const MAX_COLS = 100;
   const MAX_CELL = 2000;              // символов в ячейке, остальное отрезаем
   const MAX_TEXT = 500000;            // символов во всех ячейках вместе; больше — файл не читаем
   const MAX_FORMATS = 200;            // разных форматов чисел; остальные — «Общий»
@@ -76,7 +76,16 @@
           return new TextDecoder().decode(raw);
         }
         if (e.method !== 8) throw new Error('неизвестное сжатие');
-        const reader = new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw')).getReader();
+        // Сжатое подаём по 4 КБ, дожидаясь каждой порции: целиком (Blob.stream() отдаёт до 2 МБ разом)
+        // браузер распаковал бы «бомбу» в гигабайты ещё до первой проверки размера
+        const ds = new DecompressionStream('deflate-raw');
+        const writer = ds.writable.getWriter();
+        const reader = ds.readable.getReader();
+        let stop = false;
+        (async () => {
+          for (let i = 0; i < raw.length && !stop; i += 4096) await writer.write(raw.subarray(i, i + 4096));
+          if (!stop) await writer.close();
+        })().catch(() => {});
         const parts = [];
         let size = 0;
         for (;;) {
@@ -84,6 +93,7 @@
           if (done) break;
           size += value.length;
           if (size > MAX_PART) {
+            stop = true;
             reader.cancel().catch(() => {});
             throw tooBig();
           }
@@ -122,9 +132,10 @@
   // произношения (<rPh>) не берём. Строго по структуре, а не все <t> внутри: вложенные друг
   // в друга <t> размножали бы текст на каждом уровне
   function richText(el) {
-    let s = kids(el, 't').map((t) => t.textContent).join('');
-    kids(el, 'r').forEach((r) => { if (s.length <= MAX_CELL) s += kids(r, 't').map((t) => t.textContent).join(''); });
-    return clip(decodeX(s));
+    const own = (x) => decodeX(kids(x, 't').map((t) => t.textContent).join(''));
+    let s = own(el);
+    kids(el, 'r').forEach((r) => { if (s.length <= MAX_CELL) s += own(r); });
+    return clip(s);
   }
 
   // Путь части файла по ссылке из .rels: относительно папки той части, где ссылка
@@ -327,7 +338,7 @@
         const v = kid(el, 'v');
         const raw = v ? v.textContent : null;
         const t = el.getAttribute('t') || 'n';
-        // Число, логическое значение или код ошибки длиннее сотни символов — порча, такую ячейку пропускаем
+        // Число, логическое значение или код ошибки длиннее 300 символов — порча, такую ячейку пропускаем
         const short = raw != null && raw.length <= 300;
         let text;
         if (t === 's') text = short ? strings[parseInt(raw, 10)] : null;

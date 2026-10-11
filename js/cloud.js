@@ -333,6 +333,7 @@
   const encPath = (path) => path.split('/').map(encodeURIComponent).join('/');
 
   function ghApi(cfg) {
+    // Другой адрес API (для проверок) нужно добавить и в connect-src политики безопасности в index.html
     const root = cfg.api || window.SEMESTR_GH_API || 'https://api.github.com';
     return async (path, opts = {}) => {
       const headers = Object.assign({ Authorization: `Bearer ${cfg.token}`, Accept: 'application/vnd.github+json' }, opts.headers || {});

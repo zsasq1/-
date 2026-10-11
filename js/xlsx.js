@@ -9,15 +9,24 @@
   'use strict';
 
   const MAX_FILE = 20 * 1024 * 1024;  // сам .xlsx
-  const MAX_PART = 8 * 1024 * 1024;   // одна распакованная часть
-  const MAX_TOTAL = 24 * 1024 * 1024; // все распакованные части вместе
+  const MAX_PART = 4 * 1024 * 1024;   // одна распакованная часть
+  const MAX_TOTAL = 12 * 1024 * 1024; // все распакованные части вместе
   const MAX_TAGS = 200000;            // тегов в одной части: DOMParser на миллионах тегов занимает гигабайты
   const MAX_ROWS = 2000;              // ячейки дальше просто не читаем
   const MAX_COLS = 200;
   const MAX_CELL = 2000;              // символов в ячейке, остальное отрезаем
-  const MAX_TEXT = 500000;            // символов во всех ячейках вместе
+  const MAX_TEXT = 500000;            // символов во всех ячейках вместе; больше — файл не читаем
+  const MAX_FORMATS = 200;            // разных форматов чисел; остальные — «Общий»
+  const MAX_MERGES = 5000;            // объединений; в настоящих таблицах их меньше сотни
 
-  const tooBig = () => new Error('слишком большая таблица');
+  const tooBig = () => Object.assign(new Error('слишком большая таблица'), { tooBig: true });
+
+  // Обрезка по MAX_CELL, не разрывая эмодзи и другие символы из двух половинок
+  const clip = (s) => {
+    if (s.length <= MAX_CELL) return s;
+    const hi = s.charCodeAt(MAX_CELL - 1);
+    return s.slice(0, hi >= 0xd800 && hi <= 0xdbff ? MAX_CELL - 1 : MAX_CELL);
+  };
 
   /* ---------- Zip ---------- */
 
@@ -98,24 +107,24 @@
       return doc.getElementsByTagName('parsererror').length ? null : doc;
     };
     // Не все программы пишут правильный XML: управляющие символы и &nbsp; Excel терпит, DOMParser — нет
-    const doc = parse(text) || parse(text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '').replace(/&nbsp;/g, '&#160;'));
+    const doc = parse(text) || parse(text.replace(/[\x0B\x0C]/g, ' ').replace(/[\x00-\x08\x0E-\x1F]/g, '').replace(/&nbsp;/g, '&#160;'));
     if (!doc) throw new Error('файл повреждён');
     return doc;
   }
 
-  const byName = (root, name) => Array.from(root.getElementsByTagNameNS('*', name));
   const kids = (el, name) => Array.from(el.children).filter((x) => x.localName === name);
   const kid = (el, name) => kids(el, name)[0] || null;
 
   // Excel пишет управляющие символы как _x000D_; _x005F_ — сам знак «_»
   const decodeX = (s) => s.replace(/_x([0-9A-Fa-f]{4})_/g, (m, h) => String.fromCharCode(parseInt(h, 16)));
 
-  // Текст строки с оформлением: все <t>, кроме подсказок произношения (<rPh>)
+  // Текст строки (<si> или <is>): <t> прямо внутри или в кусках с оформлением <r>; подсказки
+  // произношения (<rPh>) не берём. Строго по структуре, а не все <t> внутри: вложенные друг
+  // в друга <t> размножали бы текст на каждом уровне
   function richText(el) {
-    return byName(el, 't').filter((t) => {
-      for (let p = t.parentElement; p && p !== el; p = p.parentElement) if (p.localName === 'rPh') return false;
-      return true;
-    }).map((t) => t.textContent).join('');
+    let s = kids(el, 't').map((t) => t.textContent).join('');
+    kids(el, 'r').forEach((r) => { if (s.length <= MAX_CELL) s += kids(r, 't').map((t) => t.textContent).join(''); });
+    return clip(decodeX(s));
   }
 
   // Путь части файла по ссылке из .rels: относительно папки той части, где ссылка
@@ -132,7 +141,7 @@
     const i = part.lastIndexOf('/');
     const xml = await zip.text(`${part.slice(0, i + 1)}_rels/${part.slice(i + 1)}.rels`);
     if (!xml) return [];
-    return byName(parseXml(xml), 'Relationship').map((r) => ({
+    return kids(parseXml(xml).documentElement, 'Relationship').map((r) => ({
       id: r.getAttribute('Id'),
       type: r.getAttribute('Type') || '',
       target: r.getAttribute('TargetMode') === 'External' ? null : resolve(part, r.getAttribute('Target') || ''),
@@ -159,7 +168,7 @@
     return s.replace(/e\+?/, 'E+').replace('E+-', 'E-');
   }
 
-  // Формат даты разбираем один раз: что из «m» — месяц, а что — минуты, решаем за один проход
+  // Формат даты разбираем один раз: что из «m» — месяц, а что — минуты, решаем двумя линейными проходами
   function compileDate(code) {
     const toks = code.match(/"[^"]*"|\\.|yyyy|yy|mmmm|mmm|mm|m|dddd|ddd|dd|d|hh|h|ss|s|AM\/PM|A\/P|\.0+|[\s\S]/gi) || [];
     const kind = toks.map((t) => (t.startsWith('"') || t.startsWith('\\') ? '' : t.toLowerCase()));
@@ -221,7 +230,7 @@
     if (!bare.trim() || /^general$/i.test(bare.trim()) || bare.trim() === '@') return general;
     if (/[dmyhs]/i.test(bare)) return compileDate(sec);
     const pct = bare.includes('%');
-    const dec = (bare.match(/\.([0#]+)/) || ['', ''])[1].length;
+    const dec = Math.min(30, (bare.match(/\.([0#]+)/) || ['', ''])[1].length); // в Excel не больше 30 знаков
     const group = /[#0],[#0]/.test(bare);
     return (v) => {
       const x = pct ? v * 100 : v;
@@ -252,15 +261,18 @@
     const wbPath = root && root.target ? root.target : 'xl/workbook.xml';
     const wbXml = await zip.text(wbPath);
     if (!wbXml) throw new Error('в файле нет книги Excel');
-    const wb = parseXml(wbXml);
+    const wb = parseXml(wbXml).documentElement;
     const wbRels = await rels(zip, wbPath);
-    const pr = byName(wb, 'workbookPr')[0];
+    const pr = kid(wb, 'workbookPr');
     const d1904 = !!pr && /^(1|true)$/i.test(pr.getAttribute('date1904') || '');
 
     // Первый лист в порядке книги, даже скрытый — как раньше брала SheetJS (SheetNames[0])
-    const first = byName(wb, 'sheet')[0];
-    const rid = first && Array.from(first.attributes).find((a) => a.localName === 'id' && a.namespaceURI);
-    const sheetRel = rid && wbRels.find((r) => r.id === rid.value);
+    // r:id ищем по известным пространствам имён, а не перебором атрибутов: перебор в Blink квадратичен
+    const sheets = kid(wb, 'sheets');
+    const first = sheets && kid(sheets, 'sheet');
+    const rid = first && (first.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id')
+      || first.getAttributeNS('http://purl.oclc.org/ooxml/officeDocument/relationships', 'id'));
+    const sheetRel = rid && wbRels.find((r) => r.id === rid);
     const sheetPath = sheetRel && sheetRel.target ? sheetRel.target : 'xl/worksheets/sheet1.xml';
     const sheetXml = await zip.text(sheetPath);
     if (!sheetXml) throw new Error('в книге нет листов');
@@ -270,7 +282,7 @@
       return r && r.target ? r.target : fallback;
     };
     const sstXml = await zip.text(part('sharedStrings', 'xl/sharedStrings.xml'));
-    const strings = sstXml ? kids(parseXml(sstXml).documentElement, 'si').map((si) => decodeX(richText(si))) : [];
+    const strings = sstXml ? kids(parseXml(sstXml).documentElement, 'si').map(richText) : [];
 
     // Форматы чисел ячеек: только <numFmts> верхнего уровня — у условного форматирования (<dxf>) свои
     const formats = [];
@@ -289,18 +301,21 @@
     const compiled = new Map();
     const formatOf = (s) => {
       const code = formats[s] || 'General';
-      if (!compiled.has(code)) compiled.set(code, compile(code));
+      if (!compiled.has(code)) compiled.set(code, compiled.size < MAX_FORMATS ? compile(code) : general);
       return compiled.get(code);
     };
 
-    const sheet = parseXml(sheetXml);
+    const sheet = parseXml(sheetXml).documentElement;
     const cells = new Map();
     let maxR = -1;
     let maxC = -1;
     let chars = 0;
 
+    // Строки и ячейки — только на своих местах (<sheetData>/<row>/<c>): вложенные друг в друга строки
+    // заставляли бы каждую ячейку перечитывать всё под собой
+    const data = kid(sheet, 'sheetData');
     let r = -1;
-    byName(sheet, 'row').forEach((row) => {
+    (data ? kids(data, 'row') : []).forEach((row) => {
       const rr = Number(row.getAttribute('r'));
       r = rr > 0 ? rr - 1 : r + 1;
       let c = -1;
@@ -312,18 +327,20 @@
         const v = kid(el, 'v');
         const raw = v ? v.textContent : null;
         const t = el.getAttribute('t') || 'n';
+        // Число, логическое значение или код ошибки длиннее сотни символов — порча, такую ячейку пропускаем
+        const short = raw != null && raw.length <= 300;
         let text;
-        if (t === 's') text = raw == null ? null : strings[parseInt(raw, 10)];
-        else if (t === 'inlineStr') { const is = kid(el, 'is'); text = is ? decodeX(richText(is)) : null; }
-        else if (t === 'str') text = raw == null ? null : decodeX(raw);
-        else if (t === 'b') text = raw == null ? null : (raw.trim() === '1' || /^true$/i.test(raw.trim()) ? 'TRUE' : 'FALSE');
-        else if (t === 'e' || t === 'd') text = raw;
-        else if (raw != null && raw.trim() !== '' && Number.isFinite(Number(raw))) {
+        if (t === 's') text = short ? strings[parseInt(raw, 10)] : null;
+        else if (t === 'inlineStr') { const is = kid(el, 'is'); text = is ? richText(is) : null; }
+        else if (t === 'str') text = raw == null ? null : clip(decodeX(raw));
+        else if (t === 'b') text = short ? (raw.trim() === '1' || /^true$/i.test(raw.trim()) ? 'TRUE' : 'FALSE') : null;
+        else if (t === 'e' || t === 'd') text = short ? raw : null;
+        else if (short && raw.trim() !== '' && Number.isFinite(Number(raw))) {
           text = formatOf(Number(el.getAttribute('s')) || 0)(Number(raw), d1904);
         } else text = null;
         // Пустые и из одних пробелов не храним: иначе случайный пробел далеко внизу раздувает таблицу
         if (typeof text !== 'string' || !text.trim()) return;
-        if (text.length > MAX_CELL) text = text.slice(0, MAX_CELL);
+        text = clip(text);
         chars += text.length;
         if (chars > MAX_TEXT) throw tooBig();
         if (r > maxR) maxR = r;
@@ -332,15 +349,20 @@
       });
     });
 
-    // Объединения таблицу не растягивают: объединённую на всю ширину строку (A1:XFD1) обрезаем по границе
-    const merges = byName(sheet, 'mergeCell').map((m) => {
+    // Объединения таблицу не растягивают: объединённую на всю ширину строку (A1:XFD1) обрезаем по границе.
+    // Берём только те, что начинаются с ячейки с текстом (другие расписанию не нужны), без повторов
+    const mc = kid(sheet, 'mergeCells');
+    const anchors = new Set();
+    const merges = (mc ? kids(mc, 'mergeCell') : []).map((m) => {
       const [a, b] = (m.getAttribute('ref') || '').split(':');
       const s = cellRef(a);
       const e = cellRef(b || a);
       if (!s || !e) return null;
       const r1 = Math.min(s.r, e.r);
       const c1 = Math.min(s.c, e.c);
-      if (r1 < 0 || c1 < 0 || r1 >= MAX_ROWS || c1 >= MAX_COLS) return null;
+      const key = `${r1}:${c1}`;
+      if (!cells.has(key) || anchors.has(key) || anchors.size >= MAX_MERGES) return null;
+      anchors.add(key);
       return [r1, c1, Math.min(Math.max(s.r, e.r), MAX_ROWS - 1), Math.min(Math.max(s.c, e.c), MAX_COLS - 1)];
     }).filter(Boolean);
 

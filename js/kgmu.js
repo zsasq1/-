@@ -229,6 +229,17 @@
 
   /* ---------- Разбор листа ---------- */
 
+  // Совпадение pattern в окне длиной span после каждого вхождения anchor. Регулярка с «[^.]*?» или «\S*»
+  // по всему тексту листа на нарочно испорченном файле работала бы секунды — окно держит её в узде
+  function near(text, anchor, pattern, span) {
+    anchor.lastIndex = 0;
+    for (let a = anchor.exec(text); a; a = anchor.exec(text)) {
+      const m = text.slice(a.index, a.index + span).match(pattern);
+      if (m) return m;
+    }
+    return null;
+  }
+
   function parseSheet({ grid, merges = [] }) {
     const cell = (r, c) => String((grid[r] || [])[c] || '').replace(/\s+/g, ' ').trim();
     const rows = grid.length;
@@ -240,12 +251,12 @@
     if (sm && MONTHS[sm[2].toLowerCase()]) sem = new Date(Number(sm[3]), MONTHS[sm[2].toLowerCase()] - 1, Number(sm[1]));
     if (!sem) {
       const y = all.match(/(\d{4})\s*-\s*(\d{4})\s*учебного/);
-      const half = /втор\S* полугоди/i.test(all);
+      const half = near(all, /втор/gi, /^втор\S* полугоди/i, 40);
       sem = y ? new Date(Number(half ? y[2] : y[1]), half ? 1 : 8, 1) : new Date(new Date().getFullYear(), 8, 1);
     }
     const ctx = { semStart: U.ymd(sem), readDate: makeDateReader(sem) };
 
-    const titleCell = all.match(/РАСПИСАНИЕ ЗАНЯТИЙ[^.]*?(\(\s*\d\s*поток\s*\))/i);
+    const titleCell = near(all, /РАСПИСАНИЕ ЗАНЯТИЙ/gi, /^РАСПИСАНИЕ ЗАНЯТИЙ[^.]*?(\(\s*\d\s*поток\s*\))/i, 400);
     const stream = titleCell ? titleCell[1].replace(/[()]/g, '').trim() : '';
     const course = (all.match(/(\d)\s*КУРСА/i) || [])[1] || '';
 
@@ -576,6 +587,7 @@
           return;
         }
         let stream;
+        let parsedNew;
         try {
           // Читаем сами (js/xlsx.js): первый лист — текст ячеек и объединения
           const sheet = await App.Xlsx.read(await file.arrayBuffer());
@@ -587,18 +599,28 @@
           });
           while (grid.length && !grid[grid.length - 1].length) grid.pop();
           stream = { file: file.name, grid, merges: sheet.merges };
-          const test = parseSheet(stream);
-          if (!test.entries.length) throw new Error('empty');
+          parsedNew = parseSheet(stream);
+          if (!parsedNew.entries.length) throw new Error('empty');
         } catch (e) {
-          UI.toast('В файле не нашлось расписания по группам. Нужен .xlsx со страницы «Расписание. Лечебный факультет»', { timeout: 7000 });
+          console.warn('Файл расписания не прочитан:', e);
+          UI.toast(e && e.tooBig
+            ? 'Таблица в файле слишком большая для расписания. Нужен .xlsx со страницы «Расписание. Лечебный факультет»'
+            : 'В файле не нашлось расписания по группам. Нужен .xlsx со страницы «Расписание. Лечебный факультет»', { timeout: 7000 });
           return;
         }
-        const base = Store.state.kgmuCustom || { title: App.KGMU_DATA.title, page: App.KGMU_DATA.page, streams: App.KGMU_DATA.streams };
-        const groups = new Set(parseSheet(stream).groups);
+        const prev = Store.state.kgmuCustom;
+        const base = prev || { title: App.KGMU_DATA.title, page: App.KGMU_DATA.page, streams: App.KGMU_DATA.streams };
+        const groups = new Set(parsedNew.groups);
         const streams = base.streams.filter((s) => !parseSheet(s).groups.some((g) => groups.has(g)));
         streams.push(stream);
         Store.state.kgmuCustom = { title: base.title, page: base.page, updated: U.ymd(new Date()), streams };
-        Store.save();
+        if (!Store.save()) {
+          // Не поместилось в память браузера — оставляем прежнее расписание, иначе после перезагрузки пропадёт всё
+          Store.state.kgmuCustom = prev;
+          Store.save();
+          UI.toast('Не хватило места в памяти браузера, расписание из файла не сохранено', { timeout: 7000 });
+          return;
+        }
         this._parsed = null;
         UI.toast(`Файл «${file.name}» прочитан: группы ${[...groups].join(', ')}`);
         if (App.route === 'settings') App.renderView(false);

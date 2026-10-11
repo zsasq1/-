@@ -53,6 +53,12 @@ NO_SUBJECT = 'Без предмета'
 CHUNK = 1 << 20
 MAX_STATE = 64 << 20
 ID_RE = re.compile(r'^[A-Za-z0-9_-]{1,80}$')
+MIME_RE = re.compile(r'^[a-z0-9!#$&^_.+-]+/[a-z0-9!#$&^_.+-]+$')
+# Что отдаёт сам Семестр (см. tools/build-mac.py); всё остальное — 404, в том числе папка «Данные»,
+# если она лежит внутри (запуск из репозитория). Белый список, а не сравнение с путём к данным:
+# на Mac имена не различают регистр, и /MAC/данные/… обходила бы сравнение строк
+STATIC_FILES = {'index.html', 'sw.js', 'manifest.webmanifest'}
+STATIC_DIRS = {'css', 'js', 'icons'}
 LOCK = threading.RLock()
 ALLOWED_HOSTS = {f'localhost:{PORT}', f'127.0.0.1:{PORT}'}
 
@@ -71,6 +77,13 @@ semestr.json — расписание, дела, заметки к заняти�
 """
 
 # ---------- Файлы и папки ----------
+
+def clean_type(value):
+    """Тип файла из заголовка: один правильный MIME-тип, иначе application/octet-stream.
+    Список вроде «application/pdf,text/html» браузер прочитал бы по последнему типу."""
+    t = str(value or '').split(';')[0].split(',')[0].strip().lower()
+    return t if MIME_RE.match(t) else 'application/octet-stream'
+
 
 def safe_name(name, fallback='Файл'):
     """Имя, которое можно положить на диск Mac: без «/» и «:», без точки в начале, не длиннее 200 байт."""
@@ -325,7 +338,7 @@ class Handler(BaseHTTPRequestHandler):
         if not ID_RE.match(file_id):
             return self.reply_json({'error': 'bad id'}, 400)
         name = safe_name(urllib.parse.unquote(self.headers.get('X-File-Name', '')))
-        ctype = self.headers.get('Content-Type', 'application/octet-stream').split(';')[0].strip()
+        ctype = clean_type(self.headers.get('Content-Type'))
         tmp = os.path.join(DATA, f'.upload-{file_id}-{threading.get_ident()}')
         try:
             with open(tmp, 'wb') as out:
@@ -360,13 +373,14 @@ class Handler(BaseHTTPRequestHandler):
 
     def get_file(self, file_id, download):
         # Ваш файл — только для просмотра и скачивания, не как скрипт или стиль самой страницы
+        # (браузеры без Sec-Fetch-Dest, например Safari до 16.4, заголовок не шлют — им не запрещаем)
         if self.headers.get('Sec-Fetch-Dest', '') in ('script', 'style', 'worker', 'sharedworker', 'serviceworker', 'audioworklet', 'paintworklet', 'xslt'):
             return self.reply_json({'error': 'forbidden'}, 403)
         path, ctype = self.file_path(file_id)
         if not path:
             return self.reply_json({'error': 'not found'}, 404)
         size = os.path.getsize(path)
-        ctype = ctype or mimetypes.guess_type(path)[0] or 'application/octet-stream'
+        ctype = clean_type(ctype or mimetypes.guess_type(path)[0])
         disp = 'attachment' if download else 'inline'
         name = urllib.parse.quote(os.path.basename(path))
         start, end = 0, size - 1
@@ -391,11 +405,11 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Accept-Ranges', 'bytes')
         self.send_header('Content-Disposition', f"{disp}; filename*=UTF-8''{name}")
         self.send_header('Cache-Control', 'no-store')
-        # Ваш файл, открытый по прямой ссылке, не должен выполнять скрипты от имени Семестра.
-        # Кроме PDF: Chrome не показывает PDF на странице с sandbox
+        # Ваш файл, открытый по прямой ссылке, не должен выполнять скрипты от имени Семестра
+        # (sandbox; кроме PDF — Chrome не показывает PDF с sandbox) и не встраивается в чужие сайты
         self.send_header('X-Content-Type-Options', 'nosniff')
-        if not ctype.lower().startswith('application/pdf'):
-            self.send_header('Content-Security-Policy', 'sandbox')
+        frame = "frame-ancestors 'self'"
+        self.send_header('Content-Security-Policy', frame if ctype == 'application/pdf' else f'sandbox; {frame}')
         if status == 206:
             self.send_header('Content-Range', f'bytes {start}-{end}/{size}')
         self.end_headers()
@@ -439,14 +453,17 @@ class Handler(BaseHTTPRequestHandler):
 
     def static(self, path):
         rel = path.lstrip('/') or 'index.html'
+        if '\x00' in rel:
+            return self.reply(404, 'Не найдено'.encode('utf-8'), 'text/plain; charset=utf-8')
         full = os.path.realpath(os.path.join(APP, rel))
-        # Папка «Данные» может лежать внутри папки приложения (запуск из репозитория):
-        # ваши файлы отдаются только через /api/files, с защитными заголовками
-        if not full.startswith(APP + os.sep) or full.startswith(os.path.realpath(DATA) + os.sep) or not os.path.isfile(full):
+        inside = os.path.relpath(full, APP).replace(os.sep, '/') if full.startswith(APP + os.sep) else ''
+        allowed = inside in STATIC_FILES or ('/' in inside and inside.split('/', 1)[0] in STATIC_DIRS)
+        # Ваши файлы отдаются только через /api/files, с защитными заголовками
+        if not allowed or not os.path.isfile(full):
             return self.reply(404, 'Не найдено'.encode('utf-8'), 'text/plain; charset=utf-8')
         with open(full, 'rb') as f:
             body = f.read()
-        if rel == 'index.html':
+        if inside == 'index.html':
             # Страница узнаёт, что данные надо хранить на диске. Тегом <meta>, а не скриптом:
             # политика безопасности страницы запрещает встроенные скрипты
             info = html.escape(json.dumps({'dir': DATA}), quote=True)

@@ -3,7 +3,7 @@
    и сама включается при следующем открытии Семестра — без предложений «Обновить».
    VERSION пересчитывается скриптом tools/sw-version.py. */
 
-const VERSION = 'semestr-f024837dad';
+const VERSION = 'semestr-5dfcc4350c';
 const RUNTIME = 'semestr-runtime';
 
 const SHELL = [
@@ -56,6 +56,13 @@ self.addEventListener('activate', (event) => {
     await Promise.all(keys
       .filter((key) => key.startsWith('semestr-') && key !== VERSION && key !== RUNTIME)
       .map((key) => caches.delete(key)));
+    // Из общего кеша убираем то, что больше не нужно: раньше там лежала библиотека Excel с cdnjs
+    const runtime = await caches.open(RUNTIME);
+    const old = (await runtime.keys()).filter((req) => {
+      const url = new URL(req.url);
+      return url.origin !== self.location.origin && !CDN.test(url.hostname);
+    });
+    await Promise.all(old.map((req) => runtime.delete(req)));
     await self.clients.claim();
   })());
 });

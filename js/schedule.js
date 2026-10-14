@@ -400,12 +400,13 @@
     dueCard(r) {
       const s = Store.subject(r.subjectId);
       const due = new Date(r.due);
+      const att = App.Files ? App.Files.ofReminder(r.id).length : 0;
       return `
         <button class="dc ${r.kind === 'deadline' ? 'is-deadline' : ''}" data-action="rem-edit" data-id="${r.id}">
           ${ico(r.kind === 'deadline' ? 'flag' : 'bell')}
           <span class="dc-body">
             <span class="dc-title">${esc(r.title)}</span>
-            <span class="dc-meta">${r.kind === 'deadline' ? 'Дедлайн' : 'Напоминание'} · ${U.hm(due)}${s ? ` · ${esc(s.name)}` : ''}</span>
+            <span class="dc-meta">${r.kind === 'deadline' ? 'Дедлайн' : 'Напоминание'} · ${U.hm(due)}${s ? ` · ${esc(s.name)}` : ''}${att ? ` · ${U.count(att, ['файл', 'файла', 'файлов'])}` : ''}</span>
           </span>
         </button>`;
     },

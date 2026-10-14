@@ -48,7 +48,8 @@
 
     /* ---------- Модальные окна ---------- */
 
-    modal({ title, body, foot = '', size = '', onMount, onClose, focus = 'auto' }) {
+    // beforeClose() → false или Promise<false> оставляет окно открытым (например, спросить «Не сохранять?»)
+    modal({ title, body, foot = '', size = '', onMount, onClose, beforeClose, focus = 'auto' }) {
       const id = `m${++modalSeq}`;
       const back = document.createElement('div');
       back.className = 'modal-backdrop';
@@ -67,10 +68,20 @@
       const prevFocus = document.activeElement;
       const el = back.querySelector('.modal');
       let closed = false;
+      let asking = false;
       const api = {
         el,
-        close() {
-          if (closed) return;
+        close(force) {
+          if (closed || asking) return;
+          if (beforeClose && !force) {
+            const ok = beforeClose();
+            if (ok === false) return;
+            if (ok && typeof ok.then === 'function') {
+              asking = true;
+              ok.then((yes) => { asking = false; if (yes) api.close(true); }, () => { asking = false; });
+              return;
+            }
+          }
           closed = true;
           const i = modals.indexOf(api);
           if (i >= 0) modals.splice(i, 1);

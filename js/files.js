@@ -22,6 +22,7 @@
 
   const Files = {
     filter: { q: '', subject: 'all' },
+    dropTarget: null, // открытое окно дедлайна принимает перетащенные файлы себе (notify.js)
 
     kind(f) {
       const ext = (f.name.split('.').length > 1 ? f.name.split('.').pop() : '').toLowerCase();
@@ -53,14 +54,25 @@
       return f && f.reminderId ? Store.state.reminders.find((r) => r.id === f.reminderId) || null : null;
     },
 
-    // Маленький значок файла в строке дедлайна: у фото — миниатюра
-    attachChip(f) {
+    isPending(id) {
+      return pending.has(id);
+    },
+
+    // Маленький значок файла в строке дедлайна: у фото — миниатюра. Пока файл сохраняется, он неактивен
+    attachChip(f, cls = '') {
       const k = this.kind(f);
+      const busy = pending.has(f.id);
       return `
-        <button type="button" class="rem-file" data-action="file-open" data-id="${esc(f.id)}" title="${esc(f.name)}" aria-label="Открыть ${esc(f.name)}">
-          <span class="rem-file-ico">${this.tile(f, 'xs')}${k.image ? `<img data-thumb="${esc(f.id)}" alt="">` : ''}</span>
-          <span class="rem-file-name">${esc(f.name)}</span>
+        <button type="button" class="rem-file ${busy ? 'is-pending' : ''} ${cls}" data-action="file-open" data-id="${esc(f.id)}" title="${esc(f.name)}" aria-label="Открыть ${esc(f.name)}" ${busy ? 'disabled aria-busy="true"' : ''}>
+          <span class="rem-file-ico">${this.tile(f, 'xs')}${k.image && !busy ? `<img data-thumb="${esc(f.id)}" alt="">` : ''}</span>
+          <span class="rem-file-name ${busy ? 'shimmer' : ''}">${esc(f.name)}</span>
         </button>`;
+    },
+
+    // Метка «к какому делу прикреплён» для карточки и строки в «Файлах»
+    reminderTag(f) {
+      const r = this.reminderOf(f);
+      return r ? `<span class="tag no-subj ftag-rem" title="Прикреплён к «${esc(r.title)}»">${ico('flag')}<span>${esc(r.title)}</span></span>` : '';
     },
 
     filtered() {
@@ -155,7 +167,7 @@
             <div class="fname" title="${esc(f.name)}">${esc(f.name)}</div>
             <div class="fmeta">${isPending ? '<span class="shimmer">Сохраняю…</span>' : `${U.fmtSize(f.size)} · ${U.timeAgo(new Date(f.addedAt))}`}</div>
             ${subj ? `<span class="tag" style="--h:${subj.hue}">${esc(subj.name)}</span>` : ''}
-            ${this.reminderOf(f) ? `<span class="tag no-subj ftag-rem" title="Прикреплён к «${esc(this.reminderOf(f).title)}»">${ico('flag')}<span>${esc(this.reminderOf(f).title)}</span></span>` : ''}
+            ${this.reminderTag(f)}
           </div>
           ${isPending ? '' : `<div class="factions">
             <button class="icon-btn sm" data-action="file-download" data-id="${f.id}" aria-label="Скачать" title="Скачать">${ico('download')}</button>
@@ -171,7 +183,7 @@
         <div class="frow ${isPending ? 'is-pending' : ''}" style="--i:${Math.min(i, 20)}" data-action="file-open" data-id="${f.id}" tabindex="0" role="button">
           ${this.tile(f, 'sm')}
           <span class="frow-name" title="${esc(f.name)}">${isPending ? `<span class="shimmer">${esc(f.name)}</span>` : esc(f.name)}</span>
-          <span class="frow-cell">${subj ? `<span class="tag" style="--h:${subj.hue}">${esc(subj.name)}</span>` : ''}</span>
+          <span class="frow-cell frow-tags">${subj ? `<span class="tag" style="--h:${subj.hue}">${esc(subj.name)}</span>` : ''}${this.reminderTag(f)}</span>
           <span class="frow-cell">${U.fmtSize(f.size)}</span>
           <span class="frow-cell">${U.fmtDate(new Date(f.addedAt))}</span>
           <span class="frow-actions">${isPending ? '' : `
@@ -422,9 +434,10 @@
         depth++;
         if (depth === 1) {
           const target = App.route === 'files' ? Store.subject(this.uploadSubject()) : null;
-          sub.textContent = App.route === 'home'
-            ? 'Файлы прикрепятся к сообщению — выберите предмет и отправьте'
-            : target ? `Сохраним в предмет «${target.name}»` : 'Сохраним в раздел «Файлы»';
+          sub.textContent = this.dropTarget ? 'Прикрепим к этому делу'
+            : App.route === 'home' ? 'Файлы прикрепятся к сообщению — выберите предмет и отправьте'
+              : target ? `Сохраним в предмет «${target.name}»` : 'Сохраним в раздел «Файлы»';
+          overlay.classList.toggle('is-modal', !!this.dropTarget);
           overlay.classList.add('is-on');
         }
       });
@@ -444,7 +457,8 @@
         hide();
         const list = e.dataTransfer.files;
         if (!list || !list.length) return;
-        if (App.route === 'home' && App.Home.attach) App.Home.attach(list);
+        if (this.dropTarget) this.dropTarget(list);
+        else if (App.route === 'home' && App.Home.attach) App.Home.attach(list);
         else this.add(list, App.route === 'files' ? this.uploadSubject() : null);
       });
       window.addEventListener('blur', hide);

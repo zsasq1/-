@@ -119,10 +119,11 @@
           const left = due - now;
           const s = Store.subject(r.subjectId);
           const when = left > 6e4 ? `Срок ${U.fmtWhen(due, now)}, осталось ${U.relIn(left)}` : 'Срок наступил';
+          const att = App.Files ? App.Files.ofReminder(r.id).length : 0;
           this.push({
             kind: r.kind === 'deadline' ? 'deadline' : 'reminder',
             title: r.title,
-            body: s ? `${when} · ${s.name}` : when,
+            body: [when, s && s.name, att && U.count(att, ['файл', 'файла', 'файлов'])].filter(Boolean).join(' · '),
             route: 'reminders',
           });
         }
@@ -213,25 +214,27 @@
       return `
         <li class="rem ${r.done ? 'is-done' : ''}" data-rem="${r.id}">
           <button class="check" data-action="rem-toggle" data-id="${r.id}" role="checkbox" aria-checked="${r.done ? 'true' : 'false'}" aria-label="${r.done ? 'Вернуть в работу' : 'Отметить выполненным'}">${ico('check')}</button>
-          <div class="rem-main" data-action="rem-edit" data-id="${r.id}" role="button" tabindex="0">
-            <span class="rem-title">${esc(r.title)}</span>
-            <div class="rem-meta">
-              ${r.kind === 'deadline' ? `<span class="kind-deadline">${ico('flag')}Дедлайн</span>` : ''}
-              <span class="due ${dueCls}">${ico('clock')}${esc(dueText)}</span>
-              ${s ? `<span class="tag" style="--h:${s.hue}">${esc(s.name)}</span>` : ''}
+          <div class="rem-body">
+            <div class="rem-main" data-action="rem-edit" data-id="${r.id}" role="button" tabindex="0">
+              <span class="rem-title">${esc(r.title)}</span>
+              <div class="rem-meta">
+                ${r.kind === 'deadline' ? `<span class="kind-deadline">${ico('flag')}Дедлайн</span>` : ''}
+                <span class="due ${dueCls}">${ico('clock')}${esc(dueText)}</span>
+                ${s ? `<span class="tag" style="--h:${s.hue}">${esc(s.name)}</span>` : ''}
+              </div>
             </div>
             ${this.filesRow(r)}
           </div>
         </li>`;
     },
 
-    // Прикреплённые фото и файлы: первые четыре и «ещё N»
+    // Прикреплённые фото и файлы: первые четыре, остальные — по «ещё N»
     filesRow(r) {
       const files = App.Files ? App.Files.ofReminder(r.id) : [];
       if (!files.length) return '';
       const more = files.length - 4;
-      return `<div class="rem-files">${files.slice(0, 4).map((f) => App.Files.attachChip(f)).join('')}${more > 0
-        ? `<span class="rem-files-more" data-action="rem-edit" data-id="${r.id}">ещё ${more}</span>` : ''}</div>`;
+      return `<div class="rem-files" aria-label="Прикреплённые файлы">${files.map((f, i) => App.Files.attachChip(f, i >= 4 ? 'is-extra' : '')).join('')}${more > 0
+        ? `<button type="button" class="rem-files-more" data-action="rem-files-all">ещё ${more}</button>` : ''}</div>`;
     },
 
     // Итоговое занятие в списке дел: предмет, когда и что повторить
@@ -436,6 +439,7 @@
       const unlink = new Set();
       const staged = [];
       const previews = new Map(); // File -> временная ссылка на миниатюру
+      let dropHere = null;
       const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
 
       UI.modal({
@@ -478,30 +482,58 @@
           ${isEdit ? `<button class="btn btn-ghost btn-danger" type="button" data-del>${ico('trash')} Удалить</button><span class="spacer"></span>` : ''}
           <button class="btn btn-ghost" type="button" data-close>Отмена</button>
           <button class="btn btn-primary" type="submit" form="rf">${isEdit ? 'Сохранить' : 'Добавить'}</button>`,
-        onClose: () => previews.forEach((url) => URL.revokeObjectURL(url)),
+        // Выбранные, но не сохранённые файлы — не теряем молча (на телефоне окно легко закрыть случайным касанием)
+        beforeClose: () => (staged.length ? UI.confirm({
+          title: 'Не сохранять фото и файлы?',
+          text: `${staged.length === 1 ? 'Выбранный файл ещё не сохранён' : `Выбранные файлы (${staged.length}) ещё не сохранены`}. Если закрыть окно, ${staged.length === 1 ? 'он пропадёт' : 'они пропадут'}.`,
+          ok: 'Закрыть без них',
+          cancel: 'Вернуться',
+        }) : true),
+        onClose: () => {
+          previews.forEach((url) => URL.revokeObjectURL(url));
+          if (Files.dropTarget === dropHere) Files.dropTarget = null;
+        },
         onMount: (el, api) => {
           const title = el.querySelector('#rf-title');
           const err = el.querySelector('#rf-err');
           const attBox = el.querySelector('#rf-att');
-          const thumb = (file) => {
-            if (!/^image\//.test(file.type || '')) return Files.tile(file, 'sm');
+          // Значок типа файла, а поверх — миниатюра фото; если браузер фото не прочтёт (HEIC, битый файл), останется значок
+          const icon = (file, src) => `<span class="att-ico">${Files.tile(file, 'sm')}${src ? `<img src="${src}" alt="">` : ''}</span>`;
+          const preview = (file) => {
+            if (!/^image\//.test(file.type || '')) return '';
             if (!previews.has(file)) previews.set(file, URL.createObjectURL(file));
-            return `<span class="att-thumb"><img src="${previews.get(file)}" alt=""></span>`;
+            return previews.get(file);
           };
-          const renderAtt = () => {
+          const renderAtt = (focusAfter) => {
             const keep = linked.filter((f) => !unlink.has(f.id));
             attBox.innerHTML = keep.map((f) => `
-              <div class="att">${Files.tile(f, 'sm')}
-                <span class="att-info"><span class="att-name" title="${esc(f.name)}">${esc(f.name)}</span><span class="att-size">${U.fmtSize(f.size)}</span></span>
+              <div class="att">
+                <button type="button" class="att-open" data-action="file-open" data-id="${esc(f.id)}" title="Открыть ${esc(f.name)}">
+                  <span class="att-ico">${Files.tile(f, 'sm')}${Files.kind(f).image ? `<img data-thumb="${esc(f.id)}" alt="">` : ''}</span>
+                  <span class="att-info"><span class="att-name">${esc(f.name)}</span><span class="att-size">${U.fmtSize(f.size)}</span></span>
+                </button>
                 <button type="button" class="icon-btn sm" data-unlink="${esc(f.id)}" aria-label="Открепить ${esc(f.name)}" title="Открепить — файл останется в разделе «Файлы»">${ico('x')}</button>
               </div>`).concat(staged.map((file, i) => `
-              <div class="att">${thumb(file)}
+              <div class="att">${icon(file, preview(file))}
                 <span class="att-info"><span class="att-name" title="${esc(file.name)}">${esc(file.name)}</span><span class="att-size">${U.fmtSize(file.size)} · новый</span></span>
                 <button type="button" class="icon-btn sm" data-unstage="${i}" aria-label="Убрать ${esc(file.name)}">${ico('x')}</button>
               </div>`)).join('');
             attBox.hidden = !keep.length && !staged.length;
+            U.$$('.att-ico img[src]', attBox).forEach((img) => img.addEventListener('error', () => img.remove(), { once: true }));
+            Files.hydrate(attBox);
+            if (focusAfter) (attBox.querySelector('[data-unlink], [data-unstage]') || el.querySelector('[data-att-file]')).focus();
           };
           const addPicked = (list) => { staged.push(...Array.from(list)); renderAtt(); };
+          // Камера на телефоне называет все снимки одинаково (image.jpg) — даём понятные имена
+          const camName = (file, i) => {
+            const m = /^(?:image|photo|\d{10,})\.(jpe?g|png|heic|heif|webp)$/i.exec(file.name || '');
+            if (!m) return file;
+            const d = new Date();
+            const n = staged.length + i + 1;
+            return new File([file], `Фото ${U.ymd(d)} ${U.hm(d).replace(':', '-')}${n > 1 ? ` (${n})` : ''}.${m[1].toLowerCase()}`, { type: file.type, lastModified: file.lastModified });
+          };
+          dropHere = addPicked;
+          Files.dropTarget = dropHere;
           attBox.addEventListener('click', (e) => {
             const un = e.target.closest('[data-unlink]');
             const us = e.target.closest('[data-unstage]');
@@ -510,20 +542,23 @@
               const [file] = staged.splice(Number(us.dataset.unstage), 1);
               if (previews.has(file)) { URL.revokeObjectURL(previews.get(file)); previews.delete(file); }
             }
-            if (un || us) renderAtt();
+            if (un || us) renderAtt(true);
           });
           el.querySelector('[data-att-file]').addEventListener('click', () => Files.pick(addPicked));
           const photo = el.querySelector('[data-att-photo]');
-          if (photo) photo.addEventListener('click', () => Files.pick(addPicked, 'image/*', 'environment'));
+          if (photo) photo.addEventListener('click', () => Files.pick((list) => addPicked(Array.from(list).map(camName)), 'image/*', 'environment'));
           renderAtt();
           setTimeout(() => title.setSelectionRange(title.value.length, title.value.length), 90);
           if (isEdit) {
-            el.querySelector('[data-del]').addEventListener('click', () => { api.close(); this.remove(rem.id); });
+            el.querySelector('[data-del]').addEventListener('click', () => { api.close(true); this.remove(rem.id); });
           }
+          let saved = false;
           el.querySelector('#rf').addEventListener('submit', (e) => {
             e.preventDefault();
+            if (saved) return;
             const t = title.value.trim();
             if (!t) { err.textContent = 'Напишите, что нужно сделать.'; err.hidden = false; title.focus(); return; }
+            saved = true;
             const subjName = el.querySelector('#rf-subj').value.trim();
             const subject = subjName ? Store.subjectByName(subjName) : null;
             const due = U.fromLocalInput(el.querySelector('#rf-due').value);
@@ -582,6 +617,7 @@
       if (r) Notify.openModal(r);
     },
     'rem-toggle': (el) => Notify.toggle(el.dataset.id, el),
+    'rem-files-all': (el) => { el.closest('.rem-files').classList.add('is-all'); el.remove(); },
   });
 
   Object.assign(App.changes, {

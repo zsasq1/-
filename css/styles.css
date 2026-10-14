@@ -776,6 +776,7 @@ select.input-sm { padding-right: 30px; background-position: right 8px center; }
 }
 .rem.is-done .check { background: var(--accent); border-color: var(--accent); }
 .rem.is-done .check .ico { stroke-dashoffset: 0; }
+.rem-body { flex: 1; min-width: 0; }
 .rem-main { flex: 1; min-width: 0; cursor: pointer; text-align: left; }
 .rem-title {
   font-size: 14.5px; font-weight: 500;
@@ -937,12 +938,24 @@ select.input-sm { padding-right: 30px; background-position: right 8px center; }
 .rem-file-ico img.is-loaded { opacity: 1; }
 .rem-file .ftype::before { background: linear-gradient(225deg, var(--surface-2) 50%, hsl(var(--h, 40) var(--sub-s) calc(var(--sub-l) - 9%)) 50%); }
 .rem-file-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rem-files-more { font-size: 12.5px; color: var(--muted); padding: 0 4px; }
+.rem-file.is-pending { pointer-events: none; opacity: .7; }
+.rem-file.is-extra { display: none; }
+.rem-files.is-all .rem-file.is-extra { display: inline-flex; animation: chip-in .35s var(--spring); }
+.rem-files-more {
+  height: 30px; padding: 0 10px; border-radius: 9px;
+  font-size: 12.5px; color: var(--muted);
+  transition: background .15s ease, color .15s ease;
+}
+.rem-files-more:hover { background: var(--surface-2); color: var(--text); }
 .rem.is-done .rem-files { opacity: .6; }
 .rf-att { margin-bottom: 8px; }
 .rf-att-btns { display: flex; flex-wrap: wrap; gap: 8px; }
-.att-thumb { width: 34px; height: 42px; flex: none; border-radius: 6px; overflow: hidden; background: var(--surface); }
-.att-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.att-ico { position: relative; width: 34px; height: 42px; flex: none; display: grid; place-items: center; border-radius: 6px; overflow: hidden; }
+.att-ico img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: var(--surface); }
+.att-ico img[data-thumb] { opacity: 0; transition: opacity .3s ease; }
+.att-ico img[data-thumb].is-loaded { opacity: 1; }
+.att-open { display: flex; align-items: center; gap: 8px; min-width: 0; text-align: left; border-radius: 8px; }
+.att-open:hover .att-name { color: var(--accent); }
 .ftag-rem { gap: 4px; }
 .ftag-rem .ico { width: 12px; height: 12px; flex: none; }
 .ftag-rem span { overflow: hidden; text-overflow: ellipsis; }
@@ -977,6 +990,8 @@ select.input-sm { padding-right: 30px; background-position: right 8px center; }
 .frow.is-pending { pointer-events: none; }
 .frow-name { font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .frow-cell { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.frow-tags { display: flex; align-items: center; gap: 6px; min-width: 0; max-width: 260px; }
+.frow-tags .tag { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .frow-actions { display: flex; justify-content: flex-end; gap: 2px; opacity: .0; transition: opacity .2s ease; }
 .frow:hover .frow-actions, .frow:focus-within .frow-actions { opacity: 1; }
 @media (hover: none) { .frow-actions { opacity: 1; } }
@@ -1010,6 +1025,7 @@ select.input-sm { padding-right: 30px; background-position: right 8px center; }
   transition: opacity .22s ease;
 }
 .drop-overlay.is-on { opacity: 1; pointer-events: auto; }
+.drop-overlay.is-modal { z-index: 105; } /* поверх окна дедлайна */
 .drop-box {
   display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
   width: min(440px, 100%); padding: 40px 28px;
@@ -1220,7 +1236,7 @@ select.input-sm { padding-right: 30px; background-position: right 8px center; }
 .modal-text { color: var(--text-2); }
 .modal-foot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; padding: 14px 22px 20px; }
 .modal-foot .spacer { flex: 1; }
-.modal-backdrop.is-closing { animation: fade-out .2s ease both; }
+.modal-backdrop.is-closing { animation: fade-out .2s ease both; pointer-events: none; } /* второй щелчок по «Добавить» не создаст копию */
 .modal-backdrop.is-closing .modal { animation: modal-out .2s ease both; }
 @keyframes fade { from { opacity: 0; } }
 @keyframes fade-out { to { opacity: 0; } }

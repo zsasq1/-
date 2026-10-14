@@ -531,7 +531,7 @@
         if (inp.subject) { const s = findSubject(inp.subject); list = list.filter((r) => r.subjectId === s.id); }
         if (inp.search) { const q = String(inp.search).toLowerCase(); list = list.filter((r) => r.title.toLowerCase().includes(q)); }
         return list.slice(0, 60).map((r) => {
-          const files = App.Files.ofReminder(r.id).map((f) => f.name);
+          const files = App.Files.ofReminder(r.id).map((f) => ({ id: f.id, name: f.name }));
           return Object.assign({ id: r.id, title: r.title, kind: r.kind, due: r.due ? fmtDue(r.due) : null, subject: (Store.subject(r.subjectId) || {}).name || null, done: r.done }, files.length ? { files } : {});
         });
       },
@@ -690,7 +690,10 @@
         let list = Store.state.files;
         if (inp.subject) { const s = findSubject(inp.subject); list = list.filter((f) => f.subjectId === s.id); }
         if (inp.search) { const q = String(inp.search).toLowerCase(); list = list.filter((f) => f.name.toLowerCase().includes(q)); }
-        return list.slice(0, 80).map((f) => ({ id: f.id, name: f.name, subject: (Store.subject(f.subjectId) || {}).name || null, size: U.fmtSize(f.size), added: (f.addedAt || '').slice(0, 10) }));
+        return list.slice(0, 80).map((f) => {
+          const r = App.Files.reminderOf(f);
+          return Object.assign({ id: f.id, name: f.name, subject: (Store.subject(f.subjectId) || {}).name || null, size: U.fmtSize(f.size), added: (f.addedAt || '').slice(0, 10) }, r ? { reminder: r.title } : {});
+        });
       },
     },
     {
@@ -724,6 +727,7 @@
         if (!a) throw new Error('такого вложения нет');
         const rem = remId ? Store.state.reminders.find((r) => r.id === String(remId)) : null;
         if (remId && !rem) throw new Error('такого дела нет — возьмите id из list_reminders');
+        if (rem) delete rem.sample; // дело с вложением — уже своё, а не пример
         const s = subject ? findSubject(subject, { create: true }) : rem ? Store.subject(rem.subjectId) : null;
         const [meta] = await App.Files.add([a.file], s ? s.id : null, rem ? { reminderId: rem.id } : {});
         log('file', rem ? `Прикреплено к «${rem.title}»: ${a.file.name}` : `Сохранено в «Файлы»: ${a.file.name}${s ? ` · ${s.name}` : ''}`);
@@ -1269,6 +1273,8 @@
       const snap = JSON.stringify({
         classes: Store.state.classes, reminders: Store.state.reminders,
         subjects: Store.state.subjects, topicNotes: Store.state.topicNotes, cards: Store.state.cards,
+        // сами файлы отмена не трогает, только то, к какому делу они прикреплены
+        fileLinks: Store.state.files.map((f) => [f.id, f.reminderId || null]),
       });
       this.busy = true;
       this.ctl = new AbortController();
@@ -1514,7 +1520,14 @@
     undo() {
       const t = this.turns[this.turns.length - 1];
       if (!t || !t.undo) return;
-      Object.assign(Store.state, JSON.parse(t.undo));
+      const { fileLinks, ...rest } = JSON.parse(t.undo);
+      Object.assign(Store.state, rest);
+      const links = new Map(fileLinks || []);
+      Store.state.files.forEach((f) => {
+        const id = links.get(f.id);
+        if (id) f.reminderId = id;
+        else delete f.reminderId;
+      });
       t.undone = true;
       t.undo = null;
       Store.save();

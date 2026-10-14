@@ -44,6 +44,25 @@
       return `<span class="ftype ${cls} ${k.neutral ? 'no-subj' : ''}" style="--h:${k.hue}">${esc(k.ext)}</span>`;
     },
 
+    // Файлы, прикреплённые к дедлайну или напоминанию
+    ofReminder(id) {
+      return id ? Store.state.files.filter((f) => f.reminderId === id) : [];
+    },
+
+    reminderOf(f) {
+      return f && f.reminderId ? Store.state.reminders.find((r) => r.id === f.reminderId) || null : null;
+    },
+
+    // Маленький значок файла в строке дедлайна: у фото — миниатюра
+    attachChip(f) {
+      const k = this.kind(f);
+      return `
+        <button type="button" class="rem-file" data-action="file-open" data-id="${esc(f.id)}" title="${esc(f.name)}" aria-label="Открыть ${esc(f.name)}">
+          <span class="rem-file-ico">${this.tile(f, 'xs')}${k.image ? `<img data-thumb="${esc(f.id)}" alt="">` : ''}</span>
+          <span class="rem-file-name">${esc(f.name)}</span>
+        </button>`;
+    },
+
     filtered() {
       const q = this.filter.q.trim().toLowerCase();
       const sub = this.filter.subject;
@@ -136,6 +155,7 @@
             <div class="fname" title="${esc(f.name)}">${esc(f.name)}</div>
             <div class="fmeta">${isPending ? '<span class="shimmer">Сохраняю…</span>' : `${U.fmtSize(f.size)} · ${U.timeAgo(new Date(f.addedAt))}`}</div>
             ${subj ? `<span class="tag" style="--h:${subj.hue}">${esc(subj.name)}</span>` : ''}
+            ${this.reminderOf(f) ? `<span class="tag no-subj ftag-rem" title="Прикреплён к «${esc(this.reminderOf(f).title)}»">${ico('flag')}<span>${esc(this.reminderOf(f).title)}</span></span>` : ''}
           </div>
           ${isPending ? '' : `<div class="factions">
             <button class="icon-btn sm" data-action="file-download" data-id="${f.id}" aria-label="Скачать" title="Скачать">${ico('download')}</button>
@@ -204,10 +224,12 @@
 
     /* ---------- Загрузка ---------- */
 
-    pick(handler, accept = '') {
+    pick(handler, accept = '', capture = '') {
       const input = U.$('#file-input');
       pickHandler = handler;
       input.accept = accept;
+      if (capture) input.setAttribute('capture', capture);
+      else input.removeAttribute('capture');
       input.value = '';
       input.click();
     },
@@ -218,18 +240,19 @@
       if (h && list && list.length) h(list);
     },
 
-    async add(list, subjectId = null) {
+    // opts.reminderId — прикрепить к дедлайну или напоминанию; файл всё равно лежит в «Файлах»
+    async add(list, subjectId = null, opts = {}) {
       const files = Array.from(list || []).filter((f) => f && f.size >= 0);
       if (!files.length) return [];
       const now = new Date().toISOString();
-      const metas = files.map((file) => ({
+      const metas = files.map((file) => Object.assign({
         id: U.uid() + Math.random().toString(36).slice(2, 5),
         name: file.name || 'Без названия',
         size: file.size,
         type: file.type || '',
         subjectId: subjectId || null,
         addedAt: now,
-      }));
+      }, opts.reminderId ? { reminderId: opts.reminderId } : {}));
       metas.forEach((m) => pending.add(m.id));
       Store.state.files.unshift(...metas);
       App.setBusy(true);
@@ -252,7 +275,10 @@
       if (App.Cloud) App.Cloud.uploadMissing();
 
       const n = metas.length;
-      const title = n === 1 ? `Файл «${metas[0].name}» сохранён` : `Добавлено ${U.count(n, ['файл', 'файла', 'файлов'])}`;
+      const rem = opts.reminderId && Store.state.reminders.find((r) => r.id === opts.reminderId);
+      const title = rem
+        ? `${n === 1 ? `«${metas[0].name}» прикреплён` : `Прикреплено ${U.count(n, ['файл', 'файла', 'файлов'])}`} к «${rem.title}»`
+        : n === 1 ? `Файл «${metas[0].name}» сохранён` : `Добавлено ${U.count(n, ['файл', 'файла', 'файлов'])}`;
       UI.toast(title);
       App.Notify.push({
         kind: 'file',

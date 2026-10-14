@@ -913,6 +913,39 @@ select.input-sm { padding-right: 30px; background-position: right 8px center; }
 .fcard .ftype::before, .fthumb .ftype::before { background: linear-gradient(225deg, var(--surface-2) 50%, hsl(var(--h, 40) var(--sub-s) calc(var(--sub-l) - 9%)) 50%); }
 .att .ftype::before { background: linear-gradient(225deg, var(--surface-2) 50%, hsl(var(--h, 40) var(--sub-s) calc(var(--sub-l) - 9%)) 50%); }
 .mini-file .ftype::before, .frow .ftype::before { background: linear-gradient(225deg, var(--surface) 50%, hsl(var(--h, 40) var(--sub-s) calc(var(--sub-l) - 9%)) 50%); }
+.ftype.xs { width: 18px; height: 22px; border-radius: 4px 6px 4px 4px; font-size: 6px; padding-bottom: 3px; letter-spacing: 0; flex: none; }
+.ftype.xs::before { width: 6px; height: 6px; border-radius: 0 0 0 2px; }
+
+/* фото и файлы дедлайна */
+.rem-files { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
+.rem-file {
+  display: inline-flex; align-items: center; gap: 7px;
+  max-width: 210px; height: 30px; padding: 0 10px 0 3px; border-radius: 9px;
+  border: 1px solid var(--border); background: var(--surface-2);
+  font-size: 12.5px; color: var(--text-2);
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.rem-file:hover { background: var(--surface); border-color: var(--border-strong); color: var(--text); }
+.rem-file-ico {
+  position: relative; width: 24px; height: 24px; flex: none;
+  display: grid; place-items: center; border-radius: 6px; overflow: hidden;
+}
+.rem-file-ico img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transition: opacity .3s ease;
+}
+.rem-file-ico img.is-loaded { opacity: 1; }
+.rem-file .ftype::before { background: linear-gradient(225deg, var(--surface-2) 50%, hsl(var(--h, 40) var(--sub-s) calc(var(--sub-l) - 9%)) 50%); }
+.rem-file-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rem-files-more { font-size: 12.5px; color: var(--muted); padding: 0 4px; }
+.rem.is-done .rem-files { opacity: .6; }
+.rf-att { margin-bottom: 8px; }
+.rf-att-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.att-thumb { width: 34px; height: 42px; flex: none; border-radius: 6px; overflow: hidden; background: var(--surface); }
+.att-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ftag-rem { gap: 4px; }
+.ftag-rem .ico { width: 12px; height: 12px; flex: none; }
+.ftag-rem span { overflow: hidden; text-overflow: ellipsis; }
 
 .fbody { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px 12px; min-width: 0; }
 .fname { font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

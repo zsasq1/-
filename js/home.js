@@ -337,7 +337,8 @@
         });
         App.Notify.tick();
       }
-      if (files.length) await App.Files.add(files, subjectId);
+      // Файлы из поля ввода прикрепляются к делу, которое из него получилось
+      if (files.length) await App.Files.add(files, subjectId, created ? { reminderId: created.id } : {});
     },
   };
 

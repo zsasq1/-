@@ -530,7 +530,10 @@
         let list = App.Notify.sortedReminders(!!inp.done);
         if (inp.subject) { const s = findSubject(inp.subject); list = list.filter((r) => r.subjectId === s.id); }
         if (inp.search) { const q = String(inp.search).toLowerCase(); list = list.filter((r) => r.title.toLowerCase().includes(q)); }
-        return list.slice(0, 60).map((r) => ({ id: r.id, title: r.title, kind: r.kind, due: r.due ? fmtDue(r.due) : null, subject: (Store.subject(r.subjectId) || {}).name || null, done: r.done }));
+        return list.slice(0, 60).map((r) => {
+          const files = App.Files.ofReminder(r.id).map((f) => f.name);
+          return Object.assign({ id: r.id, title: r.title, kind: r.kind, due: r.due ? fmtDue(r.due) : null, subject: (Store.subject(r.subjectId) || {}).name || null, done: r.done }, files.length ? { files } : {});
+        });
       },
     },
     {
@@ -714,14 +717,16 @@
     },
     {
       name: 'save_attachment',
-      description: 'Сохранить прикреплённый к сообщению файл в раздел «Файлы», можно сразу к предмету.',
-      schema: { type: 'object', properties: { index: { type: 'number' }, subject: { type: 'string' } }, required: ['index'] },
-      async run({ index, subject }) {
+      description: 'Сохранить прикреплённый к сообщению файл в раздел «Файлы», можно сразу к предмету и прикрепить к дедлайну или напоминанию (reminder_id из list_reminders).',
+      schema: { type: 'object', properties: { index: { type: 'number' }, subject: { type: 'string' }, reminder_id: { type: 'string' } }, required: ['index'] },
+      async run({ index, subject, reminder_id: remId }) {
         const a = Ai.attached[(Number(index) || 1) - 1];
         if (!a) throw new Error('такого вложения нет');
-        const s = subject ? findSubject(subject, { create: true }) : null;
-        const [meta] = await App.Files.add([a.file], s ? s.id : null);
-        log('file', `Сохранено в «Файлы»: ${a.file.name}${s ? ` · ${s.name}` : ''}`);
+        const rem = remId ? Store.state.reminders.find((r) => r.id === String(remId)) : null;
+        if (remId && !rem) throw new Error('такого дела нет — возьмите id из list_reminders');
+        const s = subject ? findSubject(subject, { create: true }) : rem ? Store.subject(rem.subjectId) : null;
+        const [meta] = await App.Files.add([a.file], s ? s.id : null, rem ? { reminderId: rem.id } : {});
+        log('file', rem ? `Прикреплено к «${rem.title}»: ${a.file.name}` : `Сохранено в «Файлы»: ${a.file.name}${s ? ` · ${s.name}` : ''}`);
         return { ok: true, id: meta && meta.id };
       },
     },

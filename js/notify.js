@@ -220,8 +220,18 @@
               <span class="due ${dueCls}">${ico('clock')}${esc(dueText)}</span>
               ${s ? `<span class="tag" style="--h:${s.hue}">${esc(s.name)}</span>` : ''}
             </div>
+            ${this.filesRow(r)}
           </div>
         </li>`;
+    },
+
+    // Прикреплённые фото и файлы: первые четыре и «ещё N»
+    filesRow(r) {
+      const files = App.Files ? App.Files.ofReminder(r.id) : [];
+      if (!files.length) return '';
+      const more = files.length - 4;
+      return `<div class="rem-files">${files.slice(0, 4).map((f) => App.Files.attachChip(f)).join('')}${more > 0
+        ? `<span class="rem-files-more" data-action="rem-edit" data-id="${r.id}">ещё ${more}</span>` : ''}</div>`;
     },
 
     // Итоговое занятие в списке дел: предмет, когда и что повторить
@@ -392,7 +402,8 @@
       Store.gcSubjects();
       Store.save();
       App.refresh();
-      UI.toast('Напоминание удалено', {
+      const kept = App.Files ? App.Files.ofReminder(id).length : 0;
+      UI.toast(kept ? `Удалено. ${kept === 1 ? 'Прикреплённый файл остался' : 'Прикреплённые файлы остались'} в разделе «Файлы»` : 'Напоминание удалено', {
         action: {
           label: 'Вернуть',
           fn: () => { st.subjects = subjects; st.reminders.splice(i, 0, removed); Store.save(); App.refresh(); },
@@ -419,6 +430,13 @@
       const subj = Store.subject(r.subjectId);
       const subjects = Store.sortedSubjects();
       const dueVal = r.due ? U.toLocalInput(new Date(r.due)) : '';
+      // Вложения: уже прикреплённые (их можно открепить) и выбранные сейчас — сохраняются по «Сохранить»/«Добавить»
+      const Files = App.Files;
+      const linked = isEdit && Files ? Files.ofReminder(rem.id) : [];
+      const unlink = new Set();
+      const staged = [];
+      const previews = new Map(); // File -> временная ссылка на миниатюру
+      const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
 
       UI.modal({
         title: isEdit ? (r.kind === 'deadline' ? 'Дедлайн' : 'Напоминание') : (r.kind === 'deadline' ? 'Новый дедлайн' : 'Новое напоминание'),
@@ -446,15 +464,58 @@
               <select id="rf-lead" class="input">${Object.entries(LEADS).map(([v, l]) => `<option value="${v}" ${Number(v) === Number(r.lead) ? 'selected' : ''}>${l}</option>`).join('')}</select>
             </div>
             <p class="field-hint span-2">Без срока напоминание просто останется в списке дел.</p>
+            <div class="field span-2">
+              <span class="field-label">Фото и файлы</span>
+              <div class="att-list rf-att" id="rf-att" hidden></div>
+              <div class="rf-att-btns">
+                <button type="button" class="btn btn-sm" data-att-file>${ico('paperclip')} Прикрепить файл</button>
+                ${coarse ? `<button type="button" class="btn btn-sm" data-att-photo>${ico('camera')} Сфотографировать</button>` : ''}
+              </div>
+            </div>
             <p class="form-error span-2" id="rf-err" hidden></p>
           </form>`,
         foot: `
           ${isEdit ? `<button class="btn btn-ghost btn-danger" type="button" data-del>${ico('trash')} Удалить</button><span class="spacer"></span>` : ''}
           <button class="btn btn-ghost" type="button" data-close>Отмена</button>
           <button class="btn btn-primary" type="submit" form="rf">${isEdit ? 'Сохранить' : 'Добавить'}</button>`,
+        onClose: () => previews.forEach((url) => URL.revokeObjectURL(url)),
         onMount: (el, api) => {
           const title = el.querySelector('#rf-title');
           const err = el.querySelector('#rf-err');
+          const attBox = el.querySelector('#rf-att');
+          const thumb = (file) => {
+            if (!/^image\//.test(file.type || '')) return Files.tile(file, 'sm');
+            if (!previews.has(file)) previews.set(file, URL.createObjectURL(file));
+            return `<span class="att-thumb"><img src="${previews.get(file)}" alt=""></span>`;
+          };
+          const renderAtt = () => {
+            const keep = linked.filter((f) => !unlink.has(f.id));
+            attBox.innerHTML = keep.map((f) => `
+              <div class="att">${Files.tile(f, 'sm')}
+                <span class="att-info"><span class="att-name" title="${esc(f.name)}">${esc(f.name)}</span><span class="att-size">${U.fmtSize(f.size)}</span></span>
+                <button type="button" class="icon-btn sm" data-unlink="${esc(f.id)}" aria-label="Открепить ${esc(f.name)}" title="Открепить — файл останется в разделе «Файлы»">${ico('x')}</button>
+              </div>`).concat(staged.map((file, i) => `
+              <div class="att">${thumb(file)}
+                <span class="att-info"><span class="att-name" title="${esc(file.name)}">${esc(file.name)}</span><span class="att-size">${U.fmtSize(file.size)} · новый</span></span>
+                <button type="button" class="icon-btn sm" data-unstage="${i}" aria-label="Убрать ${esc(file.name)}">${ico('x')}</button>
+              </div>`)).join('');
+            attBox.hidden = !keep.length && !staged.length;
+          };
+          const addPicked = (list) => { staged.push(...Array.from(list)); renderAtt(); };
+          attBox.addEventListener('click', (e) => {
+            const un = e.target.closest('[data-unlink]');
+            const us = e.target.closest('[data-unstage]');
+            if (un) unlink.add(un.dataset.unlink);
+            if (us) {
+              const [file] = staged.splice(Number(us.dataset.unstage), 1);
+              if (previews.has(file)) { URL.revokeObjectURL(previews.get(file)); previews.delete(file); }
+            }
+            if (un || us) renderAtt();
+          });
+          el.querySelector('[data-att-file]').addEventListener('click', () => Files.pick(addPicked));
+          const photo = el.querySelector('[data-att-photo]');
+          if (photo) photo.addEventListener('click', () => Files.pick(addPicked, 'image/*', 'environment'));
+          renderAtt();
           setTimeout(() => title.setSelectionRange(title.value.length, title.value.length), 90);
           if (isEdit) {
             el.querySelector('[data-del]').addEventListener('click', () => { api.close(); this.remove(rem.id); });
@@ -473,20 +534,30 @@
               due: due ? due.toISOString() : null,
               lead: Number(el.querySelector('#rf-lead').value) || 0,
             };
+            let target = rem;
             if (isEdit) {
               Object.assign(rem, data);
               delete rem.sample;
             } else {
-              Store.state.reminders.push(Object.assign({
+              target = Object.assign({
                 id: U.uid(), done: false, doneAt: null, createdAt: new Date().toISOString(),
-              }, data));
+              }, data);
+              Store.state.reminders.push(target);
             }
+            // Открепляем — файл остаётся в «Файлах»
+            unlink.forEach((id) => {
+              const f = Store.state.files.find((x) => x.id === id);
+              if (f) { delete f.reminderId; delete f.sample; }
+            });
             Store.gcSubjects();
             Store.save();
+            const files = staged.splice(0);
             api.close();
             App.refresh();
-            UI.toast(isEdit ? 'Изменения сохранены' : (due ? `Добавлено · ${U.fmtWhen(due)}` : 'Добавлено в список дел'));
+            // О новых файлах скажет сам Files.add, когда сохранит их
+            if (!files.length) UI.toast(isEdit ? 'Изменения сохранены' : (due ? `Добавлено · ${U.fmtWhen(due)}` : 'Добавлено в список дел'));
             this.tick();
+            if (files.length) Files.add(files, data.subjectId, { reminderId: target.id });
           });
         },
       });

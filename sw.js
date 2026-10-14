@@ -77,6 +77,8 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
 
   if (url.origin === self.location.origin) {
+    // Тренажёр СМП — отдельный сайт в папке test-smp, Семестр его не обслуживает
+    if (url.pathname.includes('/test-smp/')) return;
     // Данные «Семестра для Mac» всегда берём с диска, а не из кеша
     if (url.pathname.includes('/api/')) return;
     // Любая страница приложения — это index.html: маршруты живут после «#»
